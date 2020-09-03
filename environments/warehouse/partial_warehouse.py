@@ -10,6 +10,9 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import networkx as nx
 import csv
+sys.path.append("..") 
+from influence.influence_model import InfluenceModel
+import torch
 
 class PartialWarehouse(object):
     """
@@ -22,7 +25,7 @@ class PartialWarehouse(object):
                3: 'RIGHT'}
 
     def __init__(self, parameters:dict={}):
-        parameters = read_parameters('warehouse')
+        parameters = read_parameters('partial_warehouse.yaml')
         # parameters = parse_arguments()
         self.n_columns = parameters['n_columns']
         self.n_rows = parameters['n_rows']
@@ -35,10 +38,11 @@ class PartialWarehouse(object):
         self.learning_robot_id = parameters['learning_robot_id']
         self.n_steps_episode = parameters['n_steps_episode']
         self.obs_type = parameters['obs_type']
+        self.parameters = parameters
         self.items = []
         self.img = None
-        self.log_obs = parameters['log_obs']
-        self.log_file = parameters['log_file']
+        self.influence_model = InfluenceModel(41, 32, 8, [6,2,6,2,6,2,6,2])
+        self._load_influence_model(self.influence_model, '../models/influence/')
         self.reset()
 
     ############################## Override ###############################
@@ -54,36 +58,32 @@ class PartialWarehouse(object):
         self._add_items()
         self.obs = self._get_observation()
         self.num_steps = 0
-        return obs
+        self.influence_model.reset()
+        return self.obs
 
     def step(self, action):
         """
         Performs a single step in the environment.
         """
-        if self.log_obs is True:
-            self._log_obs(self.log_file, action)
-        actions = []
-        for robot in self.robots:
-            state = self._get_state()
-            obs = robot.observe(state, self.obs_type)
-            actions.append(robot.select_random_action())
-        actions[self.learning_robot_id] = action
-        self._robots_act(actions)
-        probs, values = self.influence_model.predict(self.obs)
-        ext_robot_loc = self.influence_source_loc[values]
+        self._robots_act(action)
+        self.obs = torch.reshape(torch.FloatTensor(self.obs), (1,1,-1))
+        _, probs = self.influence_model(self.obs)
+        ext_robot_locs = self._sample_ext_robot_locs(probs)
         reward = self._compute_reward(self.robots[self.learning_robot_id])
-        self._remove_items(ext_robot_loc)
+        self._remove_items(ext_robot_locs)
         self._add_items()
         self.obs = self._get_observation()
         # Check whether learning robot is done
         # done = self.robots[self.learning_robot_id].done
         self.num_steps += 1
         done = (self.n_steps_episode <= self.num_steps)
+        if self.parameters['render']:
+            self.render(self.parameters['render_delay'])
         # Experiment.py resets the environment when done
         # if done is True:
         #     # Reset the environment to start a new episode.
         #     self.reset()
-        return obs, reward, done, []
+        return self.obs, reward, done, []
 
     @property
     def observation_space(self):
@@ -221,19 +221,14 @@ class PartialWarehouse(object):
         state and the robot's designated domain.
         """
         state = self._get_state()
-        # observation = self.robots[self.learning_robot_id].observe(state, self.obs_type)
-        # print(observation)
-        observation = state[:, :, 0] - 2*state[:, :, 1]
-        shape = np.shape(observation)
-        observation = np.reshape(observation, (shape[0]*shape[1]))
+        observation = self.robots[self.learning_robot_id].observe(state, self.obs_type)
         return observation
 
-    def _robots_act(self, actions):
+    def _robots_act(self, action):
         """
-        All robots take an action in the environment.
+        Robot takes an action in the environment.
         """
-        for action,robot in zip(actions, self.robots):
-            robot.act(action)
+        self.robots[self.learning_robot_id].act(action)
 
     def _compute_reward(self, robot):
         """
@@ -251,7 +246,6 @@ class PartialWarehouse(object):
                 reward += 1
         return reward
 
-
     def _remove_items(self, ext_robot_pos):
         """
         Removes items collected by robots. Robots collect items by steping on
@@ -264,10 +258,11 @@ class PartialWarehouse(object):
                 if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
                     self.items.remove(item)
         for pos in ext_robot_pos:
-            for item in self.items:
-                item_pos = item.get_position
-                if pos[0] == item_pos[0] and pos[1] == item_pos[1]:
-                    self.items.remove(item)
+            if pos is not None:
+                for item in self.items:
+                    item_pos = item.get_position
+                    if pos[0] == item_pos[0] and pos[1] == item_pos[1]:
+                        self.items.remove(item)
 
     def _increase_item_waiting_time(self):
         """
@@ -278,21 +273,26 @@ class PartialWarehouse(object):
 
     def _neighbors(self, cell):
         return [cell + [0, 1], cell + [0, -1], cell + [1, 0], cell + [-1, 0]]
+    
+    def _sample_ext_robot_locs(self, probs):
+        locations = []
+        for i, prob in enumerate(probs):
+            # loc = np.zeros(self.robot_domain_size[0]*self.robot_domain_size[1])
+            sample = np.random.choice(np.arange(len(prob)), p=prob)
+            # loc[sample] = 1
+            # loc = np.reshape(loc, self.robot_domain_size)
+            if sample < len(prob) - 1:
+                location = self._find_loc(i, sample)
+            else:
+                location = None
+            locations.append(location)
+        return locations
 
-    def _log_obs(self, log_file, action):
-        """
-        Logs observations into a csv file
-        """
-        pass
-        # with open (log_file,'a') as file:
-        #     robot = self.robots[self.learning_robot_id]
-        #     robot_domain = robot.get_domain
-        #     state = self._get_state()
-        #     items = state[robot_domain[0]: robot_domain[2]+1,
-        #                   robot_domain[1]: robot_domain[3]+1, 0]
-        #     items = list(items[0, :]) + list(items[-1, :])
-        #     robot_coor = [robot.get_position[0] - robot_domain[0], robot.get_position[1] - robot_domain[1]]
-        #     robot_loc = robot_coor[0]*self.robot_domain_size[0] + robot_coor[1]
-        #     writer = csv.writer(file)
-        #     row = np.concatenate(([robot_loc], [action], items))
-        #     writer.writerow(row)
+    def _load_influence_model(self, model, path):
+        checkpoint = torch.load(os.path.join(path, 'checkpoint'))
+        model.load_state_dict(checkpoint['model_state_dict'])
+    
+    def _find_loc(self, ext_robot_id, loc):
+        locations = {0: [loc, 4], 1: [-1, 4], 2: [4, loc], 3: [4, 0],
+                     4: [loc, 0], 5: [0, 0], 6: [0, loc], 7: [0, 4]}
+        return locations[ext_robot_id]

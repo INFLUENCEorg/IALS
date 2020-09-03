@@ -1,15 +1,15 @@
 import sys
 sys.path.append("..") 
-from RL.controller import Controller
-from RL.PPO.PPOmodel import PPOmodel
-from RL.buffer import SerialSampling
+from agents.PPO.PPOmodel import PPOmodel
+from agents.PPO.buffer import SerialSampling
 import numpy as np
+import os
+import tensorflow as tf
 
 
-class PPOcontroller(Controller):
+class PPOAgent(object):
     """
-    Creates PPOController object and can be used to add new experiences to the
-    buffer, calculate advantages and returns and update the agent's policy.
+    PPOAgent
     """
 
     def __init__(self, parameters, action_map):
@@ -30,15 +30,49 @@ class PPOcontroller(Controller):
                       "entropy": [],
                       "policy_loss": [],
                       "value_loss": []}
-        super().__init__(self.parameters, action_map)
         if self.parameters['influence']:
             self.seq_len = self.parameters['inf_seq_len']
         elif self.parameters['recurrent']:
             self.seq_len = self.parameters['seq_len']
         else:
-            self.seq_len = 1
+            self.seq_len = 1 
+        tf.reset_default_graph()
+        self.step = 0
+        summary_path = '../summaries/' + self.parameters['name']
+        if not os.path.exists(summary_path):
+            os.makedirs(summary_path)
+        self.summary_writer = tf.summary.FileWriter(summary_path)
+        self._step_output = None
 
-    def add_to_memory(self, step_output, next_step_output, get_actions_output):
+    def take_action(self, next_step_output):
+        """
+        Get each factor's action based on its local observation. Append the given
+        state to the factor's replay memory.
+        """
+        if self.parameters['mode'] == 'train' and self._step_output is not None:
+            # Store experiences in buffer.
+            self._add_to_memory(self._step_output, next_step_output,
+                                self._take_action_output)
+            # Estimate the returns using value function when time
+            # horizon has been reached
+            self._bootstrap(next_step_output)
+            if self.step % self.parameters['train_frequency'] == 0 and self._full_memory():
+                self._update()
+        self._step_output = next_step_output
+        
+        self._take_action_output = {}
+        self._take_action_output.update(self.model.evaluate_policy(self._step_output['obs'],
+                                                                   self._step_output['prev_action']))
+        self._write_summary()
+        self._save_graph()
+        self._increment_step()
+
+        return self._take_action_output['action']
+
+
+    ######################### Private Functions ###########################
+
+    def _add_to_memory(self, step_output, next_step_output, get_actions_output):
         """
         Append the last transition to buffer and to stats
         """
@@ -56,11 +90,7 @@ class PPOcontroller(Controller):
         self.stats['value'].append(get_actions_output['value'][0])
         self.stats['entropy'].append(get_actions_output['entropy'][0])
         self.stats['learning_rate'].append(get_actions_output['learning_rate'])
-        # Note: States out is used when updating the network to feed the
-        # initial state of a sequence. In PPO this internal state will not
-        # differ that much from the current one. However for DQN we might
-        # rather set the initial state as zeros like in Jinke's
-        # implementation
+
         if self.parameters['recurrent']:
             self.buffer['states_in'].append(
                     np.transpose(get_actions_output['state_in'], (1,0,2)))
@@ -90,7 +120,7 @@ class PPOcontroller(Controller):
                         self.buffer.zero_padding(missing, worker)
                         self.t += missing
 
-    def bootstrap(self, next_step_output):
+    def _bootstrap(self, next_step_output):
         """
         Computes GAE and returns for a given time horizon
         """
@@ -115,7 +145,7 @@ class PPOcontroller(Controller):
             self.buffer['returns'].extend(returns)
             self.t = 0
 
-    def update(self):
+    def _update(self):
         """
         Runs multiple epoch of mini-batch gradient descent to update the model
         using experiences stored in buffer.
@@ -125,8 +155,6 @@ class PPOcontroller(Controller):
         n_sequences = self.parameters['batch_size'] // self.seq_len
         n_batches = self.parameters['memory_size'] // \
             self.parameters['batch_size']
-        # import time
-        # start = time.time()
         for e in range(self.parameters['num_epoch']):
             self.buffer.shuffle()
             for b in range(n_batches):
@@ -137,8 +165,7 @@ class PPOcontroller(Controller):
         self.buffer.empty()
         self.stats['policy_loss'].append(np.mean(policy_loss))
         self.stats['value_loss'].append(np.mean(value_loss))
-        # end = time.time()
-        # print('Time: ', end-start)
+        
     def _compute_advantages(self, rewards, values, dones, last_value, gamma,
                             lambd):
         """
@@ -157,3 +184,47 @@ class PPOcontroller(Controller):
             advantages[t, :] = last_advantage
             last_value = values[t, :]
         return advantages
+
+    def _increment_step(self):
+        self.model.increment_step()
+        self.step = self.model.get_current_step()
+
+    def _write_summary(self):
+        """
+        Saves training statistics to Tensorboard.
+        """
+        if self.step % self.parameters['summary_frequency'] == 0 and \
+           self.parameters['tensorboard']:
+            summary = tf.Summary()
+            for key in self.stats.keys():
+                if len(self.stats[key]) > 0:
+                    stat_mean = float(np.mean(self.stats[key]))
+                    summary.value.add(tag='{}'.format(key), simple_value=stat_mean)
+                    self.stats[key] = []
+            self.summary_writer.add_summary(summary, self.step)
+            self.summary_writer.flush()
+
+    def _store_memory(self, path):
+        # Create factor path if it does not exist.
+        path = os.path.join(os.environ['APPROXIMATOR_HOME'], path)
+        if not os.path.exists(path):
+            os.makedirs(path)
+        # Store the replay memory
+        self.buffer.store(path)
+
+    def _full_memory(self):
+        """
+        Check if the replay memories are filled.
+        """
+        return self.buffer.full()
+
+    def _save_graph(self):
+        """
+        Store all the networks and replay memories.
+        """
+        if self.step % self.parameters['save_frequency'] == 0:
+            # Create factor path if it does not exist.
+            path = os.path.join('models', self.parameters['name'])
+            if not os.path.exists(path):
+                os.makedirs(path)
+            self.model.save_graph(self.step)

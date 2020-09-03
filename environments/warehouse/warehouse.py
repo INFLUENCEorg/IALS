@@ -22,7 +22,7 @@ class Warehouse(object):
                3: 'RIGHT'}
 
     def __init__(self, parameters:dict={}):
-        parameters = read_parameters('warehouse')
+        parameters = read_parameters('warehouse.yaml')
         # parameters = parse_arguments()
         self.n_columns = parameters['n_columns']
         self.n_rows = parameters['n_rows']
@@ -145,17 +145,10 @@ class Warehouse(object):
         """
         with open(log_file,'a') as file:
             robot = self.robots[self.learning_robot_id]
-            robot_domain = robot.get_domain
             state = self._get_state()
             obs = robot.observe(state, 'vector')
-            robot_rows = set(range(robot_domain[0],robot_domain[2]+1))
-            robot_columns = set(range(robot_domain[1],robot_domain[3]+1))
             for ext_robot_id in self._get_robot_neighbors(self.learning_robot_id):
-                ext_robot_domain = self.robots[ext_robot_id].get_domain
-                ext_robot_rows = set(range(ext_robot_domain[0],ext_robot_domain[2]+1))
-                ext_robot_columns = set(range(ext_robot_domain[1],ext_robot_domain[3]+1))
-                int_rows = list(ext_robot_rows.intersection(robot_rows)) - ext_robot_domain[0]
-                int_columns = list(ext_robot_columns.intersection(robot_columns)) - ext_robot_domain[1]
+                int_rows, int_columns = self._find_intersection(ext_robot_id, self.learning_robot_id)
                 ext_robot_bitmap = np.reshape(self.robots[ext_robot_id].observe(state, 'vector')[0:25], self.robot_domain_size)
                 intersection = ext_robot_bitmap[int_rows, int_columns]
                 if all(intersection == np.zeros(len(intersection))):
@@ -257,12 +250,12 @@ class Warehouse(object):
         """
         Gets robot's neighbors
         """
-        neighbors = [robot_id + 1, #robot_id + 1 + self.parameters['n_robots_row'],
-                robot_id + self.parameters['n_robots_row'],
-                # robot_id - 1 + self.parameters['n_robots_row'],
-                robot_id - 1, # robot_id - 1 - self.parameters['n_robots_row'],
-                robot_id - self.parameters['n_robots_row']]
-                #robot_id - self.parameters['n_robots_row'] + 1]
+        neighbors = [robot_id + 1, robot_id + 1 + self.parameters['n_robots_row'],
+                     robot_id + self.parameters['n_robots_row'],
+                     robot_id - 1 + self.parameters['n_robots_row'],
+                     robot_id - 1, robot_id - 1 - self.parameters['n_robots_row'],
+                     robot_id - self.parameters['n_robots_row'],
+                     robot_id - self.parameters['n_robots_row'] + 1]
         return neighbors
 
     def _robots_act(self, actions):
@@ -310,3 +303,14 @@ class Warehouse(object):
 
     def _neighbors(self, cell):
         return [cell + [0, 1], cell + [0, -1], cell + [1, 0], cell + [-1, 0]]
+    
+    def _find_intersection(self, robot_a, robot_b):
+        robot_a_domain = self.robots[robot_a].get_domain
+        robot_b_domain = self.robots[robot_b].get_domain
+        robot_a_rows = set(range(robot_a_domain[0],robot_a_domain[2]+1))
+        robot_a_columns = set(range(robot_a_domain[1],robot_a_domain[3]+1))
+        robot_b_rows = set(range(robot_b_domain[0],robot_b_domain[2]+1))
+        robot_b_columns = set(range(robot_b_domain[1],robot_b_domain[3]+1))
+        int_rows = list(robot_a_rows.intersection(robot_b_rows)) - robot_a_domain[0]
+        int_columns = list(robot_a_columns.intersection(robot_b_columns)) - robot_a_domain[1]
+        return int_rows, int_columns

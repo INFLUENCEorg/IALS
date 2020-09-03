@@ -11,16 +11,21 @@ class InfluenceModel(nn.Module):
         self.lstm = nn.LSTM(input_size, hidden_layer_size, batch_first=True)
         self.linear = nn.ModuleList()
         self.n_sources = n_sources
-        for _ in range(self.n_sources):
-            self.linear.append(nn.Linear(hidden_layer_size, output_size))
-        self.softmax = nn.Softmax()
-        self.hidden_cell = (torch.zeros(1,1,hidden_layer_size),
-                            torch.zeros(1,1,hidden_layer_size))
+        self.softmax = nn.Softmax(dim=1)
+        self.hidden_layer_size = hidden_layer_size
+        for s in range(self.n_sources):
+            self.linear.append(nn.Linear(hidden_layer_size, output_size[s]))
+        self.reset()
 
     def forward(self, input_seq):
         lstm_out, self.hidden_cell = self.lstm(input_seq, self.hidden_cell)
-        predictions = []
+        logits = []
+        probs = []
         for k in range(self.n_sources):
-            logits = self.linear[k](lstm_out[:, -1, :])
-            predictions.append(self.softmax(logits))
-        return predictions
+            logits.append(self.linear[k](lstm_out))
+            probs.append(self.softmax(logits[-1][:, -1, :])[0].detach().numpy())
+        return logits, probs
+    
+    def reset(self):
+        self.hidden_cell = (torch.zeros(1,1,self.hidden_layer_size),
+                            torch.zeros(1,1,self.hidden_layer_size))

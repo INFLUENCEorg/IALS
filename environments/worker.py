@@ -1,6 +1,7 @@
 import multiprocessing
 import multiprocessing.connection
 from environments.warehouse.warehouse import Warehouse
+from environments.warehouse.partial_warehouse import PartialWarehouse
 import os
 
 
@@ -14,14 +15,17 @@ def worker_process(remote: multiprocessing.connection.Connection, parameters,
     # The Atari wrappers are now imported from openAI baselines
     # https://github.com/openai/baselines
     log_dir = './log'
-    if parameters['env_type'] == 'warehouse':
-        env = Warehouse()
+    if parameters['env'] == 'warehouse':
+        if parameters['simulator'] == 'partial':
+            env = PartialWarehouse()
+        else:
+            env = Warehouse()
         
     while True:
         cmd, data = remote.recv()
         if cmd == 'step':
             obs, reward, done, info = env.step(data)
-            if parameters['env_type'] == 'atari':
+            if parameters['env'] == 'atari':
                 done = False
                 if 'episode' in info.keys():
                     done = True

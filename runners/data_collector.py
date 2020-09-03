@@ -32,8 +32,8 @@ class DataCollector(object):
         """
         self.parameters = parameters
         self.generate_path(self.parameters)
-        self.generate_env()
-        self.generate_controller()
+        self.env = Warehouse()
+        self.agent = RandomAgent(self.parameters, self.env.action_space.n)
 
     def generate_path(self, parameters):
         """
@@ -44,18 +44,6 @@ class DataCollector(object):
         data_path = os.path.join("../data", path)
         if not os.path.exists(data_path):
             os.makedirs(data_path)
-
-    def generate_env(self, test_it=0):
-        """
-        Create environment container that will interact with SUMO
-        """
-        self.env = Warehouse()
-
-    def generate_controller(self):
-        """
-        Create controller that will interact with agents
-        """    
-        self.agent = RandomAgent(self.env.action_space.n)
 
     def run(self):
         """
@@ -68,7 +56,7 @@ class DataCollector(object):
         obs = self.env.reset()
         while step < self.maximum_time_steps:
             self.env.log_obs('../data/warehouse/data.csv')
-            action = self.agent.step(obs)
+            action = self.agent.take_action({'obs': [obs], 'done': [False]})
             step += 1
             obs, _, _, _ = self.env.step(action)
         self.env.close()

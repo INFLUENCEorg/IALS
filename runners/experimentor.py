@@ -2,7 +2,8 @@ import os
 import tensorflow as tf
 import sys
 sys.path.append("..") 
-from RL.PPO.PPOcontroller import PPOcontroller
+from agents.PPO.PPOAgent import PPOAgent
+from agents.random_agent import RandomAgent
 from environments.vectorized_environment import VectorizedEnvironment
 import argparse
 import yaml
@@ -33,8 +34,8 @@ class Experimentor(object):
         """
         self.parameters = parameters
         self.path = self.generate_path(self.parameters)
-        self.generate_env()
-        self.generate_controller(self.env.action_space())
+        self.env = VectorizedEnvironment(self.parameters)
+        self.agent = PPOAgent(self.parameters, self.env.action_space())
         self.train_frequency = self.parameters["train_frequency"]
         tf.reset_default_graph()
 
@@ -52,18 +53,6 @@ class Experimentor(object):
             os.makedirs(model_path)
         return path
 
-    def generate_env(self, test_it=0):
-        """
-        Create environment container that will interact with SUMO
-        """
-        self.env = VectorizedEnvironment(self.parameters)
-
-    def generate_controller(self, actionmap):
-        """
-        Create controller that will interact with agents
-        """    
-        self.controller = PPOcontroller(self.parameters, actionmap)
-
     def print_results(self, info, n_steps=0):
         """
         Prints results to the screen.
@@ -71,7 +60,7 @@ class Experimentor(object):
         print(("Train step {} of {}".format(self.step,
                                             self.maximum_time_steps)))
         print(("-"*30))
-        print(("Episode {} ended after {} steps.".format(self.controller.episodes,
+        print(("Episode {} ended after {} steps.".format(self.agent.episodes,
                                                          n_steps)))
         print(("- Total reward: {}".format(info)))
         print(("-"*30))
@@ -89,36 +78,21 @@ class Experimentor(object):
         start = time.time()
         while self.step < self.maximum_time_steps:
             # Select the action to perform
-            get_actions_output = self.controller.get_actions(step_output)
+            action = self.agent.take_action(step_output)
             # Increment step
-            self.controller.increment_step()
             self.step += 1
             # Get new state and reward given actions a
-            next_step_output = self.env.step(get_actions_output['action'],
-                                             step_output['obs'])
-            if self.parameters['mode'] == 'train':
-                # Store experiences in buffer.
-                self.controller.add_to_memory(step_output, next_step_output,
-                                              get_actions_output)
-                # Estimate the returns using value function when time
-                # horizon has been reached
-                self.controller.bootstrap(next_step_output)
-                if self.step % self.train_frequency == 0 and \
-                   self.controller.full_memory():
-                    self.controller.update()
-            step_output = next_step_output
-            reward += next_step_output['reward'][0]
+            step_output = self.env.step(action)
+            
+            reward += step_output['reward'][0]
             n_steps += 1
-            if next_step_output['done'][0]:
+            if step_output['done'][0]:
                 end = time.time()
                 print('Time: ', end - start)
                 start = end
                 self.print_results(reward, n_steps)
                 reward = 0
                 n_steps = 0
-            self.controller.write_summary()    
-            # Tensorflow only stores a limited number of networks.
-            self.controller.save_graph()
 
         self.env.close()
 

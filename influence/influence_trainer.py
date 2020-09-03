@@ -27,8 +27,10 @@ class InfluenceTrainer(object):
         self.input_size = parameters.input_size
         self.output_size = parameters.output_size
         self.model = InfluenceModel(self.input_size, self._hidden_layer_size, self.n_sources, self.output_size)
-        self.loss_function = nn.BCELoss()
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self._lr)
+        weights1 = torch.FloatTensor([1.0, 1.0, 1.0, 1.0, 1.0, 0.05])
+        weights2 = torch.FloatTensor([1.0, 0.04])
+        self.loss_function = [nn.CrossEntropyLoss(weight=weights1),  nn.CrossEntropyLoss(weight=weights2)]
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self._lr, weight_decay=0.001)
         self.checkpoint_path = parameters.checkpoint_path
         if parameters.load_model:
             self._load_model(self.model, self.optimizer, self.checkpoint_path)
@@ -72,23 +74,26 @@ class InfluenceTrainer(object):
         for e in range(self._n_epochs):
             permutation = torch.randperm(len(seqs))
             loss = 0
+            test_loss = self._test(test_inputs, test_targets)
+            print(f'epoch: {e:3} test loss: {test_loss.item():10.8f}')
             for i in range(0, len(seqs) - len(seqs) % self._batch_size, self._batch_size):
                 indices = permutation[i:i+self._batch_size]
                 seqs_batch = seqs[indices]
                 targets_batch = targets[indices]
                 self.model.hidden_cell = (torch.zeros(1, self._batch_size, self._hidden_layer_size),
-                                     torch.zeros(1, self._batch_size, self._hidden_layer_size))
-                predictions = self.model(seqs_batch)
-                for k in range(self.n_sources):
+                                          torch.zeros(1, self._batch_size, self._hidden_layer_size))
+                logits, _ = self.model(seqs_batch)
+                end = 0
+                for s in range(self.n_sources):
                     self.optimizer.zero_grad()
-                    start = k*self.output_size
-                    end = (k+1)*self.output_size
-                    single_loss = self.loss_function(predictions[k], targets_batch[:, start:end])
+                    start = end
+                    end += self.output_size[s]
+                    single_loss = self.loss_function[s % 2](logits[s][:,-1,:], torch.argmax(targets_batch[:, start:end], dim=1))
                     single_loss.backward(retain_graph=True)
                     self.optimizer.step()
                 loss += single_loss
-            test_loss = self._test(test_inputs, test_targets)
-            print(f'epoch: {e:3} train loss: {loss.item():10.8f} test loss: {test_loss.item():10.8f}')
+        test_loss = self._test(test_inputs, test_targets)
+        print(f'epoch: {e+1:3} test loss: {test_loss.item():10.8f}')
 
     def _test(self, inputs, targets):
         inputs = torch.FloatTensor(inputs)
@@ -96,16 +101,15 @@ class InfluenceTrainer(object):
         loss = 0
         self.model.hidden_cell = (torch.zeros(1, len(inputs), self._hidden_layer_size),
                                   torch.zeros(1, len(inputs), self._hidden_layer_size))
-        predictions = self.model(inputs)
+        logits, probs = self.model(inputs)
         self.img1 = None
-        for k in range(self.n_sources):
-            start = k*self.output_size
-            end = (k+1)*self.output_size
-            loss += self.loss_function(predictions[k], targets[:, start:end])
-            print('influence source: ' + str(k))
-            print('loss: ' + str(loss))
+        end = 0
+        for s in range(self.n_sources):
+            start = end
+            end += self.output_size[s]
+            loss += self.loss_function[s % 2](logits[s][:,-1,:], torch.argmax(targets[:, start:end], dim=1))
             # for i in range(len(inputs)):
-                # self._plot_prediction(predictions[k][i], targets[i, start:end])
+                # self._plot_prediction(probs[k][i], targets[i, start:end])
         return loss
 
     def _plot_prediction(self, prediction, target):
@@ -147,19 +151,19 @@ class InfluenceTrainer(object):
                             help='episode length')
         parser.add_argument('--data_file', type=str, default='../data/warehouse/data.csv',
                             help='path to the file where observations are stored')
-        parser.add_argument('--lr', type=float, default=5.0e-3,
+        parser.add_argument('--lr', type=float, default=1.0e-3,
                             help='learning rate')
-        parser.add_argument('--n_epochs', type=int, default=5,
+        parser.add_argument('--n_epochs', type=int, default=15,
                             help='number of epochs')
         parser.add_argument('--batch_size', type=int, default=500,
                             help='batch size')
-        parser.add_argument('--hidden_layer_size', type=int, default=128,
+        parser.add_argument('--hidden_layer_size', type=int, default=32,
                             help='recurrent hidden layer size')
         parser.add_argument('--input_size', type=int, default=41,
                             help='input size')
-        parser.add_argument('--output_size', type=int, default=6,
+        parser.add_argument('--output_size', type=int, default=[6,2,6,2,6,2,6,2],
                             help='size of each influence source')
-        parser.add_argument('--n_sources', type=int, default=4,
+        parser.add_argument('--n_sources', type=int, default=8,
                             help='number of influence sources')
         parser.add_argument('--checkpoint_path', type=str, default='../models/influence',
                             help='checkpoint path')

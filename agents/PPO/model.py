@@ -2,7 +2,7 @@ import sys
 sys.path.append("..") 
 import tensorflow as tf
 import os
-from RL.networks import Networks as net
+from agents.PPO.networks import Networks as net
 import tensorflow.contrib.layers as c_layers
 import numpy as np
 
@@ -68,10 +68,6 @@ class Model(object):
                                               dtype=tf.float32, name='observation')
 
         hidden = self.observation
-        # normalize input
-        if self.parameters['env_type'] == 'atari':
-            self.observation_norm = tf.cast(self.observation, tf.float32) / 255.
-            hidden = self.observation_norm
         if self.convolutional:
             self.hidden_conv = net.cnn(self.observation,
                                        self.parameters["num_conv_layers"],

@@ -25,14 +25,15 @@ class VectorizedEnvironment(object):
         """
         for worker in self.workers:
             worker.child.send(('reset', None))
-        output = {'obs': [], 'prev_action': []}
+        output = {'obs': [], 'prev_action': [], 'done': []}
         for worker in self.workers:
             obs = worker.child.recv()
             output['obs'].append(obs)
             output['prev_action'].append(-1)
+            output['done'].append(False)
         return output
 
-    def step(self, actions, prev_stacked_obs):
+    def step(self, actions):
         """
         Takes an action in each of the enviroment instances
         """
@@ -48,11 +49,6 @@ class VectorizedEnvironment(object):
                 prob_flicker = random.uniform(0, 1)
                 if prob_flicker > p:
                     obs = np.zeros_like(obs)
-            # new_stacked_obs = np.zeros((self.parameters['frame_height'],
-            #                             self.parameters['frame_width'],
-            #                             self.parameters['num_frames']))
-            # new_stacked_obs[:, :, 0] = obs[:, :, 0]
-            # new_stacked_obs[:, :, 1:] = prev_stacked_obs[i][:, :, :-1]
             output['obs'].append(obs)
             output['reward'].append(reward)
             output['done'].append(done)

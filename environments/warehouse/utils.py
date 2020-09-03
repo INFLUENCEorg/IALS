@@ -4,19 +4,19 @@ import sys
 import os
 import argparse
 
-def get_config_file():
+def get_config_file(config_file):
     dir = os.path.dirname(__file__)
-    config_file = os.path.join(dir, 'configs/warehourse_environment.yaml')
+    config_file = os.path.join(dir, 'configs', config_file)
     # parser.add_argument('--config', default=config_file, help='config file')
     # args, _ = parser.parse_known_args()
     # config_file = args.config
     return config_file
 
-def read_parameters(scope):
-    config_file = get_config_file()
+def read_parameters(config_file):
+    config_file = get_config_file(config_file)
     with open(config_file) as file:
         parameters = yaml.load(file, Loader=yaml.FullLoader)
-    return parameters[scope]
+    return parameters['warehouse']
 
 def parse_arguments():
     parser = argparse.ArgumentParser()

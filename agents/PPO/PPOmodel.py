@@ -2,8 +2,8 @@ import sys
 sys.path.append("..") 
 import tensorflow as tf
 import tensorflow.contrib.layers as c_layers
-from RL.networks import Networks as net
-from RL.model import Model
+from agents.PPO.networks import Networks as net
+from agents.PPO.model import Model
 import numpy as np
 import time
 
