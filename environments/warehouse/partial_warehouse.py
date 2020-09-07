@@ -57,22 +57,26 @@ class PartialWarehouse(object):
         self.items = []
         self._add_items()
         self.obs = self._get_observation()
+        obs_tensor = torch.reshape(torch.FloatTensor(self.obs), (1,1,-1))
+        _, probs = self.influence_model(obs_tensor)
+        ia_obs = np.append(self.obs, np.concatenate([prob[:-1] for prob in probs]))
         self.num_steps = 0
         self.influence_model.reset()
-        return self.obs
+        return ia_obs
 
     def step(self, action):
         """
         Performs a single step in the environment.
         """
         self._robots_act(action)
-        self.obs = torch.reshape(torch.FloatTensor(self.obs), (1,1,-1))
-        _, probs = self.influence_model(self.obs)
+        obs_tensor = torch.reshape(torch.FloatTensor(self.obs), (1,1,-1))
+        _, probs = self.influence_model(obs_tensor)
         ext_robot_locs = self._sample_ext_robot_locs(probs)
         reward = self._compute_reward(self.robots[self.learning_robot_id])
         self._remove_items(ext_robot_locs)
         self._add_items()
         self.obs = self._get_observation()
+        ia_obs = np.append(self.obs, np.concatenate([prob[:-1] for prob in probs]))
         # Check whether learning robot is done
         # done = self.robots[self.learning_robot_id].done
         self.num_steps += 1
@@ -83,7 +87,7 @@ class PartialWarehouse(object):
         # if done is True:
         #     # Reset the environment to start a new episode.
         #     self.reset()
-        return self.obs, reward, done, []
+        return ia_obs, reward, done, []
 
     @property
     def observation_space(self):
