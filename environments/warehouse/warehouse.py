@@ -239,11 +239,11 @@ class Warehouse(object):
         state and the robot's designated domain.
         """
         state = self._get_state()
-        # observation = self.robots[self.learning_robot_id].observe(state, self.obs_type)
+        observation = self.robots[self.learning_robot_id].observe(state, 'vector')
         # print(observation)
-        observation = state[:, :, 0] - 2*state[:, :, 1]
-        shape = np.shape(observation)
-        observation = np.reshape(observation, (shape[0]*shape[1]))
+        # observation = state[:, :, 0] - 2*state[:, :, 1]
+        # shape = np.shape(observation)
+        # observation = np.reshape(observation, (shape[0]*shape[1]))
         return observation
 
     def _get_robot_neighbors(self, robot_id):
