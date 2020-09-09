@@ -4,7 +4,7 @@ Source code for influence augmented local simulation for fast policy search in s
 
 * A policy search algorithm to train RL agents (PPO). 
 * Global and local simulators of the Warehouse environment. 
-* An influence predictor for the local simulators.
+* An influence predictor for the local simulator.
 
 To run a new experiment do:
 
