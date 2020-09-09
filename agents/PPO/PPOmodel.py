@@ -137,7 +137,7 @@ class PPOmodel(Model):
         optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
         self.update = optimizer.minimize(self.loss)
 
-    def evaluate_policy(self, observation, prev_action):
+    def evaluate_policy(self, observation, prev_action=None):
         """
         Evaluates policy given current observation and previous action
         """

@@ -1,0 +1,10 @@
+parameters:
+    # Common hyperparameters
+    load: false
+    mode: eval
+    name: 'warehouse'
+    render: false
+    render_delay: 0.1
+    env_type: 'warehouse'
+    max_steps: 1.0e+4
+    max_episode_steps: 5.0e+3

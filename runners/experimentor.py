@@ -4,7 +4,9 @@ import sys
 sys.path.append("..") 
 from agents.PPO.PPOAgent import PPOAgent
 from agents.random_agent import RandomAgent
-from environments.vectorized_environment import VectorizedEnvironment
+from simulators.distributed_simulation import DistributedSimulation
+from influence.influence import Influence
+from simulators.warehouse.warehouse import Warehouse
 import argparse
 import yaml
 import time
@@ -34,9 +36,14 @@ class Experimentor(object):
         """
         self.parameters = parameters
         self.path = self.generate_path(self.parameters)
-        self.env = VectorizedEnvironment(self.parameters)
-        self.agent = PPOAgent(self.parameters, self.env.action_space())
+        self.agent = PPOAgent(self.parameters, 4)
         self.train_frequency = self.parameters["train_frequency"]
+        if self.parameters['simulator'] == 'partial':
+            global_simulator = Warehouse()
+            self.influence = Influence(self.agent, global_simulator)
+        else:
+            self.influence = None
+        self.sim = DistributedSimulation(self.parameters, self.influence)
         tf.reset_default_graph()
 
     def generate_path(self, parameters):
@@ -72,17 +79,20 @@ class Experimentor(object):
         self.maximum_time_steps = int(self.parameters["max_steps"])
         self.step = max(self.parameters["iteration"], 0)
         # reset environment
-        step_output = self.env.reset()
+        step_output = self.sim.reset()
         reward = 0
         n_steps = 0
         start = time.time()
         while self.step < self.maximum_time_steps:
+            if self.parameters['simulator'] == 'partial' and \
+              self.step % self.parameters['influence_train_frequency'] == 0:
+                self.influence.train()
             # Select the action to perform
             action = self.agent.take_action(step_output)
             # Increment step
             self.step += 1
             # Get new state and reward given actions a
-            step_output = self.env.step(action)
+            step_output = self.sim.step(action)
             
             reward += step_output['reward'][0]
             n_steps += 1
@@ -94,7 +104,7 @@ class Experimentor(object):
                 reward = 0
                 n_steps = 0
 
-        self.env.close()
+        self.sim.close()
 
 def get_parameters():
     parser = argparse.ArgumentParser(description='RL')

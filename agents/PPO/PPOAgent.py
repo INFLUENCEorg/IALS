@@ -23,6 +23,7 @@ class PPOAgent(object):
         self.episode_step = 0
         self.episodes = 0
         self.t = 0
+        self._prev_action = -1
         self.stats = {"cumulative_rewards": [],
                       "episode_length": [],
                       "value": [],
@@ -44,30 +45,30 @@ class PPOAgent(object):
         self.summary_writer = tf.summary.FileWriter(summary_path)
         self._step_output = None
 
-    def take_action(self, next_step_output):
+    def take_action(self, step_output, mode='train'):
         """
         Get each factor's action based on its local observation. Append the given
         state to the factor's replay memory.
         """
-        if self.parameters['mode'] == 'train' and self._step_output is not None:
+        if mode == 'train' and self.step != 0:
             # Store experiences in buffer.
-            self._add_to_memory(self._step_output, next_step_output,
-                                self._take_action_output)
+            self._add_to_memory(self._prev_step_output, step_output,
+                                self._prev_action_output)
             # Estimate the returns using value function when time
             # horizon has been reached
-            self._bootstrap(next_step_output)
+            self._bootstrap(step_output)
             if self.step % self.parameters['train_frequency'] == 0 and self._full_memory():
                 self._update()
-        self._step_output = next_step_output
+            self._write_summary()
+            self._save_graph()   
         
-        self._take_action_output = {}
-        self._take_action_output.update(self.model.evaluate_policy(self._step_output['obs'],
-                                                                   self._step_output['prev_action']))
-        self._write_summary()
-        self._save_graph()
-        self._increment_step()
+        take_action_output = self.model.evaluate_policy(step_output['obs'])
+        if mode == 'train':
+            self._prev_step_output = step_output
+            self._prev_action_output = take_action_output
+            self._increment_step()
 
-        return self._take_action_output['action']
+        return take_action_output['action']
 
 
     ######################### Private Functions ###########################

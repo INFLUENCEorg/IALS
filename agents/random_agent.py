@@ -9,7 +9,7 @@ class RandomAgent(object):
     This implementation selects random actions
     """
 
-    def __init__(self, parameters, action_space):
+    def __init__(self, action_space, parameters=None):
         self.action_space = action_space
         self.episodes = 0
 
@@ -21,5 +21,4 @@ class RandomAgent(object):
         action = [random.randint(0, self.action_space - 1) for _ in range(len(obs))]
         if step_output['done'][0] == True:
             self.episodes += 1
-
         return action
