@@ -5,7 +5,7 @@ parameters:
     name: 'FNN_warehouse'
     algorithm: PPO
     env: 'warehouse'
-    simulator: 'partial'
+    simulator: 'global'
     flicker: false
     max_steps: 2.0e+6
     max_episode_steps: 5.0e+3
