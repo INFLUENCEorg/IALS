@@ -12,7 +12,7 @@ class PPOAgent(object):
     PPOAgent
     """
 
-    def __init__(self, parameters, action_map):
+    def __init__(self, action_map, parameters):
         self.parameters = parameters
         self.num_actions = action_map
         self.model = PPOmodel(self.parameters,

@@ -26,21 +26,20 @@ class PartialWarehouse(object):
                2: 'LEFT',
                3: 'RIGHT'}
 
-    def __init__(self, parameters:dict={}, influence=None):
-        parameters = read_parameters('partial_warehouse.yaml')
+    def __init__(self, influence=None):
+        self.parameters = read_parameters('partial_warehouse.yaml')
         # parameters = parse_arguments()
-        self.n_columns = parameters['n_columns']
-        self.n_rows = parameters['n_rows']
-        self.n_robots_row = parameters['n_robots_row']
-        self.n_robots_column = parameters['n_robots_column']
-        self.distance_between_shelves = parameters['distance_between_shelves']
-        self.robot_domain_size = parameters['robot_domain_size']
-        self.prob_item_appears = parameters['prob_item_appears']
+        self.n_columns = self.parameters['n_columns']
+        self.n_rows = self.parameters['n_rows']
+        self.n_robots_row = self.parameters['n_robots_row']
+        self.n_robots_column = self.parameters['n_robots_column']
+        self.distance_between_shelves = self.parameters['distance_between_shelves']
+        self.robot_domain_size = self.parameters['robot_domain_size']
+        self.prob_item_appears = self.parameters['prob_item_appears']
         # The learning robot
-        self.learning_robot_id = parameters['learning_robot_id']
-        self.max_episode_length = parameters['n_steps_episode']
-        self.obs_type = parameters['obs_type']
-        self.parameters = parameters
+        self.learning_robot_id = self.parameters['learning_robot_id']
+        self.max_episode_length = self.parameters['n_steps_episode']
+        self.obs_type = self.parameters['obs_type']
         self.items = []
         self.img = None
         self.influence = influence
@@ -59,11 +58,14 @@ class PartialWarehouse(object):
         self.obs = self._get_observation()
         obs_tensor = torch.reshape(torch.FloatTensor(self.obs), (1,1,-1))
         _, probs = self.influence.model(obs_tensor)
-        # INFLUENCE-AUGMENTED OBSERVATIONS
-        # ia_obs = np.append(self.obs, np.concatenate([prob[:-1] for prob in probs]))
         self.episode_length = 0
         self.influence.model.reset()
-        return self.obs
+        # Influence-augmented observations
+        if self.parameters['influence_aug_obs']:
+            ia_obs = np.append(self.obs, np.concatenate([prob[:-1] for prob in probs]))
+            return ia_obs
+        else:
+            return self.obs
 
     def step(self, action):
         """
@@ -94,7 +96,13 @@ class PartialWarehouse(object):
         # if done is True:
         #     # Reset the environment to start a new episode.
         #     self.reset()
-        return self.obs, reward, done, []
+        # Influence-augmented observations
+        if self.parameters['influence_aug_obs']:
+            ia_obs = np.append(self.obs, np.concatenate([prob[:-1] for prob in probs]))
+            return ia_obs, reward, done, []
+        else:
+            return self.obs, reward, done, []
+        
 
     @property
     def observation_space(self):

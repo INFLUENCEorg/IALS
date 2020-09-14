@@ -17,7 +17,7 @@ def worker_process(remote: multiprocessing.connection.Connection, parameters,
     log_dir = './log'
     if parameters['env'] == 'warehouse':
         if parameters['simulator'] == 'partial':
-            env = PartialWarehouse(worker_id, influence)
+            env = PartialWarehouse(influence)
         else:
             env = Warehouse()
         

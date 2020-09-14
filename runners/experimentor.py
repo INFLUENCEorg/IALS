@@ -36,7 +36,7 @@ class Experimentor(object):
         """
         self.parameters = parameters
         self.path = self.generate_path(self.parameters)
-        self.agent = PPOAgent(self.parameters, 4)
+        self.agent = PPOAgent(4, self.parameters)
         self.train_frequency = self.parameters["train_frequency"]
         if self.parameters['simulator'] == 'partial':
             global_simulator = Warehouse()
@@ -85,7 +85,8 @@ class Experimentor(object):
         start = time.time()
         while self.step < self.maximum_time_steps:
             if self.parameters['simulator'] == 'partial' and \
-              self.step % self.parameters['influence_train_frequency'] == 0:
+              self.step % self.parameters['influence_train_frequency'] == 0 and \
+              self.parameters['mode'] == 'train':
                 self.influence.train()
             # Select the action to perform
             action = self.agent.take_action(step_output)

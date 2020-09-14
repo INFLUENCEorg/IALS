@@ -11,3 +11,4 @@ warehouse:
   n_steps_episode: 100
   render: False
   render_delay: 0.5
+  influence_aug_obs: True

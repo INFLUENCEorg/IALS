@@ -1,11 +1,11 @@
 parameters:
     # Common hyperparameters
-    mode: 'train'
+    mode: 'eval'
     load: False
     name: 'FNN_warehouse'
     algorithm: PPO
     env: 'warehouse'
-    simulator: 'global'
+    simulator: 'partial'
     flicker: false
     max_steps: 2.0e+6
     max_episode_steps: 5.0e+3
@@ -24,7 +24,7 @@ parameters:
     iteration: -1
     episode: 0
     obs_type: 'vector'
-    obs_size: 41
+    obs_size: 65
     frame_height: 25
     frame_width: 25
 
