@@ -1,6 +1,6 @@
 parameters:
     # Common hyperparameters
-    mode: 'eval'
+    mode: 'train'
     load: False
     name: 'FNN_warehouse'
     algorithm: PPO
