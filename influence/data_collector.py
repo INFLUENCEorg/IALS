@@ -6,6 +6,8 @@ from simulators.warehouse.warehouse import Warehouse
 import argparse
 import yaml
 import time
+import torch
+import numpy as np
 
 
 class DataCollector(object):
@@ -14,13 +16,15 @@ class DataCollector(object):
     the agent and log results.
     """
 
-    def __init__(self, agent, simulator):
+    def __init__(self, agent, simulator, influence_model, influence_aug_obs):
         """
         """
         self.parameters = read_parameters('../influence/configs/data_collection.yaml')
         self.data_file = self.generate_path()
         self.sim = simulator
         self.agent = agent
+        self.influence_model = influence_model
+        self.influence_aug_obs = influence_aug_obs
 
     def generate_path(self):
         """
@@ -48,6 +52,10 @@ class DataCollector(object):
         done = True
         while step < self.maximum_time_steps:
             self.sim.log_obs(self.data_file)
+            if self.influence_aug_obs:
+                obs_tensor = torch.reshape(torch.FloatTensor(obs), (1,1,-1))
+                _, probs = self.influence_model(obs_tensor)
+                obs = np.append(obs, np.concatenate([prob[:-1] for prob in probs]))
             action = self.agent.take_action({'obs': [obs], 'done': [done]}, 'eval')[0]
             step += 1
             obs, _, done, _ = self.sim.step(action)

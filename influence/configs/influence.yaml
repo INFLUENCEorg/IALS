@@ -11,4 +11,5 @@ parameters:
     output_size: [6,2,6,2,6,2,6,2]
     n_sources: 8
     checkpoint_path: 'models/influence'
+    influence_aug_obs: True
     load_model: False

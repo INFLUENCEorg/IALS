@@ -39,7 +39,7 @@ class Influence(object):
         self.checkpoint_path = parameters['checkpoint_path']
         if parameters['load_model']:
             self._load_model(self.model, self.optimizer, self.checkpoint_path)
-        self.data_collector = DataCollector(agent, simulator)
+        self.data_collector = DataCollector(agent, simulator, self.model, parameters['influence_aug_obs'])
 
     def train(self):
         self.data_collector.run()
