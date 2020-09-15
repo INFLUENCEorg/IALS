@@ -53,6 +53,8 @@ class DataCollector(object):
         while step < self.maximum_time_steps:
             self.sim.log_obs(self.data_file)
             if self.influence_aug_obs:
+                if done:
+                    self.influence_model.reset()
                 obs_tensor = torch.reshape(torch.FloatTensor(obs), (1,1,-1))
                 _, probs = self.influence_model(obs_tensor)
                 obs = np.append(obs, np.concatenate([prob[:-1] for prob in probs]))
