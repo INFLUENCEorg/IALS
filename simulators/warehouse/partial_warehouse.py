@@ -79,10 +79,6 @@ class PartialWarehouse(object):
         self._remove_items(ext_robot_locs)
         self._add_items()
         self.obs = self._get_observation()
-        # INFLUENCE-AUGMENTED OBSERVATIONS
-        # ia_obs = np.append(self.obs, np.concatenate([prob[:-1] for prob in probs]))
-        # Check whether learning robot is done
-        # done = self.robots[self.learning_robot_id].done
         self.episode_length += 1
         self.total_steps += 1
         done = (self.max_episode_length <= self.episode_length)
@@ -90,12 +86,6 @@ class PartialWarehouse(object):
             self.reset()
         if self.parameters['render']:
             self.render(self.parameters['render_delay'])
-        # if self.parameters['inf_update_freq'] % self.total_steps == 0 and self.simulator_id == 0:
-            # self._update_influence()
-        # Experiment.py resets the environment when done
-        # if done is True:
-        #     # Reset the environment to start a new episode.
-        #     self.reset()
         # Influence-augmented observations
         if self.parameters['influence_aug_obs']:
             ia_obs = np.append(self.obs, np.concatenate([prob[:-1] for prob in probs]))
@@ -296,14 +286,12 @@ class PartialWarehouse(object):
     def _sample_ext_robot_locs(self, probs):
         locations = []
         for i, prob in enumerate(probs):
-            # loc = np.zeros(self.robot_domain_size[0]*self.robot_domain_size[1])
-            sample = np.random.choice(np.arange(len(prob)), p=prob)
-            # loc[sample] = 1
-            # loc = np.reshape(loc, self.robot_domain_size)
-            if sample < len(prob) - 1:
-                location = self._find_loc(i, sample)
-            else:
-                location = None
+            sample = np.random.uniform(0,1)
+            location = None
+            if sample < self.influence.strength:
+                sample = np.random.choice(np.arange(len(prob)), p=prob)
+                if sample < len(prob) - 1:
+                    location = self._find_loc(i, sample)    
             locations.append(location)
         return locations
     

@@ -31,6 +31,7 @@ class Influence(object):
         self.n_sources = parameters['n_sources']
         self.input_size = parameters['input_size']
         self.output_size = parameters['output_size']
+        self.curriculum = parameters['curriculum']
         self.model = InfluenceModel(self.input_size, self._hidden_layer_size, self.n_sources, self.output_size)
         weights1 = torch.FloatTensor([1.0, 1.0, 1.0, 1.0, 1.0, 0.05])
         weights2 = torch.FloatTensor([1.0, 0.04])
@@ -40,6 +41,11 @@ class Influence(object):
         if parameters['load_model']:
             self._load_model(self.model, self.optimizer, self.checkpoint_path)
         self.data_collector = DataCollector(agent, simulator, self.model, parameters['influence_aug_obs'])
+        if self.curriculum:
+            self.strength = 0.5
+            self.strength_increment = 0.025
+        else:
+            self.strength = 1
 
     def train(self):
         self.data_collector.run()
@@ -49,6 +55,9 @@ class Influence(object):
         self._train(train_inputs, train_targets, test_inputs, test_targets)
         self._test(test_inputs, test_targets)
         self._save_model(self.model, self.optimizer, self.checkpoint_path)
+        if self.curriculum:
+            self.strength += self.strength_increment
+        print(self.strength)
 
     def _read_data(self, data_file):
         data = []

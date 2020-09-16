@@ -13,3 +13,4 @@ parameters:
     checkpoint_path: 'models/influence'
     influence_aug_obs: True
     load_model: False
+    curriculum: True

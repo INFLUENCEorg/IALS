@@ -50,6 +50,8 @@ class DataCollector(object):
         # reset environment
         obs = self.sim.reset()
         done = True
+        episodic_reward = 0
+        rewards = []
         while step < self.maximum_time_steps:
             self.sim.log_obs(self.data_file)
             if self.influence_aug_obs:
@@ -60,9 +62,14 @@ class DataCollector(object):
                 obs = np.append(obs, np.concatenate([prob[:-1] for prob in probs]))
             action = self.agent.take_action({'obs': [obs], 'done': [done]}, 'eval')[0]
             step += 1
-            obs, _, done, _ = self.sim.step(action)
+            obs, reward, done, _ = self.sim.step(action)
+            episodic_reward += reward
+            if done:
+                rewards.append(episodic_reward)
+                episodic_reward = 0
         self.sim.close()
         print('Done!')
+        print('Mean episodic reward: ' + str(np.mean(rewards)))
 
 def read_parameters(config_file):
     with open(config_file) as file:
