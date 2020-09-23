@@ -8,3 +8,4 @@ data
 data/warehouse
 runners/models
 influence/models
+runners/saved_runs/*

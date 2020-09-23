@@ -48,7 +48,7 @@ class Influence(object):
             self.strength = 1
 
     def train(self):
-        self.data_collector.run()
+        mean_episodic_return = self.data_collector.run()
         data = self._read_data(self._data_file)
         inputs, targets = self._form_sequences(np.array(data))
         train_inputs, train_targets, test_inputs, test_targets = self._split_train_test(inputs, targets)
@@ -57,7 +57,7 @@ class Influence(object):
         self._save_model(self.model, self.optimizer, self.checkpoint_path)
         if self.curriculum:
             self.strength += self.strength_increment
-        print(self.strength)
+        return mean_episodic_return
 
     def _read_data(self, data_file):
         data = []

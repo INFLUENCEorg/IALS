@@ -1,0 +1,268 @@
+INFO - scalable-simulations - Running command 'main'
+INFO - scalable-simulations - Started run with ID "1"
+{'mode': 'train', 'load': False, 'name': 'partial', 'algorithm': 'PPO', 'env': 'warehouse', 'simulator': 'partial', 'flicker': False, 'max_steps': 2000000.0, 'max_episode_steps': 5000.0, 'num_epoch': 3, 'gamma': 0.99, 'lambda': 0.95, 'learning_rate': 0.00025, 'batch_size': 32, 'memory_size': 128, 'train_frequency': 1, 'influence_train_frequency': 100000.0, 'save_frequency': 100000.0, 'summary_frequency': 10000.0, 'tensorboard': True, 'iteration': -1, 'episode': 0, 'obs_type': 'vector', 'obs_size': 65, 'fully_connected': True, 'num_fc_layers': 2, 'num_fc_units': [128, 64], 'convolutional': False, 'num_conv_layers': 2, 'num_filters': [32, 16], 'kernel_sizes': [2, 2], 'strides': [1, 1], 'recurrent': False, 'num_rec_units': 128, 'seq_len': 8, 'influence': False, 'num_workers': 8, 'beta': 0.1, 'epsilon': 0.1, 'time_horizon': 16, 'c1': 1}
+WARNING:tensorflow:From ../agents/PPO/model.py:24: The name tf.Session is deprecated. Please use tf.compat.v1.Session instead.
+
+WARNING - tensorflow - From ../agents/PPO/model.py:24: The name tf.Session is deprecated. Please use tf.compat.v1.Session instead.
+
+2020-09-23 14:45:51.392160: I tensorflow/core/platform/cpu_feature_guard.cc:142] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2020-09-23 14:45:51.397845: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2099940000 Hz
+2020-09-23 14:45:51.398605: I tensorflow/compiler/xla/service/service.cc:168] XLA service 0x565007915850 initialized for platform Host (this does not guarantee that XLA will be used). Devices:
+2020-09-23 14:45:51.398627: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (0): Host, Default Version
+WARNING:tensorflow:From ../agents/PPO/PPOmodel.py:28: The name tf.assign is deprecated. Please use tf.compat.v1.assign instead.
+
+WARNING - tensorflow - From ../agents/PPO/PPOmodel.py:28: The name tf.assign is deprecated. Please use tf.compat.v1.assign instead.
+
+WARNING:tensorflow:From ../agents/PPO/model.py:67: The name tf.placeholder is deprecated. Please use tf.compat.v1.placeholder instead.
+
+WARNING - tensorflow - From ../agents/PPO/model.py:67: The name tf.placeholder is deprecated. Please use tf.compat.v1.placeholder instead.
+
+WARNING:tensorflow:From ../agents/PPO/networks.py:15: The name tf.variable_scope is deprecated. Please use tf.compat.v1.variable_scope instead.
+
+WARNING - tensorflow - From ../agents/PPO/networks.py:15: The name tf.variable_scope is deprecated. Please use tf.compat.v1.variable_scope instead.
+
+WARNING:tensorflow:From ../agents/PPO/networks.py:21: dense (from tensorflow.python.layers.core) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use keras.layers.Dense instead.
+WARNING - tensorflow - From ../agents/PPO/networks.py:21: dense (from tensorflow.python.layers.core) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use keras.layers.Dense instead.
+WARNING:tensorflow:From /home/miguel/.local/lib/python3.7/site-packages/tensorflow_core/python/layers/core.py:187: Layer.apply (from tensorflow.python.keras.engine.base_layer) is deprecated and will be removed in a future version.
+Instructions for updating:
+Please use `layer.__call__` method instead.
+WARNING - tensorflow - From /home/miguel/.local/lib/python3.7/site-packages/tensorflow_core/python/layers/core.py:187: Layer.apply (from tensorflow.python.keras.engine.base_layer) is deprecated and will be removed in a future version.
+Instructions for updating:
+Please use `layer.__call__` method instead.
+WARNING:tensorflow:From ../agents/PPO/PPOmodel.py:62: multinomial (from tensorflow.python.ops.random_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use `tf.random.categorical` instead.
+WARNING - tensorflow - From ../agents/PPO/PPOmodel.py:62: multinomial (from tensorflow.python.ops.random_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use `tf.random.categorical` instead.
+WARNING:tensorflow:From ../agents/PPO/PPOmodel.py:70: The name tf.log is deprecated. Please use tf.math.log instead.
+
+WARNING - tensorflow - From ../agents/PPO/PPOmodel.py:70: The name tf.log is deprecated. Please use tf.math.log instead.
+
+WARNING:tensorflow:From /home/miguel/.local/lib/python3.7/site-packages/tensorflow_core/contrib/layers/python/layers/layers.py:2563: to_int64 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use `tf.cast` instead.
+WARNING - tensorflow - From /home/miguel/.local/lib/python3.7/site-packages/tensorflow_core/contrib/layers/python/layers/layers.py:2563: to_int64 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use `tf.cast` instead.
+WARNING:tensorflow:From ../agents/PPO/PPOmodel.py:90: The name tf.train.polynomial_decay is deprecated. Please use tf.compat.v1.train.polynomial_decay instead.
+
+WARNING - tensorflow - From ../agents/PPO/PPOmodel.py:90: The name tf.train.polynomial_decay is deprecated. Please use tf.compat.v1.train.polynomial_decay instead.
+
+WARNING:tensorflow:From ../agents/PPO/PPOmodel.py:107: The name tf.squared_difference is deprecated. Please use tf.math.squared_difference instead.
+
+WARNING - tensorflow - From ../agents/PPO/PPOmodel.py:107: The name tf.squared_difference is deprecated. Please use tf.math.squared_difference instead.
+
+WARNING:tensorflow:From ../agents/PPO/PPOmodel.py:137: The name tf.train.AdamOptimizer is deprecated. Please use tf.compat.v1.train.AdamOptimizer instead.
+
+WARNING - tensorflow - From ../agents/PPO/PPOmodel.py:137: The name tf.train.AdamOptimizer is deprecated. Please use tf.compat.v1.train.AdamOptimizer instead.
+
+WARNING:tensorflow:From /home/miguel/.local/lib/python3.7/site-packages/tensorflow_core/python/ops/math_grad.py:1424: where (from tensorflow.python.ops.array_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use tf.where in 2.0, which has the same broadcast rule as np.where
+WARNING - tensorflow - From /home/miguel/.local/lib/python3.7/site-packages/tensorflow_core/python/ops/math_grad.py:1424: where (from tensorflow.python.ops.array_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use tf.where in 2.0, which has the same broadcast rule as np.where
+WARNING:tensorflow:From ../agents/PPO/model.py:31: The name tf.train.Saver is deprecated. Please use tf.compat.v1.train.Saver instead.
+
+WARNING - tensorflow - From ../agents/PPO/model.py:31: The name tf.train.Saver is deprecated. Please use tf.compat.v1.train.Saver instead.
+
+WARNING:tensorflow:From ../agents/PPO/model.py:32: The name tf.global_variables_initializer is deprecated. Please use tf.compat.v1.global_variables_initializer instead.
+
+WARNING - tensorflow - From ../agents/PPO/model.py:32: The name tf.global_variables_initializer is deprecated. Please use tf.compat.v1.global_variables_initializer instead.
+
+WARNING:tensorflow:From ../agents/PPO/PPOAgent.py:40: The name tf.reset_default_graph is deprecated. Please use tf.compat.v1.reset_default_graph instead.
+
+WARNING - tensorflow - From ../agents/PPO/PPOAgent.py:40: The name tf.reset_default_graph is deprecated. Please use tf.compat.v1.reset_default_graph instead.
+
+WARNING:tensorflow:From ../agents/PPO/PPOAgent.py:45: The name tf.summary.FileWriter is deprecated. Please use tf.compat.v1.summary.FileWriter instead.
+
+WARNING - tensorflow - From ../agents/PPO/PPOAgent.py:45: The name tf.summary.FileWriter is deprecated. Please use tf.compat.v1.summary.FileWriter instead.
+
+cpu count 8
+collecting data...
+Done!
+epoch:   0 test loss: 10.26718235
+epoch:   1 test loss: 10.22461414
+epoch:   2 test loss: 10.16943264
+epoch:   3 test loss: 10.11713219
+epoch:   4 test loss: 10.06525803
+epoch:   5 test loss: 10.01114178
+Time:  11.036478996276855
+Train step 100 of 2000000
+------------------------------
+Episode 0 ended after 100 steps.
+- Total reward: -16.399999999999995
+------------------------------
+Time:  0.7621545791625977
+Train step 200 of 2000000
+------------------------------
+Episode 1 ended after 100 steps.
+- Total reward: -14.199999999999987
+------------------------------
+Time:  0.6356005668640137
+Train step 300 of 2000000
+------------------------------
+Episode 2 ended after 100 steps.
+- Total reward: -11.299999999999997
+------------------------------
+Time:  0.849891185760498
+Train step 400 of 2000000
+------------------------------
+Episode 3 ended after 100 steps.
+- Total reward: -11.699999999999994
+------------------------------
+Time:  0.7922914028167725
+Train step 500 of 2000000
+------------------------------
+Episode 4 ended after 100 steps.
+- Total reward: -16.399999999999988
+------------------------------
+Time:  0.8934941291809082
+Train step 600 of 2000000
+------------------------------
+Episode 5 ended after 100 steps.
+- Total reward: -13.099999999999984
+------------------------------
+Time:  0.700366735458374
+Train step 700 of 2000000
+------------------------------
+Episode 6 ended after 100 steps.
+- Total reward: -13.49999999999999
+------------------------------
+Time:  0.6360235214233398
+Train step 800 of 2000000
+------------------------------
+Episode 7 ended after 100 steps.
+- Total reward: -15.399999999999991
+------------------------------
+Time:  0.6443030834197998
+Train step 900 of 2000000
+------------------------------
+Episode 8 ended after 100 steps.
+- Total reward: -16.199999999999992
+------------------------------
+Time:  0.5502076148986816
+Train step 1000 of 2000000
+------------------------------
+Episode 9 ended after 100 steps.
+- Total reward: -14.299999999999999
+------------------------------
+Time:  0.6204900741577148
+Train step 1100 of 2000000
+------------------------------
+Episode 10 ended after 100 steps.
+- Total reward: -18.099999999999994
+------------------------------
+Time:  0.5963897705078125
+Train step 1200 of 2000000
+------------------------------
+Episode 11 ended after 100 steps.
+- Total reward: -8.499999999999996
+------------------------------
+Time:  0.6594698429107666
+Train step 1300 of 2000000
+------------------------------
+Episode 12 ended after 100 steps.
+- Total reward: -11.4
+------------------------------
+Time:  0.6976804733276367
+Train step 1400 of 2000000
+------------------------------
+Episode 13 ended after 100 steps.
+- Total reward: -14.39999999999999
+------------------------------
+Time:  0.625314474105835
+Train step 1500 of 2000000
+------------------------------
+Episode 14 ended after 100 steps.
+- Total reward: -10.599999999999998
+------------------------------
+Time:  0.6558377742767334
+Train step 1600 of 2000000
+------------------------------
+Episode 15 ended after 100 steps.
+- Total reward: -16.599999999999984
+------------------------------
+Time:  0.6078288555145264
+Train step 1700 of 2000000
+------------------------------
+Episode 16 ended after 100 steps.
+- Total reward: -9.5
+------------------------------
+Time:  0.5958085060119629
+Train step 1800 of 2000000
+------------------------------
+Episode 17 ended after 100 steps.
+- Total reward: -10.799999999999997
+------------------------------
+Time:  0.61348557472229
+Train step 1900 of 2000000
+------------------------------
+Episode 18 ended after 100 steps.
+- Total reward: -13.499999999999995
+------------------------------
+Time:  0.5839757919311523
+Train step 2000 of 2000000
+------------------------------
+Episode 19 ended after 100 steps.
+- Total reward: -15.399999999999999
+------------------------------
+Time:  0.6061546802520752
+Train step 2100 of 2000000
+------------------------------
+Episode 20 ended after 100 steps.
+- Total reward: -18.39999999999999
+------------------------------
+Time:  0.6194605827331543
+Train step 2200 of 2000000
+------------------------------
+Episode 21 ended after 100 steps.
+- Total reward: -17.099999999999994
+------------------------------
+Time:  0.6239874362945557
+Train step 2300 of 2000000
+------------------------------
+Episode 22 ended after 100 steps.
+- Total reward: -13.200000000000005
+------------------------------
+Time:  0.7400522232055664
+Train step 2400 of 2000000
+------------------------------
+Episode 23 ended after 100 steps.
+- Total reward: -17.19999999999999
+------------------------------
+Time:  0.5804479122161865
+Train step 2500 of 2000000
+------------------------------
+Episode 24 ended after 100 steps.
+- Total reward: -16.999999999999982
+------------------------------
+Time:  0.5616343021392822
+Train step 2600 of 2000000
+------------------------------
+Episode 25 ended after 100 steps.
+- Total reward: -11.99999999999999
+------------------------------
+Time:  0.5889298915863037
+Train step 2700 of 2000000
+------------------------------
+Episode 26 ended after 100 steps.
+- Total reward: -17.599999999999998
+------------------------------
+Time:  0.5859663486480713
+Train step 2800 of 2000000
+------------------------------
+Episode 27 ended after 100 steps.
+- Total reward: -8.999999999999996
+------------------------------
+Time:  0.614386796951294
+Train step 2900 of 2000000
+------------------------------
+Episode 28 ended after 100 steps.
+- Total reward: -7.500000000000002
+------------------------------

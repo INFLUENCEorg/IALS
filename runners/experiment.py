@@ -10,15 +10,39 @@ from simulators.warehouse.warehouse import Warehouse
 import argparse
 import yaml
 import time
+import sacred
+from sacred.observers import MongoObserver
+import pymongo
+
+ex = sacred.Experiment('scalable-simulations')
+
+# load default configuration
+ex.add_config('configs/Warehouse/agent.yaml')
+
+# connect the experiment instance to the mongodb database
+db_uri = 'mongodb://localhost/scalable-simulations'
+db_name = 'scalable-simulations'
+maxSevSelDelay = 20
+try:
+    print("Trying to connect to mongoDB '{}'".format(db_uri))
+    client = pymongo.MongoClient(db_uri, ssl=False)
+    client.server_info()
+    ex.observers.append(MongoObserver.create(db_uri, db_name=db_name, ssl=False))
+    print("Added MongoDB observer on {}.".format(db_uri))
+except pymongo.errors.ServerSelectionTimeoutError as e:
+    print(e)
+    print("ONLY FILE STORAGE OBSERVER ADDED")
+    from sacred.observers import FileStorageObserver
+    ex.observers.append(FileStorageObserver.create('saved_runs'))
 
 
-class Experimentor(object):
+class Experiment(object):
     """
-    Creates experimentor object to store interact with the environment and
+    Creates experiment object to store interact with the environment and
     the agent and log results.
     """
 
-    def __init__(self, parameters):
+    def __init__(self, parameters, _run):
         """
         Initializes the experiment by extracting the parameters
         @param parameters a dictionary with many obligatory elements
@@ -45,6 +69,7 @@ class Experimentor(object):
             self.influence = None
         self.sim = DistributedSimulation(self.parameters, self.influence)
         tf.reset_default_graph()
+        self._run = _run
 
     def generate_path(self, parameters):
         """
@@ -60,16 +85,16 @@ class Experimentor(object):
             os.makedirs(model_path)
         return path
 
-    def print_results(self, info, n_steps=0):
+    def print_results(self, episode_return, episode_step, global_step):
         """
         Prints results to the screen.
         """
-        print(("Train step {} of {}".format(self.step,
+        print(("Train step {} of {}".format(global_step,
                                             self.maximum_time_steps)))
         print(("-"*30))
         print(("Episode {} ended after {} steps.".format(self.agent.episodes,
-                                                         n_steps)))
-        print(("- Total reward: {}".format(info)))
+                                                         episode_step)))
+        print(("- Total reward: {}".format(episode_return)))
         print(("-"*30))
 
     def run(self):
@@ -77,49 +102,51 @@ class Experimentor(object):
         Runs the experiment.
         """
         self.maximum_time_steps = int(self.parameters["max_steps"])
-        self.step = max(self.parameters["iteration"], 0)
+        global_step = max(self.parameters["iteration"], 0)
         # reset environment
         step_output = self.sim.reset()
-        reward = 0
-        n_steps = 0
+        episode_return = 0
+        episode_step = 0
         start = time.time()
-        while self.step < self.maximum_time_steps:
+        while global_step < self.maximum_time_steps:
             if self.parameters['simulator'] == 'partial' and \
-              self.step % self.parameters['influence_train_frequency'] == 0 and \
+              global_step % self.parameters['influence_train_frequency'] == 0 and \
               self.parameters['mode'] == 'train':
-                self.influence.train()
+                mean_episodic_return = self.influence.train()
+                self._run.log_scalar("mean episodic_return", mean_episodic_return, global_step)
             # Select the action to perform
             action = self.agent.take_action(step_output)
             # Increment step
-            self.step += 1
+            episode_step += 1
+            global_step += 1
             # Get new state and reward given actions a
             step_output = self.sim.step(action)
             
-            reward += step_output['reward'][0]
-            n_steps += 1
+            episode_return += step_output['reward'][0]
             if step_output['done'][0]:
                 end = time.time()
                 print('Time: ', end - start)
                 start = end
-                self.print_results(reward, n_steps)
-                reward = 0
-                n_steps = 0
+                self.print_results(episode_return, episode_step, global_step)
+                episode_return = 0
+                episode_step = 0
 
         self.sim.close()
 
-def get_parameters():
-    parser = argparse.ArgumentParser(description='RL')
-    parser.add_argument('--config', default=None, help='config file')
-    args = parser.parse_args()
-    return args
+# def get_parameters():
+#     parser = argparse.ArgumentParser(description='RL')
+#     parser.add_argument('--config', default=None, help='config file')
+#     args = parser.parse_args()
+#     return args
 
 def read_parameters(config_file):
     with open(config_file) as file:
         parameters = yaml.load(file, Loader=yaml.FullLoader)
     return parameters['parameters']
 
-if __name__ == "__main__":
-    args = get_parameters()
-    parameters = read_parameters(args.config)
-    exp = Experimentor(parameters)
+@ex.automain
+def main(parameters, seed, _run):
+    print(parameters)
+    # parameters = read_parameters(config)
+    exp = Experiment(parameters, _run)
     exp.run()
