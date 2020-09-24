@@ -20,7 +20,7 @@ ex = sacred.Experiment('scalable-simulations')
 ex.add_config('configs/Warehouse/agent.yaml')
 
 # connect the experiment instance to the mongodb database
-db_uri = 'mongodb://localhost/scalable-simulations'
+db_uri = 'mongodb://SUMODBOwner:3DyKJc3faNCGEwBDMbKjSn3DY4dJbGG6@localhost:27017/SUMODB'
 db_name = 'scalable-simulations'
 maxSevSelDelay = 20
 try:
@@ -34,7 +34,6 @@ except pymongo.errors.ServerSelectionTimeoutError as e:
     print("ONLY FILE STORAGE OBSERVER ADDED")
     from sacred.observers import FileStorageObserver
     ex.observers.append(FileStorageObserver.create('saved_runs'))
-
 
 class Experiment(object):
     """
