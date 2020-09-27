@@ -44,8 +44,9 @@ class PPOAgent(object):
             os.makedirs(summary_path)
         self.summary_writer = tf.summary.FileWriter(summary_path)
         self._step_output = None
+        self._prev_action = [-1]*self.parameters['num_workers']
 
-    def take_action(self, step_output, mode='train'):
+    def take_action(self, step_output, mode='train', prev_action=None):
         """
         Get each factor's action based on its local observation. Append the given
         state to the factor's replay memory.
@@ -61,7 +62,7 @@ class PPOAgent(object):
                 self._update()
             self._write_summary()
             self._save_graph()
-        take_action_output = self.model.evaluate_policy(step_output['obs'])
+        take_action_output = self.model.evaluate_policy(step_output['obs'], prev_action)
         if mode == 'train':
             self._prev_step_output = step_output
             self._prev_action_output = take_action_output

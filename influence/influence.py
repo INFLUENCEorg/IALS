@@ -17,13 +17,13 @@ import yaml
 class Influence(object):
     """
     """
-    def __init__(self, agent, simulator, parameters):
+    def __init__(self, agent, simulator, parameters, run_id):
         """
         """
         # parameters = read_parameters('../influence/configs/influence.yaml')
         self._seq_len = parameters['seq_len']
         self._episode_length = parameters['episode_length']
-        self._data_file = parameters['data_file']
+        self._data_file = parameters['data_file'] + str(run_id) + '.csv'
         self._lr = parameters['lr']
         self._n_epochs = parameters['n_epochs']
         self._hidden_layer_size = parameters['hidden_layer_size']
@@ -41,7 +41,7 @@ class Influence(object):
         self.influence_aug_obs = parameters['influence_aug_obs']
         if parameters['load_model']:
             self._load_model(self.model, self.optimizer, self.checkpoint_path)
-        self.data_collector = DataCollector(agent, simulator, self.model, self.influence_aug_obs)
+        self.data_collector = DataCollector(agent, simulator, self.model, self.influence_aug_obs, run_id)
         if self.curriculum:
             self.strength = 0.5
             self.strength_increment = 0.025
@@ -58,6 +58,7 @@ class Influence(object):
         self._save_model(self.model, self.optimizer, self.checkpoint_path)
         if self.curriculum:
             self.strength += self.strength_increment
+        os.remove(self._data_file)
         return mean_episodic_return
 
     def _read_data(self, data_file):

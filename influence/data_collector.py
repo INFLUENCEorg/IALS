@@ -16,24 +16,24 @@ class DataCollector(object):
     the agent and log results.
     """
 
-    def __init__(self, agent, simulator, influence_model, influence_aug_obs):
+    def __init__(self, agent, simulator, influence_model, influence_aug_obs, run_id):
         """
         """
         self.parameters = read_parameters('../influence/configs/data_collection.yaml')
-        self.data_file = self.generate_path()
+        self.data_file = self.generate_path(run_id)
         self.sim = simulator
         self.agent = agent
         self.influence_model = influence_model
         self.influence_aug_obs = influence_aug_obs
 
-    def generate_path(self):
+    def generate_path(self, run_id):
         """
         Generate a path to store e.g. logs, models and plots. Check if
         all needed subpaths exist, and if not, create them.
         """
         name = self.parameters['name']
         data_path = os.path.join('../influence/data', name)
-        data_file = os.path.join(data_path, 'data.csv')
+        data_file = os.path.join(data_path, str(run_id) + '.csv')
         if os.path.exists(data_file):
             os.remove(data_file)
         if not os.path.exists(data_path):

@@ -22,7 +22,7 @@ parameters:
         epsilon: 0.1
         time_horizon: 16
         obs_type: 'vector'
-        obs_size: 41
+        obs_size: 65
         c1: 1
         num_epoch: 3
         gamma: 0.99
@@ -33,8 +33,8 @@ parameters:
         influence_train_frequency: 1.0e+5
 
         fully_connected: true
-        num_fc_layers: 1
-        num_fc_units: [64]
+        num_fc_layers: 2
+        num_fc_units: [128, 128]
         # Convolutional module
         convolutional: false
         num_conv_layers: 2
@@ -42,8 +42,8 @@ parameters:
         kernel_sizes: [2, 2]
         strides: [1, 1]
         # Recurrent module
-        recurrent: false
-        num_rec_units: 128
+        recurrent: False
+        num_rec_units: 64
         seq_len: 8
         # Influence-aware memory
         influence: false
@@ -52,15 +52,15 @@ parameters:
         # Common hyperparameters
         seq_len: 20
         episode_length: 100
-        data_file: '../influence/data/warehouse/data.csv'
+        data_file: '../influence/data/warehouse/'
         lr: 1.0e-3
         n_epochs: 5
-        batch_size: 500
+        batch_size: 128
         hidden_layer_size: 32
         input_size: 41
         output_size: [6,2,6,2,6,2,6,2]
         n_sources: 8
         checkpoint_path: '../influence/models/warehouse'
-        influence_aug_obs: False
+        influence_aug_obs: True
         load_model: False
         curriculum: False

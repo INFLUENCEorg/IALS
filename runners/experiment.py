@@ -63,7 +63,7 @@ class Experiment(object):
         self.train_frequency = self.parameters['train_frequency']
         if self.parameters['simulator'] == 'partial':
             global_simulator = Warehouse()
-            self.influence = Influence(self.agent, global_simulator, parameters['influence'])
+            self.influence = Influence(self.agent, global_simulator, parameters['influence'], _run._id)
         else:
             self.influence = None
         self.sim = DistributedSimulation(parameters['main'], self.influence)
