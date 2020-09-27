@@ -17,7 +17,6 @@ class DistributedSimulation(object):
         else:
             self.num_workers = mp.cpu_count()
         self.workers = [Worker(parameters, i, influence) for i in range(self.num_workers)]
-        self.parameters = parameters
 
     def reset(self):
         """
@@ -44,11 +43,6 @@ class DistributedSimulation(object):
         i = 0
         for worker in self.workers:
             obs, reward, done, info = worker.child.recv()
-            if self.parameters['flicker']:
-                p = 0.5
-                prob_flicker = random.uniform(0, 1)
-                if prob_flicker > p:
-                    obs = np.zeros_like(obs)
             output['obs'].append(obs)
             output['reward'].append(reward)
             output['done'].append(done)

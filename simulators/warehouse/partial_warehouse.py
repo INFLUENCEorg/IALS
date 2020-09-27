@@ -61,7 +61,7 @@ class PartialWarehouse(object):
         self.episode_length = 0
         self.influence.model.reset()
         # Influence-augmented observations
-        if self.parameters['influence_aug_obs']:
+        if self.influence.influence_aug_obs:
             ia_obs = np.append(self.obs, np.concatenate([prob[:-1] for prob in probs]))
             return ia_obs
         else:
@@ -87,7 +87,7 @@ class PartialWarehouse(object):
         if self.parameters['render']:
             self.render(self.parameters['render_delay'])
         # Influence-augmented observations
-        if self.parameters['influence_aug_obs']:
+        if self.influence.influence_aug_obs:
             ia_obs = np.append(self.obs, np.concatenate([prob[:-1] for prob in probs]))
             return ia_obs, reward, done, []
         else:

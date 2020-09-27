@@ -17,10 +17,10 @@ import pymongo
 ex = sacred.Experiment('scalable-simulations')
 
 # load default configuration
-ex.add_config('configs/Warehouse/agent.yaml')
+ex.add_config('configs/warehouse/default.yaml')
 
 # connect the experiment instance to the mongodb database
-db_uri = 'mongodb://SUMODBOwner:3DyKJc3faNCGEwBDMbKjSn3DY4dJbGG6@localhost:27017/SUMODB'
+db_uri = 'mongodb://localhost:27017/scalable-simulations'
 db_name = 'scalable-simulations'
 maxSevSelDelay = 20
 try:
@@ -57,25 +57,24 @@ class Experiment(object):
         and more TODO
         </ul>
         """
-        self.parameters = parameters
-        self.path = self.generate_path(self.parameters)
-        self.agent = PPOAgent(4, self.parameters)
-        self.train_frequency = self.parameters["train_frequency"]
+        self.parameters = parameters['main']
+        self.path = self.generate_path(self.parameters['name'])
+        self.agent = PPOAgent(4, parameters['main'])
+        self.train_frequency = self.parameters['train_frequency']
         if self.parameters['simulator'] == 'partial':
             global_simulator = Warehouse()
-            self.influence = Influence(self.agent, global_simulator)
+            self.influence = Influence(self.agent, global_simulator, parameters['influence'])
         else:
             self.influence = None
-        self.sim = DistributedSimulation(self.parameters, self.influence)
+        self.sim = DistributedSimulation(parameters['main'], self.influence)
         tf.reset_default_graph()
         self._run = _run
 
-    def generate_path(self, parameters):
+    def generate_path(self, path):
         """
         Generate a path to store e.g. logs, models and plots. Check if
         all needed subpaths exist, and if not, create them.
         """
-        path = self.parameters['name']
         result_path = os.path.join("../results", path)
         model_path = os.path.join("../models", path)
         if not os.path.exists(result_path):
@@ -112,7 +111,7 @@ class Experiment(object):
               global_step % self.parameters['influence_train_frequency'] == 0 and \
               self.parameters['mode'] == 'train':
                 mean_episodic_return = self.influence.train()
-                self._run.log_scalar("mean episodic_return", mean_episodic_return, global_step)
+                self._run.log_scalar("mean episodic return", mean_episodic_return, global_step)
             # Select the action to perform
             action = self.agent.take_action(step_output)
             # Increment step
@@ -141,7 +140,7 @@ class Experiment(object):
 def read_parameters(config_file):
     with open(config_file) as file:
         parameters = yaml.load(file, Loader=yaml.FullLoader)
-    return parameters['parameters']
+    return parameters
 
 @ex.automain
 def main(parameters, seed, _run):

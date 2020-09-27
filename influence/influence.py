@@ -17,10 +17,10 @@ import yaml
 class Influence(object):
     """
     """
-    def __init__(self, agent, simulator):
+    def __init__(self, agent, simulator, parameters):
         """
         """
-        parameters = read_parameters('../influence/configs/influence.yaml')
+        # parameters = read_parameters('../influence/configs/influence.yaml')
         self._seq_len = parameters['seq_len']
         self._episode_length = parameters['episode_length']
         self._data_file = parameters['data_file']
@@ -38,9 +38,10 @@ class Influence(object):
         self.loss_function = [nn.CrossEntropyLoss(weight=weights1),  nn.CrossEntropyLoss(weight=weights2)]
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self._lr, weight_decay=0.001)
         self.checkpoint_path = parameters['checkpoint_path']
+        self.influence_aug_obs = parameters['influence_aug_obs']
         if parameters['load_model']:
             self._load_model(self.model, self.optimizer, self.checkpoint_path)
-        self.data_collector = DataCollector(agent, simulator, self.model, parameters['influence_aug_obs'])
+        self.data_collector = DataCollector(agent, simulator, self.model, self.influence_aug_obs)
         if self.curriculum:
             self.strength = 0.5
             self.strength_increment = 0.025
@@ -168,5 +169,6 @@ def read_parameters(config_file):
 if __name__ == '__main__':
     simulator = Warehouse()
     agent = RandomAgent(simulator.action_space.n, None)
-    trainer = Influence(agent, simulator)
+    parameters = read_parameters('../influence/configs/influence.yaml')
+    trainer = Influence(agent, simulator, parameters)
     trainer.train()

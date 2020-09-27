@@ -60,8 +60,7 @@ class PPOAgent(object):
             if self.step % self.parameters['train_frequency'] == 0 and self._full_memory():
                 self._update()
             self._write_summary()
-            self._save_graph()   
-        
+            self._save_graph()
         take_action_output = self.model.evaluate_policy(step_output['obs'])
         if mode == 'train':
             self._prev_step_output = step_output

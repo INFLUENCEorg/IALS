@@ -196,7 +196,7 @@ class PPOmodel(Model):
         """
         Updates model using experiences stored in buffer
         """
-        if self.parameters['obs_type'] == 'images':
+        if self.parameters['obs_type'] == 'image':
             obs = np.reshape(batch['obs'], [-1, self.parameters['frame_height'],
                                             self.parameters['frame_width'],
                                             self.parameters['num_frames']])
