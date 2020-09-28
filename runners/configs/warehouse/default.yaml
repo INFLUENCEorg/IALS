@@ -34,13 +34,9 @@ parameters:
 
         fully_connected: true
         num_fc_layers: 2
-        num_fc_units: [128, 128]
+        num_fc_units: [32, 32]
         # Convolutional module
         convolutional: false
-        num_conv_layers: 2
-        num_filters: [32, 16]
-        kernel_sizes: [2, 2]
-        strides: [1, 1]
         # Recurrent module
         recurrent: False
         num_rec_units: 64
