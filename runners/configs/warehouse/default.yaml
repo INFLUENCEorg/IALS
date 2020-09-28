@@ -22,7 +22,7 @@ parameters:
         epsilon: 0.1
         time_horizon: 16
         obs_type: 'vector'
-        obs_size: 65
+        obs_size: 41
         c1: 1
         num_epoch: 3
         gamma: 0.99
@@ -61,7 +61,7 @@ parameters:
         output_size: [6,2,6,2,6,2,6,2]
         n_sources: 8
         checkpoint_path: '../influence/models/warehouse'
-        influence_aug_obs: True
+        influence_aug_obs: False
         load_model: False
         curriculum: False
         dataset_size: 1.0e+4
