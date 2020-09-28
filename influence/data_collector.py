@@ -16,23 +16,22 @@ class DataCollector(object):
     the agent and log results.
     """
 
-    def __init__(self, agent, simulator, influence_model, influence_aug_obs, run_id):
+    def __init__(self, agent, simulator, influence_model, influence_aug_obs, run_id, max_steps):
         """
         """
-        self.parameters = read_parameters('../influence/configs/data_collection.yaml')
         self.data_file = self.generate_path(run_id)
         self.sim = simulator
         self.agent = agent
         self.influence_model = influence_model
         self.influence_aug_obs = influence_aug_obs
+        self.maximum_time_steps = int(max_steps)
 
     def generate_path(self, run_id):
         """
         Generate a path to store e.g. logs, models and plots. Check if
         all needed subpaths exist, and if not, create them.
         """
-        name = self.parameters['name']
-        data_path = os.path.join('../influence/data', name)
+        data_path = '../influence/data/warehouse'
         data_file = os.path.join(data_path, str(run_id) + '.csv')
         if os.path.exists(data_file):
             os.remove(data_file)
@@ -45,7 +44,6 @@ class DataCollector(object):
         Runs the data collection process.
         """
         print('collecting data...')
-        self.maximum_time_steps = int(self.parameters["max_steps"])
         step = 0
         # reset environment
         obs = self.sim.reset()

@@ -41,7 +41,8 @@ class Influence(object):
         self.influence_aug_obs = parameters['influence_aug_obs']
         if parameters['load_model']:
             self._load_model(self.model, self.optimizer, self.checkpoint_path)
-        self.data_collector = DataCollector(agent, simulator, self.model, self.influence_aug_obs, run_id)
+        self.data_collector = DataCollector(agent, simulator, self.model, self.influence_aug_obs,
+                                            run_id, parameters['dataset_size'])
         if self.curriculum:
             self.strength = 0.5
             self.strength_increment = 0.025
