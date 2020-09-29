@@ -89,6 +89,7 @@ class PartialWarehouse(object):
         # Influence-augmented observations
         if self.influence.influence_aug_obs:
             ia_obs = np.append(self.obs, np.concatenate([prob[:-1] for prob in probs]))
+            print(ia_obs)
             return ia_obs, reward, done, []
         else:
             return self.obs, reward, done, []
