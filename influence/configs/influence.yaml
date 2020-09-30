@@ -1,16 +1,17 @@
 parameters:
     # Common hyperparameters
-    seq_len: 20
+    seq_len: 8
     episode_length: 100
-    data_file: '../influence/data/warehouse/data.csv'
+    data_file: '../influence/data/warehouse/'
     lr: 1.0e-3
-    n_epochs: 5
-    batch_size: 500
+    n_epochs: 15
+    batch_size: 32
     hidden_layer_size: 32
-    input_size: 41
+    input_size: 16
     output_size: [6,2,6,2,6,2,6,2]
     n_sources: 8
     checkpoint_path: 'models/influence'
     influence_aug_obs: True
     load_model: False
     curriculum: False
+    dataset_size: 1.0e+4

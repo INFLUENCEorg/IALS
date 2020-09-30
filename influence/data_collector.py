@@ -33,8 +33,8 @@ class DataCollector(object):
         """
         data_path = '../influence/data/warehouse'
         data_file = os.path.join(data_path, str(run_id) + '.csv')
-        if os.path.exists(data_file):
-            os.remove(data_file)
+        # if os.path.exists(data_file):
+        #     os.remove(data_file)
         if not os.path.exists(data_path):
             os.makedirs(data_path)
         return data_file
@@ -56,6 +56,7 @@ class DataCollector(object):
                 if done:
                     self.influence_model.reset()
                 obs_tensor = torch.reshape(torch.FloatTensor(obs), (1,1,-1))
+                # print(np.shape(obs_tensor))
                 _, probs = self.influence_model(obs_tensor)
                 obs = np.append(obs, np.concatenate([prob[:-1] for prob in probs]))
             action = self.agent.take_action({'obs': [obs], 'done': [done]}, 'eval')[0]

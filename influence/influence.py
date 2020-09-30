@@ -33,8 +33,8 @@ class Influence(object):
         self.output_size = parameters['output_size']
         self.curriculum = parameters['curriculum']
         self.model = InfluenceModel(self.input_size, self._hidden_layer_size, self.n_sources, self.output_size)
-        weights1 = torch.FloatTensor([1.0, 1.0, 1.0, 1.0, 1.0, 0.05])
-        weights2 = torch.FloatTensor([1.0, 0.04])
+        weights1 = torch.FloatTensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+        weights2 = torch.FloatTensor([1.0, 1.0])
         self.loss_function = [nn.CrossEntropyLoss(weight=weights1),  nn.CrossEntropyLoss(weight=weights2)]
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self._lr, weight_decay=0.001)
         self.checkpoint_path = parameters['checkpoint_path']
@@ -75,7 +75,7 @@ class Influence(object):
         inputs = []
         targets = []
         for episode in range(n_episodes):
-            for seq in range(self._episode_length - self._seq_len - 1):
+            for seq in range(self._episode_length - (self._seq_len - 1)):
                 start = episode*self._episode_length+seq
                 end = episode*self._episode_length+seq+self._seq_len
                 inputs.append(data[start:end, :41])
@@ -92,7 +92,6 @@ class Influence(object):
         targets = torch.FloatTensor(train_targets)
         for e in range(self._n_epochs):
             permutation = torch.randperm(len(seqs))
-            loss = 0
             test_loss = self._test(test_inputs, test_targets)
             print(f'epoch: {e:3} test loss: {test_loss.item():10.8f}')
             for i in range(0, len(seqs) - len(seqs) % self._batch_size, self._batch_size):
@@ -101,16 +100,19 @@ class Influence(object):
                 targets_batch = targets[indices]
                 self.model.hidden_cell = (torch.zeros(1, self._batch_size, self._hidden_layer_size),
                                           torch.zeros(1, self._batch_size, self._hidden_layer_size))
-                logits, _ = self.model(seqs_batch)
+                logits, probs = self.model(seqs_batch)
                 end = 0
+                self.optimizer.zero_grad()
+                loss = 0
                 for s in range(self.n_sources):
-                    self.optimizer.zero_grad()
-                    start = end
+                    start = end 
                     end += self.output_size[s]
-                    single_loss = self.loss_function[s % 2](logits[s][:,-1,:], torch.argmax(targets_batch[:, start:end], dim=1))
-                    single_loss.backward(retain_graph=True)
-                    self.optimizer.step()
-                loss += single_loss
+                    # breakpoint()
+                    # single_loss = self.loss_function[s % 2](logits[s][:,-1,:], torch.argmax(targets_batch[:, start:end], dim=1))
+                    single_loss = self.loss_function[s % 2](logits[s], torch.argmax(targets_batch[:, start:end], dim=1))
+                    loss += single_loss
+                loss.backward()
+                self.optimizer.step()
         test_loss = self._test(test_inputs, test_targets)
         print(f'epoch: {e+1:3} test loss: {test_loss.item():10.8f}')
 
@@ -126,9 +128,11 @@ class Influence(object):
         for s in range(self.n_sources):
             start = end
             end += self.output_size[s]
-            loss += self.loss_function[s % 2](logits[s][:,-1,:], torch.argmax(targets[:, start:end], dim=1))
+            # loss += self.loss_function[s % 2](logits[s][:,-1,:], torch.argmax(targets[:, start:end], dim=1))
+            # breakpoint()
+            loss += self.loss_function[s % 2](logits[s], torch.argmax(targets[:, start:end], dim=1))
             # for i in range(len(inputs)):
-                # self._plot_prediction(probs[k][i], targets[i, start:end])
+                # self._plot_prediction(probs[s][i], targets[i, start:end])
         return loss
 
     def _plot_prediction(self, prediction, target):
@@ -172,5 +176,5 @@ if __name__ == '__main__':
     simulator = Warehouse()
     agent = RandomAgent(simulator.action_space.n, None)
     parameters = read_parameters('../influence/configs/influence.yaml')
-    trainer = Influence(agent, simulator, parameters)
+    trainer = Influence(agent, simulator, parameters, 0)
     trainer.train()

@@ -16,7 +16,7 @@ parameters:
         tensorboard: true
         iteration: -1
         episode: 0
-        num_workers: 8
+        num_workers: 1
         max_steps: 2.0e+6
         beta: 1.0e-1
         epsilon: 0.1

@@ -13,7 +13,7 @@ class RandomAgent(object):
         self.action_space = action_space
         self.episodes = 0
 
-    def take_action(self, step_output):
+    def take_action(self, step_output, mode):
         """
         Selects a random action
         """
