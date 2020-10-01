@@ -58,7 +58,7 @@ class DataCollector(object):
                 obs_tensor = torch.reshape(torch.FloatTensor(obs[25:]), (1,1,-1))
                 # print(np.shape(obs_tensor))
                 _, probs = self.influence_model(obs_tensor)
-                obs = np.append(obs, np.concatenate([prob[:-1] for prob in probs]))
+                obs = np.append(obs, np.concatenate([prob[0, :-1] for prob in probs]))
             action = self.agent.take_action({'obs': [obs], 'done': [done]}, 'eval')[0]
             step += 1
             obs, reward, done, _ = self.sim.step(action)

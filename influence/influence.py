@@ -115,6 +115,7 @@ class Influence(object):
                 self.optimizer.step()
         test_loss = self._test(test_inputs, test_targets)
         print(f'epoch: {e+1:3} test loss: {test_loss.item():10.8f}')
+        self.model.reset()
 
     def _test(self, inputs, targets):
         inputs = torch.FloatTensor(inputs)

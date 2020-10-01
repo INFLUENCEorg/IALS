@@ -66,7 +66,6 @@ class Experiment(object):
             self.influence = Influence(self.agent, global_simulator, parameters['influence'], _run._id)
         else:
             self.influence = None
-        self.sim = DistributedSimulation(parameters['main'], self.influence)
         tf.reset_default_graph()
         self._run = _run
 
@@ -102,7 +101,8 @@ class Experiment(object):
         self.maximum_time_steps = int(self.parameters["max_steps"])
         global_step = max(self.parameters["iteration"], 0)
         # reset environment
-        step_output = self.sim.reset()
+        # self.sim = DistributedSimulation(self.parameters, self.influence)
+        # step_output = self.sim.reset()
         episode_return = 0
         episode_step = 0
         start = time.time()
@@ -111,6 +111,9 @@ class Experiment(object):
               global_step % self.parameters['influence_train_frequency'] == 0 and \
               self.parameters['mode'] == 'train':
                 mean_episodic_return = self.influence.train()
+                # INFLUENCE MODEL NEEDS TO BE PASSED TO WORKERS EVERY TIME IT IS UPDATED SINCE ONLY A COPY OF THE OBJECT IS PASSED TO EACH WORKER. FIND A BETER WAY
+                self.sim = DistributedSimulation(self.parameters, self.influence)
+                step_output = self.sim.reset()
                 self._run.log_scalar("mean episodic return", mean_episodic_return, global_step)
             # Select the action to perform
             action = self.agent.take_action(step_output)
@@ -119,6 +122,8 @@ class Experiment(object):
             global_step += 1
             # Get new state and reward given actions a
             step_output = self.sim.step(action)
+            # for name, param in self.influence.model.named_parameters():
+            #     print(name, param.data)
             
             episode_return += step_output['reward'][0]
             if step_output['done'][0]:

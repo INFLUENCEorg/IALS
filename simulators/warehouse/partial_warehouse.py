@@ -26,7 +26,7 @@ class PartialWarehouse(object):
                2: 'LEFT',
                3: 'RIGHT'}
 
-    def __init__(self, influence=None):
+    def __init__(self, influence):
         self.parameters = read_parameters('partial_warehouse.yaml')
         # parameters = parse_arguments()
         self.n_columns = self.parameters['n_columns']
@@ -43,7 +43,6 @@ class PartialWarehouse(object):
         self.items = []
         self.img = None
         self.influence = influence
-        self.reset()
         self.total_steps = 0
 
     def reset(self):
@@ -57,12 +56,12 @@ class PartialWarehouse(object):
         self._add_items()
         self.obs = self._get_observation()
         obs_tensor = torch.reshape(torch.FloatTensor(self.obs[25:]), (1,1,-1))
+        self.influence.model.reset()
         _, probs = self.influence.model(obs_tensor)
         self.episode_length = 0
-        self.influence.model.reset()
         # Influence-augmented observations
         if self.influence.influence_aug_obs:
-            ia_obs = np.append(self.obs, np.concatenate([prob[:-1] for prob in probs]))
+            ia_obs = np.append(self.obs, np.concatenate([prob[0, :-1] for prob in probs]))
             return ia_obs
         else:
             return self.obs
@@ -74,7 +73,7 @@ class PartialWarehouse(object):
         self._robots_act(action)
         obs_tensor = torch.reshape(torch.FloatTensor(self.obs[25:]), (1,1,-1))
         _, probs = self.influence.model(obs_tensor)
-        ext_robot_locs = self._sample_ext_robot_locs(probs)
+        ext_robot_locs = self._sample_ext_robot_locs([prob[0] for prob in probs])
         reward = self._compute_reward(self.robots[self.learning_robot_id])
         self._remove_items(ext_robot_locs)
         self._add_items()
@@ -88,7 +87,7 @@ class PartialWarehouse(object):
             self.render(self.parameters['render_delay'])
         # Influence-augmented observations
         if self.influence.influence_aug_obs:
-            ia_obs = np.append(self.obs, np.concatenate([prob[:-1] for prob in probs]))
+            ia_obs = np.append(self.obs, np.concatenate([prob[0, :-1] for prob in probs]))
             return ia_obs, reward, done, []
         else:
             return self.obs, reward, done, []
