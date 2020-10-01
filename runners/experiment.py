@@ -106,6 +106,8 @@ class Experiment(object):
         episode_return = 0
         episode_step = 0
         start = time.time()
+        self.sim = DistributedSimulation(self.parameters, self.influence)
+        step_output = self.sim.reset()
         while global_step < self.maximum_time_steps:
             if self.parameters['simulator'] == 'partial' and \
               global_step % self.parameters['influence_train_frequency'] == 0 and \
