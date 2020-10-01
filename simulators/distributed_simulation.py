@@ -24,12 +24,13 @@ class DistributedSimulation(object):
         """
         for worker in self.workers:
             worker.child.send(('reset', None))
-        output = {'obs': [], 'prev_action': [], 'done': []}
+        output = {'obs': [], 'prev_action': [], 'done': [], 'reward': []}
         for worker in self.workers:
             obs = worker.child.recv()
             output['obs'].append(obs)
             output['prev_action'].append(-1)
             output['done'].append(False)
+            output['reward'].append(0)
         return output
 
     def step(self, actions):

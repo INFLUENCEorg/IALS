@@ -57,9 +57,8 @@ class PPOAgent(object):
                                 self._prev_action_output)
             # Estimate the returns using value function when time
             # horizon has been reached
-            self._bootstrap(step_output)
-            if self.step % self.parameters['train_frequency'] == 0 and self._full_memory():
-                self._update()
+            self._bootstrap(step_output)    
+            self._update()
             self._write_summary()
             self._save_graph()
         take_action_output = self.model.evaluate_policy(step_output['obs'], prev_action)
@@ -151,21 +150,22 @@ class PPOAgent(object):
         Runs multiple epoch of mini-batch gradient descent to update the model
         using experiences stored in buffer.
         """
-        policy_loss = 0
-        value_loss = 0
-        n_sequences = self.parameters['batch_size'] // self.seq_len
-        n_batches = self.parameters['memory_size'] // \
-            self.parameters['batch_size']
-        for e in range(self.parameters['num_epoch']):
-            self.buffer.shuffle()
-            for b in range(n_batches):
-                batch = self.buffer.sample(b, n_sequences)
-                update_model_output = self.model.update_model(batch)
-                policy_loss += update_model_output['policy_loss']
-                value_loss += update_model_output['value_loss']
-        self.buffer.empty()
-        self.stats['policy_loss'].append(np.mean(policy_loss))
-        self.stats['value_loss'].append(np.mean(value_loss))
+        if self.step % self.parameters['train_frequency'] == 0 and self._full_memory():
+            policy_loss = 0
+            value_loss = 0
+            n_sequences = self.parameters['batch_size'] // self.seq_len
+            n_batches = self.parameters['memory_size'] // \
+                self.parameters['batch_size']
+            for e in range(self.parameters['num_epoch']):
+                self.buffer.shuffle()
+                for b in range(n_batches):
+                    batch = self.buffer.sample(b, n_sequences)
+                    update_model_output = self.model.update_model(batch)
+                    policy_loss += update_model_output['policy_loss']
+                    value_loss += update_model_output['value_loss']
+            self.buffer.empty()
+            self.stats['policy_loss'].append(np.mean(policy_loss))
+            self.stats['value_loss'].append(np.mean(value_loss))
         
     def _compute_advantages(self, rewards, values, dones, last_value, gamma,
                             lambd):

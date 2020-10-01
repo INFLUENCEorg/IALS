@@ -116,7 +116,7 @@ class Experiment(object):
                 step_output = self.sim.reset()
                 self._run.log_scalar("mean episodic return", mean_episodic_return, global_step)
             # Select the action to perform
-            action = self.agent.take_action(step_output)
+            action = self.agent.take_action(step_output, episode_step)
             # Increment step
             episode_step += 1
             global_step += 1
