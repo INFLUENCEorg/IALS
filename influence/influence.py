@@ -78,7 +78,7 @@ class Influence(object):
             for seq in range(self._episode_length - (self._seq_len - 1)):
                 start = episode*self._episode_length+seq
                 end = episode*self._episode_length+seq+self._seq_len
-                inputs.append(data[start:end, :41])
+                inputs.append(data[start:end, 25:41])
                 targets.append(data[end-1, 41:])
         return inputs, targets
 

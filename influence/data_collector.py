@@ -55,7 +55,7 @@ class DataCollector(object):
             if self.influence_aug_obs:
                 if done:
                     self.influence_model.reset()
-                obs_tensor = torch.reshape(torch.FloatTensor(obs), (1,1,-1))
+                obs_tensor = torch.reshape(torch.FloatTensor(obs[25:]), (1,1,-1))
                 # print(np.shape(obs_tensor))
                 _, probs = self.influence_model(obs_tensor)
                 obs = np.append(obs, np.concatenate([prob[:-1] for prob in probs]))

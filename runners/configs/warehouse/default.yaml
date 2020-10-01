@@ -16,7 +16,7 @@ parameters:
         tensorboard: true
         iteration: -1
         episode: 0
-        num_workers: 1
+        num_workers: 8
         max_steps: 2.0e+6
         beta: 1.0e-1
         epsilon: 0.1
@@ -52,8 +52,8 @@ parameters:
         lr: 1.0e-3
         n_epochs: 10
         batch_size: 128
-        hidden_layer_size: 64
-        input_size: 41
+        hidden_layer_size: 32
+        input_size: 16
         output_size: [6,2,6,2,6,2,6,2]
         n_sources: 8
         checkpoint_path: '../influence/models/warehouse'

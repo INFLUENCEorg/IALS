@@ -56,7 +56,7 @@ class PartialWarehouse(object):
         self.items = []
         self._add_items()
         self.obs = self._get_observation()
-        obs_tensor = torch.reshape(torch.FloatTensor(self.obs), (1,1,-1))
+        obs_tensor = torch.reshape(torch.FloatTensor(self.obs[25:]), (1,1,-1))
         _, probs = self.influence.model(obs_tensor)
         self.episode_length = 0
         self.influence.model.reset()
@@ -72,7 +72,7 @@ class PartialWarehouse(object):
         Performs a single step in the environment.
         """
         self._robots_act(action)
-        obs_tensor = torch.reshape(torch.FloatTensor(self.obs), (1,1,-1))
+        obs_tensor = torch.reshape(torch.FloatTensor(self.obs[25:]), (1,1,-1))
         _, probs = self.influence.model(obs_tensor)
         ext_robot_locs = self._sample_ext_robot_locs(probs)
         reward = self._compute_reward(self.robots[self.learning_robot_id])
