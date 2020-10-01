@@ -60,4 +60,4 @@ parameters:
         influence_aug_obs: True
         load_model: False
         curriculum: False
-        dataset_size: 1.0e+4
+        dataset_size: 2.0e+4

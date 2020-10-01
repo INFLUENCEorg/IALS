@@ -51,7 +51,7 @@ class PPOAgent(object):
         Get each factor's action based on its local observation. Append the given
         state to the factor's replay memory.
         """
-        if mode == 'train' and self.step != 0:
+        if mode == 'train' and self.episode_step != 0:
             # Store experiences in buffer.
             self._add_to_memory(self._prev_step_output, step_output,
                                 self._prev_action_output)
