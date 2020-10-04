@@ -8,7 +8,7 @@ class InfluenceModel(nn.Module):
     """
     def __init__(self, input_size, hidden_layer_size, n_sources, output_size):
         super().__init__()
-        self.fc = nn.Linear(input_size, hidden_layer_size)
+        # self.fc = nn.Linear(input_size, hidden_layer_size)
         self.relu = nn.ReLU()
         self.lstm = nn.LSTM(input_size, hidden_layer_size, batch_first=True)
         self.linear1 = nn.ModuleList()

@@ -38,7 +38,7 @@ class Influence(object):
         weights2 = torch.FloatTensor([1.0, 1.0])
         self.loss_function = [nn.CrossEntropyLoss(weight=weights1),  nn.CrossEntropyLoss(weight=weights2)]
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self._lr, weight_decay=0.001)
-        self.checkpoint_path = parameters['checkpoint_path']
+        self.checkpoint_path = parameters['checkpoint_path'] + str(run_id)
         if parameters['load_model']:
             self._load_model()
         self.data_collector = DataCollector(agent, simulator, self.model, self.aug_obs,
