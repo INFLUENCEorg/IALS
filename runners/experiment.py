@@ -118,7 +118,7 @@ class Experiment(object):
                 self.sim.load_influence_model()
                 self._run.log_scalar("mean episodic return", mean_episodic_return, global_step)
             # Select the action to perform
-            action = self.agent.take_action(step_output, episode_step)
+            action = self.agent.take_action(step_output)
             # Increment step
             episode_step += 1
             global_step += 1
