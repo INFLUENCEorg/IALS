@@ -1,4 +1,4 @@
-import multiprocessing
+import multiprocessing as mp
 import multiprocessing.connection
 from simulators.warehouse.warehouse import Warehouse
 from simulators.warehouse.partial_warehouse import PartialWarehouse
@@ -14,7 +14,6 @@ def worker_process(remote: multiprocessing.connection.Connection, parameters,
     """
     # The Atari wrappers are now imported from openAI baselines
     # https://github.com/openai/baselines
-    log_dir = './log'
     if parameters['env'] == 'warehouse':
         if parameters['simulator'] == 'partial':
             env = PartialWarehouse(influence)
@@ -30,6 +29,8 @@ def worker_process(remote: multiprocessing.connection.Connection, parameters,
             remote.send(env.reset())
         elif cmd == 'action_space':
             remote.send(env.action_space.n)
+        elif cmd == 'load':
+            env.load_influence_model()
         elif cmd == 'close':
             remote.close()
             break
@@ -45,8 +46,7 @@ class Worker(object):
     """
     def __init__(self, parameters, worker_id, influence=None):
 
-        self.child, parent = multiprocessing.Pipe()
-        self.process = multiprocessing.Process(target=worker_process,
-                                               args=(parent, parameters,
-                                                     worker_id, influence))
+        self.child, parent = mp.Pipe()
+        self.process = mp.Process(target=worker_process, args=(parent, parameters,
+                                                               worker_id, influence))
         self.process.start()

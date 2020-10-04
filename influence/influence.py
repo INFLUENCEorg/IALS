@@ -32,16 +32,16 @@ class Influence(object):
         self.input_size = parameters['input_size']
         self.output_size = parameters['output_size']
         self.curriculum = parameters['curriculum']
+        self.aug_obs = parameters['influence_aug_obs']
         self.model = InfluenceModel(self.input_size, self._hidden_layer_size, self.n_sources, self.output_size)
         weights1 = torch.FloatTensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
         weights2 = torch.FloatTensor([1.0, 1.0])
         self.loss_function = [nn.CrossEntropyLoss(weight=weights1),  nn.CrossEntropyLoss(weight=weights2)]
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self._lr, weight_decay=0.001)
         self.checkpoint_path = parameters['checkpoint_path']
-        self.influence_aug_obs = parameters['influence_aug_obs']
         if parameters['load_model']:
-            self._load_model(self.model, self.optimizer, self.checkpoint_path)
-        self.data_collector = DataCollector(agent, simulator, self.model, self.influence_aug_obs,
+            self._load_model()
+        self.data_collector = DataCollector(agent, simulator, self.model, self.aug_obs,
                                             run_id, parameters['dataset_size'])
         if self.curriculum:
             self.strength = 0.5
@@ -56,7 +56,7 @@ class Influence(object):
         train_inputs, train_targets, test_inputs, test_targets = self._split_train_test(inputs, targets)
         self._train(train_inputs, train_targets, test_inputs, test_targets)
         self._test(test_inputs, test_targets)
-        self._save_model(self.model, self.optimizer, self.checkpoint_path)
+        self._save_model()
         if self.curriculum:
             self.strength += self.strength_increment
         os.remove(self._data_file)
@@ -126,12 +126,18 @@ class Influence(object):
         logits, probs = self.model(inputs)
         self.img1 = None
         end = 0
+        targets_counts = []
         for s in range(self.n_sources):
             start = end
             end += self.output_size[s]
             # loss += self.loss_function[s % 2](logits[s][:,-1,:], torch.argmax(targets[:, start:end], dim=1))
             # breakpoint()
             loss += self.loss_function[s % 2](logits[s], torch.argmax(targets[:, start:end], dim=1))
+            from collections import Counter
+            targets_counts = Counter(torch.argmax(targets[:, start:end], dim=1).detach().numpy())
+            print(targets_counts)
+            probs_counts = np.sum(probs[s], axis=0)
+            print(probs_counts)
             # for i in range(len(inputs)):
                 # self._plot_prediction(probs[s][i], targets[i, start:end])
         return loss
@@ -154,18 +160,17 @@ class Influence(object):
         plt.pause(0.5)
         plt.draw()
 
-    def _save_model(self, model, optimizer, path):
-        if not os.path.exists(path):
-            os.makedirs(path)
-        torch.save({'model_state_dict': model.state_dict(),
-                    'optimizer_state_dict': optimizer.state_dict()}, 
-                    os.path.join(path, 'checkpoint'))
+    def _save_model(self):
+        if not os.path.exists(self.checkpoint_path):
+            os.makedirs(self.checkpoint_path)
+        torch.save({'model_state_dict': self.model.state_dict(),
+                    'optimizer_state_dict': self.optimizer.state_dict()}, 
+                    os.path.join(self.checkpoint_path, 'checkpoint'))
     
-    def _load_model(self, model, optimizer, path):
-        checkpoint = torch.load(os.path.join(path, 'checkpoint'))
-        model.load_state_dict(checkpoint['model_state_dict'])
-        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-        return model, optimizer
+    def _load_model(self):
+        checkpoint = torch.load(os.path.join(self.checkpoint_path, 'checkpoint'))
+        self.model.load_state_dict(checkpoint['model_state_dict'])
+        self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
 def read_parameters(config_file):
     with open(config_file) as file:

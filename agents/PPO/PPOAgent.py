@@ -36,7 +36,7 @@ class PPOAgent(object):
         elif self.parameters['recurrent']:
             self.seq_len = self.parameters['seq_len']
         else:
-            self.seq_len = 1 
+            self.seq_len = 1
         tf.reset_default_graph()
         self.step = 0
         summary_path = '../summaries/' + self.parameters['name']

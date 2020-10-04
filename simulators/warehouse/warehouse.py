@@ -276,9 +276,9 @@ class Warehouse(object):
         robot_domain = robot.get_domain
         for item in self.items:
             item_pos = item.get_position
-            if robot_domain[0] <= item_pos[0] <= robot_domain[2] and \
-               robot_domain[1] <= item_pos[1] <= robot_domain[3]:
-                reward += -0.1 #*item.get_waiting_time
+            # if robot_domain[0] <= item_pos[0] <= robot_domain[2] and \
+            #    robot_domain[1] <= item_pos[1] <= robot_domain[3]:
+            #     reward += -0.1 #*item.get_waiting_time
             if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
                 reward += 1
         return reward

@@ -10,13 +10,13 @@ class DistributedSimulation(object):
     the same policy
     """
 
-    def __init__(self, parameters, influence):
+    def __init__(self, parameters, influence_model):
         print('cpu count', mp.cpu_count())
         if parameters['num_workers'] < mp.cpu_count():
             self.num_workers = parameters['num_workers']
         else:
             self.num_workers = mp.cpu_count()
-        self.workers = [Worker(parameters, i, influence) for i in range(self.num_workers)]
+        self.workers = [Worker(parameters, i, influence_model) for i in range(self.num_workers)]
 
     def reset(self):
         """
@@ -41,14 +41,13 @@ class DistributedSimulation(object):
             worker.child.send(('step', action))
         output = {'obs': [], 'reward': [], 'done': [], 'prev_action': [],
                   'info': []}
-        i = 0
+
         for worker in self.workers:
             obs, reward, done, info = worker.child.recv()
             output['obs'].append(obs)
             output['reward'].append(reward)
             output['done'].append(done)
             output['info'].append(info)
-            i += 1
         output['prev_action'] = actions
         return output
 
@@ -66,3 +65,11 @@ class DistributedSimulation(object):
         """
         for worker in self.workers:
             worker.child.send(('close', None))
+
+    def load_influence_model(self):
+        """
+        Loads the newest influence model
+        """
+        for worker in self.workers:
+            worker.child.send(('load', None))
+        

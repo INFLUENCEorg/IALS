@@ -17,7 +17,7 @@ class InfluenceModel(nn.Module):
         self.softmax = nn.Softmax(dim=1)
         self.hidden_layer_size = hidden_layer_size
         for s in range(self.n_sources):
-            # self.linear1.append((nn.Linear(hidden_layer_size, 32)))
+            self.linear1.append((nn.Linear(hidden_layer_size, hidden_layer_size)))
             self.linear2.append(nn.Linear(hidden_layer_size, output_size[s]))
         self.reset()
 
@@ -29,8 +29,8 @@ class InfluenceModel(nn.Module):
         logits = []
         probs = []
         for k in range(self.n_sources):
-            # linear1_out = self.relu(self.linear1[k](lstm_out[:,-1,:]))
-            linear2_out = self.linear2[k](lstm_out[:,-1,:])
+            linear1_out = self.relu(self.linear1[k](lstm_out[:,-1,:]))
+            linear2_out = self.linear2[k](linear1_out)
             logits.append(linear2_out)
             probs.append(self.softmax(logits[-1]).detach().numpy())
         return logits, probs

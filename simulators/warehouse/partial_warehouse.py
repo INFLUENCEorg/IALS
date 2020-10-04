@@ -60,7 +60,7 @@ class PartialWarehouse(object):
         _, probs = self.influence.model(obs_tensor)
         self.episode_length = 0
         # Influence-augmented observations
-        if self.influence.influence_aug_obs:
+        if self.influence.aug_obs:
             ia_obs = np.append(self.obs, np.concatenate([prob[0, :-1] for prob in probs]))
             return ia_obs
         else:
@@ -86,7 +86,7 @@ class PartialWarehouse(object):
         if self.parameters['render']:
             self.render(self.parameters['render_delay'])
         # Influence-augmented observations
-        if self.influence.influence_aug_obs:
+        if self.influence.aug_obs:
             ia_obs = np.append(self.obs, np.concatenate([prob[0, :-1] for prob in probs]))
             return ia_obs, reward, done, []
         else:
@@ -247,9 +247,9 @@ class PartialWarehouse(object):
         robot_domain = robot.get_domain
         for item in self.items:
             item_pos = item.get_position
-            if robot_domain[0] <= item_pos[0] <= robot_domain[2] and \
-               robot_domain[1] <= item_pos[1] <= robot_domain[3]:
-                reward += -0.1 #*item.get_waiting_time
+            # if robot_domain[0] <= item_pos[0] <= robot_domain[2] and \
+            #    robot_domain[1] <= item_pos[1] <= robot_domain[3]:
+            #     # reward += -0.1 #*item.get_waiting_time
             if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
                 reward += 1
         return reward
@@ -298,3 +298,6 @@ class PartialWarehouse(object):
         locations = {0: [loc, 4], 1: [-1, 4], 2: [4, loc], 3: [4, 0],
                      4: [loc, 0], 5: [0, 0], 6: [0, loc], 7: [0, 4]}
         return locations[ext_robot_id]
+
+    def load_influence_model(self):
+        self.influence._load_model()

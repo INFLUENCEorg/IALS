@@ -23,17 +23,17 @@ ex.add_config('configs/warehouse/default.yaml')
 db_uri = 'mongodb://localhost:27017/scalable-simulations'
 db_name = 'scalable-simulations'
 maxSevSelDelay = 20
-try:
-    print("Trying to connect to mongoDB '{}'".format(db_uri))
-    client = pymongo.MongoClient(db_uri, ssl=False)
-    client.server_info()
-    ex.observers.append(MongoObserver.create(db_uri, db_name=db_name, ssl=False))
-    print("Added MongoDB observer on {}.".format(db_uri))
-except pymongo.errors.ServerSelectionTimeoutError as e:
-    print(e)
-    print("ONLY FILE STORAGE OBSERVER ADDED")
-    from sacred.observers import FileStorageObserver
-    ex.observers.append(FileStorageObserver.create('saved_runs'))
+# try:
+#     print("Trying to connect to mongoDB '{}'".format(db_uri))
+#     client = pymongo.MongoClient(db_uri, ssl=False)
+#     client.server_info()
+#     ex.observers.append(MongoObserver.create(db_uri, db_name=db_name, ssl=False))
+#     print("Added MongoDB observer on {}.".format(db_uri))
+# except pymongo.errors.ServerSelectionTimeoutError as e:
+    # print(e)
+print("ONLY FILE STORAGE OBSERVER ADDED")
+from sacred.observers import FileStorageObserver
+ex.observers.append(FileStorageObserver.create('saved_runs'))
 
 class Experiment(object):
     """
@@ -113,9 +113,9 @@ class Experiment(object):
               global_step % self.parameters['influence_train_frequency'] == 0 and \
               self.parameters['mode'] == 'train':
                 mean_episodic_return = self.influence.train()
-                # INFLUENCE MODEL NEEDS TO BE PASSED TO WORKERS EVERY TIME IT IS UPDATED SINCE ONLY A COPY OF THE OBJECT IS PASSED TO EACH WORKER. FIND A BETER WAY
-                self.sim = DistributedSimulation(self.parameters, self.influence)
-                step_output = self.sim.reset()
+                # influence model parameters need to be loaded every time they are updated because 
+                # each process keeps a separate copy of the influence model
+                self.sim.load_influence_model()
                 self._run.log_scalar("mean episodic return", mean_episodic_return, global_step)
             # Select the action to perform
             action = self.agent.take_action(step_output, episode_step)
