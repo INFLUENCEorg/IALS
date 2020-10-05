@@ -133,11 +133,11 @@ class Influence(object):
             # loss += self.loss_function[s % 2](logits[s][:,-1,:], torch.argmax(targets[:, start:end], dim=1))
             # breakpoint()
             loss += self.loss_function[s % 2](logits[s], torch.argmax(targets[:, start:end], dim=1))
-            from collections import Counter
-            targets_counts = Counter(torch.argmax(targets[:, start:end], dim=1).detach().numpy())
-            print(targets_counts)
-            probs_counts = np.sum(probs[s], axis=0)
-            print(probs_counts)
+            # from collections import Counter
+            # targets_counts = Counter(torch.argmax(targets[:, start:end], dim=1).detach().numpy())
+            # print(targets_counts)
+            # probs_counts = np.sum(probs[s], axis=0)
+            # print(probs_counts)
             # for i in range(len(inputs)):
                 # self._plot_prediction(probs[s][i], targets[i, start:end])
         return loss
