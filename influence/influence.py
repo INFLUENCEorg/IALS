@@ -34,8 +34,8 @@ class Influence(object):
         self.curriculum = parameters['curriculum']
         self.aug_obs = parameters['influence_aug_obs']
         self.model = InfluenceModel(self.input_size, self._hidden_layer_size, self.n_sources, self.output_size)
-        weights1 = torch.FloatTensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
-        weights2 = torch.FloatTensor([1.0, 1.0])
+        weights1 = torch.FloatTensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0/20])
+        weights2 = torch.FloatTensor([1.0, 1.0/24])
         self.loss_function = [nn.CrossEntropyLoss(weight=weights1),  nn.CrossEntropyLoss(weight=weights2)]
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self._lr, weight_decay=0.001)
         self.checkpoint_path = parameters['checkpoint_path'] + str(run_id)
