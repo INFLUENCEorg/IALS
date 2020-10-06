@@ -16,13 +16,13 @@ class DataCollector(object):
     the agent and log results.
     """
 
-    def __init__(self, agent, simulator, influence_model, influence_aug_obs, run_id, max_steps):
+    def __init__(self, agent, simulator, influence, influence_aug_obs, run_id, max_steps):
         """
         """
         self.data_file = self.generate_path(run_id)
         self.sim = simulator
         self.agent = agent
-        self.influence_model = influence_model
+        self.influence = influence
         self.influence_aug_obs = influence_aug_obs
         self.maximum_time_steps = int(max_steps)
 
@@ -54,10 +54,9 @@ class DataCollector(object):
             self.sim.log_obs(self.data_file)
             if self.influence_aug_obs:
                 if done:
-                    self.influence_model.reset()
-                obs_tensor = torch.reshape(torch.FloatTensor(obs[25:]), (1,1,-1))
+                    self.influence.reset()
                 # print(np.shape(obs_tensor))
-                _, probs = self.influence_model(obs_tensor)
+                _, probs = self.influence.predict(obs[25:])
                 obs = np.append(obs, np.concatenate([prob[0, :-1] for prob in probs]))
             action = self.agent.take_action({'obs': [obs], 'done': [done]}, 'eval')[0]
             step += 1

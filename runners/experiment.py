@@ -5,7 +5,8 @@ sys.path.append("..")
 from agents.PPO.PPOAgent import PPOAgent
 from agents.random_agent import RandomAgent
 from simulators.distributed_simulation import DistributedSimulation
-from influence.influence import Influence
+from influence.influence_network import InfluenceNetwork
+from influence.influence_uniform import InfluenceUniform
 from simulators.warehouse.warehouse import Warehouse
 import argparse
 import yaml
@@ -63,7 +64,10 @@ class Experiment(object):
         self.train_frequency = self.parameters['train_frequency']
         if self.parameters['simulator'] == 'partial':
             global_simulator = Warehouse()
-            self.influence = Influence(self.agent, global_simulator, parameters['influence'], _run._id)
+            if self.parameters['influence_model'] == 'nn':
+                self.influence = InfluenceNetwork(self.agent, global_simulator, parameters['influence'], _run._id)
+            else:
+                self.influence = InfluenceUniform(self.agent, global_simulator, parameters['influence'], _run._id)
         else:
             self.influence = None
         tf.reset_default_graph()
@@ -108,7 +112,7 @@ class Experiment(object):
         start = time.time()
         self.sim = DistributedSimulation(self.parameters, self.influence)
         step_output = self.sim.reset()
-        while global_step < self.maximum_time_steps:
+        while global_step <= self.maximum_time_steps:
             if self.parameters['simulator'] == 'partial' and \
               global_step % self.parameters['influence_train_frequency'] == 0 and \
               self.parameters['mode'] == 'train':

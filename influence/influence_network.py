@@ -4,7 +4,7 @@ import numpy as np
 import csv
 import sys
 sys.path.append("..") 
-from influence.influence_model import InfluenceModel
+from influence.network import InfluenceModel
 from influence.data_collector import DataCollector
 from agents.random_agent import RandomAgent
 from simulators.warehouse.warehouse import Warehouse
@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import os
 import yaml
 
-class Influence(object):
+class InfluenceNetwork(object):
     """
     """
     def __init__(self, agent, simulator, parameters, run_id):
@@ -34,14 +34,14 @@ class Influence(object):
         self.curriculum = parameters['curriculum']
         self.aug_obs = parameters['influence_aug_obs']
         self.model = InfluenceModel(self.input_size, self._hidden_layer_size, self.n_sources, self.output_size)
-        weights1 = torch.FloatTensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0/20])
-        weights2 = torch.FloatTensor([1.0, 1.0/24])
+        weights1 = torch.FloatTensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+        weights2 = torch.FloatTensor([1.0, 1.0])
         self.loss_function = [nn.CrossEntropyLoss(weight=weights1),  nn.CrossEntropyLoss(weight=weights2)]
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self._lr, weight_decay=0.001)
         self.checkpoint_path = parameters['checkpoint_path'] + str(run_id)
         if parameters['load_model']:
             self._load_model()
-        self.data_collector = DataCollector(agent, simulator, self.model, self.aug_obs,
+        self.data_collector = DataCollector(agent, simulator, self, self.aug_obs,
                                             run_id, parameters['dataset_size'])
         if self.curriculum:
             self.strength = 0.5
@@ -61,6 +61,18 @@ class Influence(object):
             self.strength += self.strength_increment
         os.remove(self._data_file)
         return mean_episodic_return
+    
+    def predict(self, obs):
+        obs_tensor = torch.reshape(torch.FloatTensor(obs), (1,1,-1))
+        _, probs = self.model(obs_tensor)
+        probs = [prob[0] for prob in probs]
+        return probs
+    
+    def reset(self):
+        self.model.reset()
+
+
+### Private methods ###        
 
     def _read_data(self, data_file):
         data = []

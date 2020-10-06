@@ -11,8 +11,7 @@ import matplotlib.patches as patches
 import networkx as nx
 import csv
 sys.path.append("..") 
-from influence.influence_model import InfluenceModel
-from influence.influence import Influence
+from influence.influence_network import InfluenceNetwork
 from influence.data_collector import DataCollector
 import torch
 
@@ -55,9 +54,8 @@ class PartialWarehouse(object):
         self.items = []
         self._add_items()
         self.obs = self._get_observation()
-        obs_tensor = torch.reshape(torch.FloatTensor(self.obs[25:]), (1,1,-1))
-        self.influence.model.reset()
-        _, probs = self.influence.model(obs_tensor)
+        self.influence.reset()
+        probs = self.influence.predict(self.obs[25:])
         self.episode_length = 0
         # Influence-augmented observations
         if self.influence.aug_obs:
@@ -71,9 +69,8 @@ class PartialWarehouse(object):
         Performs a single step in the environment.
         """
         self._robots_act(action)
-        obs_tensor = torch.reshape(torch.FloatTensor(self.obs[25:]), (1,1,-1))
-        _, probs = self.influence.model(obs_tensor)
-        ext_robot_locs = self._sample_ext_robot_locs([prob[0] for prob in probs])
+        probs = self.influence.predict(self.obs[25:])
+        ext_robot_locs = self._sample_ext_robot_locs(probs)
         reward = self._compute_reward(self.robots[self.learning_robot_id])
         self._remove_items(ext_robot_locs)
         self._add_items()
@@ -87,7 +84,7 @@ class PartialWarehouse(object):
             self.render(self.parameters['render_delay'])
         # Influence-augmented observations
         if self.influence.aug_obs:
-            ia_obs = np.append(self.obs, np.concatenate([prob[0, :-1] for prob in probs]))
+            ia_obs = np.append(self.obs, probs)
             return ia_obs, reward, done, []
         else:
             return self.obs, reward, done, []

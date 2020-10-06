@@ -30,6 +30,7 @@ parameters:
         batch_size: 32
         memory_size: 128
         influence_train_frequency: 1.0e+5
+        influence_model: 'uniform'
 
         fully_connected: true
         num_fc_layers: 2
