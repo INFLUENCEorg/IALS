@@ -55,9 +55,8 @@ class DataCollector(object):
             if self.influence_aug_obs:
                 if done:
                     self.influence.reset()
-                # print(np.shape(obs_tensor))
-                _, probs = self.influence.predict(obs[25:])
-                obs = np.append(obs, np.concatenate([prob[0, :-1] for prob in probs]))
+                probs = self.influence.predict(obs[25:])
+                obs = np.append(obs, np.concatenate([prob[:-1] for prob in probs]))
             action = self.agent.take_action({'obs': [obs], 'done': [done]}, 'eval')[0]
             step += 1
             obs, reward, done, _ = self.sim.step(action)
