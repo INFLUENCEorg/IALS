@@ -10,13 +10,13 @@ class DistributedSimulation(object):
     the same policy
     """
 
-    def __init__(self, parameters, influence_model):
+    def __init__(self, parameters, influence_model, seed):
         print('cpu count', mp.cpu_count())
         if parameters['num_workers'] < mp.cpu_count():
             self.num_workers = parameters['num_workers']
         else:
             self.num_workers = mp.cpu_count()
-        self.workers = [Worker(parameters, i, influence_model) for i in range(self.num_workers)]
+        self.workers = [Worker(parameters, i, influence_model, seed) for i in range(self.num_workers)]
 
     def reset(self):
         """

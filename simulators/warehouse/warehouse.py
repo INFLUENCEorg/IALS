@@ -2,8 +2,6 @@ from simulators.warehouse.item import Item
 from simulators.warehouse.robot import Robot
 from simulators.warehouse.utils import *
 import numpy as np
-import copy
-import random
 from gym import spaces
 import time
 import matplotlib.pyplot as plt
@@ -21,7 +19,7 @@ class Warehouse(object):
                2: 'LEFT',
                3: 'RIGHT'}
 
-    def __init__(self, parameters:dict={}):
+    def __init__(self, seed):
         parameters = read_parameters('warehouse.yaml')
         # parameters = parse_arguments()
         self.n_columns = parameters['n_columns']
@@ -38,6 +36,7 @@ class Warehouse(object):
         self.items = []
         self.img = None
         self.parameters = parameters
+        self.seed(seed)
         self.reset()
 
     ############################## Override ###############################
@@ -139,7 +138,7 @@ class Warehouse(object):
 
     def seed(self, seed=None):
         if seed is not None:
-            random.seed(seed)
+            np.random.seed(seed)
 
     def log_obs(self, log_file):
         """
@@ -208,7 +207,7 @@ class Warehouse(object):
                     loc_free = True
                     if item_locs is not None:
                         loc_free = loc not in item_locs
-                    if random.random() < self.prob_item_appears and loc_free:
+                    if np.random.uniform() < self.prob_item_appears and loc_free:
                         self.items.append(Item(self.item_id, loc))
                         self.item_id += 1
             else:
@@ -217,7 +216,7 @@ class Warehouse(object):
                     loc_free = True
                     if item_locs is not None:
                         loc_free = loc not in item_locs
-                    if random.random() < self.prob_item_appears and loc_free:
+                    if np.random.uniform() < self.prob_item_appears and loc_free:
                         self.items.append(Item(self.item_id, loc))
                         self.item_id += 1
 

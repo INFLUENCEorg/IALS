@@ -6,7 +6,7 @@ import os
 
 
 def worker_process(remote: multiprocessing.connection.Connection, parameters,
-                   worker_id, influence=None):
+                   worker_id, influence, seed):
     """
     This function is used as target by each of the threads in the multiprocess
     to build environment instances and define the commands that can be executed
@@ -16,9 +16,9 @@ def worker_process(remote: multiprocessing.connection.Connection, parameters,
     # https://github.com/openai/baselines
     if parameters['env'] == 'warehouse':
         if parameters['simulator'] == 'partial':
-            env = PartialWarehouse(influence)
+            env = PartialWarehouse(influence, seed+worker_id)
         else:
-            env = Warehouse()
+            env = Warehouse(seed+worker_id)
         
     while True:
         cmd, data = remote.recv()
@@ -44,9 +44,8 @@ class Worker(object):
     multiprocess. Commands can be send and outputs received by calling
     child.send() and child.recv() respectively
     """
-    def __init__(self, parameters, worker_id, influence=None):
+    def __init__(self, parameters, worker_id, influence, seed):
 
         self.child, parent = mp.Pipe()
-        self.process = mp.Process(target=worker_process, args=(parent, parameters,
-                                                               worker_id, influence))
+        self.process = mp.Process(target=worker_process, args=(parent, parameters, worker_id, influence, seed))
         self.process.start()

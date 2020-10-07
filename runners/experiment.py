@@ -42,7 +42,7 @@ class Experiment(object):
     the agent and log results.
     """
 
-    def __init__(self, parameters, _run):
+    def __init__(self, parameters, _run, seed):
         """
         Initializes the experiment by extracting the parameters
         @param parameters a dictionary with many obligatory elements
@@ -63,13 +63,14 @@ class Experiment(object):
         self.agent = PPOAgent(4, parameters['main'])
         self.train_frequency = self.parameters['train_frequency']
         if self.parameters['simulator'] == 'partial':
-            global_simulator = Warehouse()
+            global_simulator = Warehouse(seed)
             if self.parameters['influence_model'] == 'nn':
                 self.influence = InfluenceNetwork(self.agent, global_simulator, parameters['influence'], _run._id)
             else:
                 self.influence = InfluenceUniform(self.agent, global_simulator, parameters['influence'], _run._id)
         else:
             self.influence = None
+        self.sim = DistributedSimulation(self.parameters, self.influence, seed)
         tf.reset_default_graph()
         self._run = _run
 
@@ -110,7 +111,6 @@ class Experiment(object):
         episode_return = 0
         episode_step = 0
         start = time.time()
-        self.sim = DistributedSimulation(self.parameters, self.influence)
         step_output = self.sim.reset()
         while global_step <= self.maximum_time_steps:
             if self.parameters['simulator'] == 'partial' and \
@@ -155,5 +155,5 @@ def read_parameters(config_file):
 
 @ex.automain
 def main(parameters, seed, _run):
-    exp = Experiment(parameters, _run)
+    exp = Experiment(parameters, _run, seed)
     exp.run()

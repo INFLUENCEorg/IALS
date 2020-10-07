@@ -2,8 +2,6 @@ from simulators.warehouse.item import Item
 from simulators.warehouse.robot import Robot
 from simulators.warehouse.utils import *
 import numpy as np
-import copy
-import random
 from gym import spaces
 import time
 import matplotlib.pyplot as plt
@@ -25,7 +23,7 @@ class PartialWarehouse(object):
                2: 'LEFT',
                3: 'RIGHT'}
 
-    def __init__(self, influence):
+    def __init__(self, influence, seed):
         self.parameters = read_parameters('partial_warehouse.yaml')
         # parameters = parse_arguments()
         self.n_columns = self.parameters['n_columns']
@@ -43,6 +41,7 @@ class PartialWarehouse(object):
         self.img = None
         self.influence = influence
         self.total_steps = 0
+        self.seed(seed)
 
     def reset(self):
         """
@@ -147,7 +146,7 @@ class PartialWarehouse(object):
 
     def seed(self, seed=None):
         if seed is not None:
-            random.seed(seed)
+            np.random.seed(seed)
 
     def create_graph(self, robot):
         """
@@ -196,7 +195,7 @@ class PartialWarehouse(object):
                     loc_free = True
                     if item_locs is not None:
                         loc_free = loc not in item_locs
-                    if random.random() < self.prob_item_appears and loc_free:
+                    if np.random.uniform() < self.prob_item_appears and loc_free:
                         self.items.append(Item(self.item_id, loc))
                         self.item_id += 1
             else:
@@ -205,7 +204,7 @@ class PartialWarehouse(object):
                     loc_free = True
                     if item_locs is not None:
                         loc_free = loc not in item_locs
-                    if random.random() < self.prob_item_appears and loc_free:
+                    if np.random.uniform() < self.prob_item_appears and loc_free:
                         self.items.append(Item(self.item_id, loc))
                         self.item_id += 1
 
