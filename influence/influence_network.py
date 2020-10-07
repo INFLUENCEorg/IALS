@@ -91,12 +91,13 @@ class InfluenceNetwork(object):
                 start = episode*self._episode_length+seq
                 end = episode*self._episode_length+seq+self._seq_len
                 inputs.append(data[start:end, 25:41])
-                targets.append(data[end-1, 41:])
+                targets.append(data[start:end, 41:])
         return inputs, targets
 
     def _split_train_test(self, inputs, targets):
-        train_inputs, train_targets = inputs[:-self._episode_length], targets[:-self._episode_length] 
-        test_inputs, test_targets = inputs[-self._episode_length:], targets[-self._episode_length:]
+        test_size = int(0.1*len(inputs))
+        train_inputs, train_targets = inputs[:-test_size], targets[:-test_size] 
+        test_inputs, test_targets = inputs[-test_size:], targets[-test_size:]
         return train_inputs, train_targets, test_inputs, test_targets
 
     def _train(self, train_inputs, train_targets, test_inputs, test_targets):
@@ -104,14 +105,15 @@ class InfluenceNetwork(object):
         targets = torch.FloatTensor(train_targets)
         for e in range(self._n_epochs):
             permutation = torch.randperm(len(seqs))
-            test_loss = self._test(test_inputs, test_targets)
-            print(f'epoch: {e:3} test loss: {test_loss.item():10.8f}')
+            if e % 10 == 0:
+                test_loss = self._test(test_inputs, test_targets)
+                print(f'epoch: {e:3} test loss: {test_loss.item():10.8f}')
             for i in range(0, len(seqs) - len(seqs) % self._batch_size, self._batch_size):
                 indices = permutation[i:i+self._batch_size]
                 seqs_batch = seqs[indices]
                 targets_batch = targets[indices]
-                self.model.hidden_cell = (torch.zeros(1, self._batch_size, self._hidden_layer_size),
-                                          torch.zeros(1, self._batch_size, self._hidden_layer_size))
+                self.model.hidden_cell = (torch.randn(1, self._batch_size, self._hidden_layer_size),
+                                          torch.randn(1, self._batch_size, self._hidden_layer_size))
                 logits, probs = self.model(seqs_batch)
                 end = 0
                 self.optimizer.zero_grad()
@@ -121,7 +123,7 @@ class InfluenceNetwork(object):
                     end += self.output_size[s]
                     # breakpoint()
                     # single_loss = self.loss_function[s % 2](logits[s][:,-1,:], torch.argmax(targets_batch[:, start:end], dim=1))
-                    single_loss = self.loss_function[s % 2](logits[s], torch.argmax(targets_batch[:, start:end], dim=1))
+                    single_loss = self.loss_function[s % 2](logits[s].view(-1, self.output_size[s]), torch.argmax(targets_batch[:, :, start:end], dim=2).view(-1))
                     loss += single_loss
                 loss.backward()
                 self.optimizer.step()
@@ -144,7 +146,7 @@ class InfluenceNetwork(object):
             end += self.output_size[s]
             # loss += self.loss_function[s % 2](logits[s][:,-1,:], torch.argmax(targets[:, start:end], dim=1))
             # breakpoint()
-            loss += self.loss_function[s % 2](logits[s], torch.argmax(targets[:, start:end], dim=1))
+            loss += self.loss_function[s % 2](logits[s].view(-1, self.output_size[s]), torch.argmax(targets[:, :, start:end], dim=2).view(-1))
             # from collections import Counter
             # targets_counts = Counter(torch.argmax(targets[:, start:end], dim=1).detach().numpy())
             # print(targets_counts)
@@ -194,5 +196,5 @@ if __name__ == '__main__':
     simulator = Warehouse()
     agent = RandomAgent(simulator.action_space.n, None)
     parameters = read_parameters('../influence/configs/influence.yaml')
-    trainer = Influence(agent, simulator, parameters, 0)
+    trainer = InfluenceNetwork(agent, simulator, parameters, 0)
     trainer.train()

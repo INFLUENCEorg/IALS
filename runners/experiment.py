@@ -155,7 +155,5 @@ def read_parameters(config_file):
 
 @ex.automain
 def main(parameters, seed, _run):
-    print(parameters)
-    # parameters = read_parameters(config)
     exp = Experiment(parameters, _run)
     exp.run()

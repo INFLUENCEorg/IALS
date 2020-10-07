@@ -29,10 +29,10 @@ class InfluenceModel(nn.Module):
         logits = []
         probs = []
         for k in range(self.n_sources):
-            linear1_out = self.relu(self.linear1[k](lstm_out[:,-1,:]))
+            linear1_out = self.relu(self.linear1[k](lstm_out))
             linear2_out = self.linear2[k](linear1_out)
             logits.append(linear2_out)
-            probs.append(self.softmax(logits[-1]).detach().numpy())
+            probs.append(self.softmax(linear2_out[:, -1, :]).detach().numpy())
         return logits, probs
     
     def reset(self):

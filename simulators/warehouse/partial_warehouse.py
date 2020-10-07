@@ -50,12 +50,12 @@ class PartialWarehouse(object):
         """
         self.robot_id = 0
         self._place_robots()
+        probs = self.influence.predict(np.zeros(16))
         self.item_id = 0
         self.items = []
         self._add_items()
         self.obs = self._get_observation()
         self.influence.reset()
-        probs = self.influence.predict(self.obs[25:])
         self.episode_length = 0
         # Influence-augmented observations
         if self.influence.aug_obs:
@@ -70,7 +70,7 @@ class PartialWarehouse(object):
         """
         self._robots_act(action)
         probs = self.influence.predict(self.obs[25:])
-        ext_robot_locs = self._sample_ext_robot_locs(probs)
+        ext_robot_locs, sample = self._sample_ext_robot_locs(probs)
         reward = self._compute_reward(self.robots[self.learning_robot_id])
         self._remove_items(ext_robot_locs)
         self._add_items()
@@ -81,7 +81,7 @@ class PartialWarehouse(object):
         if done:
             self.reset()
         if self.parameters['render']:
-            self.render(self.parameters['render_delay'])
+            self.render(ext_robot_locs, self.parameters['render_delay'])
         # Influence-augmented observations
         if self.influence.aug_obs:
             ia_obs = np.append(self.obs, np.concatenate([prob[:-1] for prob in probs]))
@@ -106,7 +106,7 @@ class PartialWarehouse(object):
         action_space.n = 4
         return action_space
 
-    def render(self, delay=0.0):
+    def render(self, ext_robot_locs, delay=0.0):
         """
         Renders the environment
         """
@@ -114,9 +114,12 @@ class PartialWarehouse(object):
         position = self.robots[self.learning_robot_id].get_position
         bitmap[position[0], position[1], 1] += 1
         im = bitmap[:, :, 0] - 2*bitmap[:, :, 1]
+        for loc in ext_robot_locs:
+            if loc is not None:
+                im[loc[0], loc[1]] -= 1
         if self.img is None:
             fig,ax = plt.subplots(1)
-            self.img = ax.imshow(im)
+            self.img = ax.imshow(im, vmin=-2, vmax=1)
             for robot_id, robot in enumerate(self.robots):
                 domain = robot.get_domain
                 y = domain[0]
@@ -281,18 +284,19 @@ class PartialWarehouse(object):
     
     def _sample_ext_robot_locs(self, probs):
         locations = []
+        samples = []
         for i, prob in enumerate(probs):
             sample = np.random.uniform(0,1)
             location = None
-            if sample < self.influence.strength:
+            if sample <= self.influence.strength:
                 sample = np.random.choice(np.arange(len(prob)), p=prob)
                 if sample < len(prob) - 1:
                     location = self._find_loc(i, sample)    
             locations.append(location)
-        return locations
+        return locations, sample
     
     def _find_loc(self, ext_robot_id, loc):
-        locations = {0: [loc, 4], 1: [-1, 4], 2: [4, loc], 3: [4, 0],
+        locations = {0: [loc, 4], 1: [4, 4], 2: [4, loc], 3: [4, 0],
                      4: [loc, 0], 5: [0, 0], 6: [0, loc], 7: [0, 4]}
         return locations[ext_robot_id]
 
