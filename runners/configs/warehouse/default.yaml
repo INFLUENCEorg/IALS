@@ -15,13 +15,13 @@ parameters:
         tensorboard: true
         iteration: -1
         episode: 0
-        num_workers: 1
+        num_workers: 8
         max_steps: 2.0e+6
         beta: 1.0e-1
         epsilon: 0.1
         time_horizon: 16
         obs_type: 'vector'
-        obs_size: 65
+        obs_size: 41
         c1: 1
         num_epoch: 3
         gamma: 0.99
@@ -30,7 +30,7 @@ parameters:
         batch_size: 32
         memory_size: 128
         influence_train_frequency: 1.0e+5
-        influence_model: 'nn'
+        influence_model: 'uniform'
 
         fully_connected: true
         num_fc_layers: 2
@@ -46,7 +46,7 @@ parameters:
 
     influence:
         # Common hyperparameters
-        seq_len: 8
+        seq_len: 100
         episode_length: 100
         data_file: '../influence/data/warehouse/'
         lr: 1.0e-3
@@ -57,7 +57,7 @@ parameters:
         output_size: [6,2,6,2,6,2,6,2]
         n_sources: 8
         checkpoint_path: '../influence/models/warehouse/model'
-        influence_aug_obs: True
+        influence_aug_obs: False
         load_model: False
         curriculum: False
         dataset_size: 1.0e+4
