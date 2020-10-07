@@ -17,13 +17,12 @@ import yaml
 class InfluenceNetwork(object):
     """
     """
-    def __init__(self, agent, simulator, parameters, run_id):
+    def __init__(self, agent, parameters, data_file, run_id):
         """
         """
         # parameters = read_parameters('../influence/configs/influence.yaml')
         self._seq_len = parameters['seq_len']
         self._episode_length = parameters['episode_length']
-        self._data_file = parameters['data_file'] + str(run_id) + '.csv'
         self._lr = parameters['lr']
         self._n_epochs = parameters['n_epochs']
         self._hidden_layer_size = parameters['hidden_layer_size']
@@ -32,7 +31,9 @@ class InfluenceNetwork(object):
         self.input_size = parameters['input_size']
         self.output_size = parameters['output_size']
         self.curriculum = parameters['curriculum']
-        self.aug_obs = parameters['influence_aug_obs']
+        self.aug_obs = parameters['aug_obs']
+        self.parameters = parameters
+        self._data_file = data_file
         self.model = InfluenceModel(self.input_size, self._hidden_layer_size, self.n_sources, self.output_size)
         weights1 = torch.FloatTensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
         weights2 = torch.FloatTensor([1.0, 1.0])
@@ -41,26 +42,22 @@ class InfluenceNetwork(object):
         self.checkpoint_path = parameters['checkpoint_path'] + str(run_id)
         if parameters['load_model']:
             self._load_model()
-        self.data_collector = DataCollector(agent, simulator, self, self.aug_obs,
-                                            run_id, parameters['dataset_size'])
         if self.curriculum:
             self.strength = 0.5
             self.strength_increment = 0.025
         else:
             self.strength = 1
 
-    def train(self):
-        mean_episodic_return = self.data_collector.run()
-        data = self._read_data(self._data_file)
-        inputs, targets = self._form_sequences(np.array(data))
-        train_inputs, train_targets, test_inputs, test_targets = self._split_train_test(inputs, targets)
-        self._train(train_inputs, train_targets, test_inputs, test_targets)
-        self._test(test_inputs, test_targets)
-        self._save_model()
-        if self.curriculum:
-            self.strength += self.strength_increment
-        os.remove(self._data_file)
-        return mean_episodic_return
+    def train(self, step):
+        if step % self.parameters['train_freq']  == 0:
+            data = self._read_data(self._data_file)
+            inputs, targets = self._form_sequences(np.array(data))
+            train_inputs, train_targets, test_inputs, test_targets = self._split_train_test(inputs, targets)
+            self._train(train_inputs, train_targets, test_inputs, test_targets)
+            self._test(test_inputs, test_targets)
+            self._save_model()
+            if self.curriculum:
+                self.strength += self.strength_increment
     
     def predict(self, obs):
         obs_tensor = torch.reshape(torch.FloatTensor(obs), (1,1,-1))

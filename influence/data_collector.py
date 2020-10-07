@@ -16,28 +16,24 @@ class DataCollector(object):
     the agent and log results.
     """
 
-    def __init__(self, agent, simulator, influence, influence_aug_obs, run_id, max_steps):
+    def __init__(self, agent, simulator, influence, data_file, max_steps):
         """
         """
-        self.data_file = self.generate_path(run_id)
+        self.data_file = data_file
+        self.generate_path()
         self.sim = simulator
         self.agent = agent
         self.influence = influence
-        self.influence_aug_obs = influence_aug_obs
         self.maximum_time_steps = int(max_steps)
 
-    def generate_path(self, run_id):
+    def generate_path(self):
         """
         Generate a path to store e.g. logs, models and plots. Check if
         all needed subpaths exist, and if not, create them.
         """
         data_path = '../influence/data/warehouse'
-        data_file = os.path.join(data_path, str(run_id) + '.csv')
-        # if os.path.exists(data_file):
-        #     os.remove(data_file)
         if not os.path.exists(data_path):
             os.makedirs(data_path)
-        return data_file
 
     def run(self):
         """
@@ -52,7 +48,7 @@ class DataCollector(object):
         episodic_returns = []
         while step < self.maximum_time_steps:
             self.sim.log_obs(self.data_file)
-            if self.influence_aug_obs:
+            if self.influence.parameters['aug_obs']:
                 if done:
                     self.influence.reset()
                 probs = self.influence.predict(obs[25:])

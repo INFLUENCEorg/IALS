@@ -7,6 +7,7 @@ from agents.random_agent import RandomAgent
 from simulators.distributed_simulation import DistributedSimulation
 from influence.influence_network import InfluenceNetwork
 from influence.influence_uniform import InfluenceUniform
+from influence.influence_uniform import DataCollector
 from simulators.warehouse.warehouse import Warehouse
 import argparse
 import yaml
@@ -62,15 +63,18 @@ class Experiment(object):
         self.path = self.generate_path(self.parameters['name'])
         self.agent = PPOAgent(4, parameters['main'])
         self.train_frequency = self.parameters['train_frequency']
+        self.data_file = parameters['influence']['data_file'] + str(_run._id) + '.csv'
         if self.parameters['simulator'] == 'partial':
-            global_simulator = Warehouse(seed)
             if self.parameters['influence_model'] == 'nn':
-                self.influence = InfluenceNetwork(self.agent, global_simulator, parameters['influence'], _run._id)
+                self.influence = InfluenceNetwork(self.agent, parameters['influence'], self.data_file, _run._id)
             else:
-                self.influence = InfluenceUniform(self.agent, global_simulator, parameters['influence'], _run._id)
+                self.influence = InfluenceUniform(parameters['influence'])
         else:
             self.influence = None
         self.sim = DistributedSimulation(self.parameters, self.influence, seed)
+        global_simulator = Warehouse(seed)
+        self.data_collector = DataCollector(self.agent, global_simulator, self.influence, self.data_file, 
+                                            parameters['influence']['dataset_size'])
         tf.reset_default_graph()
         self._run = _run
 
@@ -113,14 +117,14 @@ class Experiment(object):
         start = time.time()
         step_output = self.sim.reset()
         while global_step <= self.maximum_time_steps:
-            if self.parameters['simulator'] == 'partial' and \
-              global_step % self.parameters['influence_train_frequency'] == 0 and \
-              self.parameters['mode'] == 'train':
-                mean_episodic_return = self.influence.train()
+            if global_step % self.parameters['eval_freq'] == 0:
+                mean_episodic_return = self.data_collector.run()
+                self._run.log_scalar("mean episodic return", mean_episodic_return, global_step)
+                self.influence.train(global_step)
                 # influence model parameters need to be loaded every time they are updated because 
                 # each process keeps a separate copy of the influence model
                 self.sim.load_influence_model()
-                self._run.log_scalar("mean episodic return", mean_episodic_return, global_step)
+                os.remove(self.data_file)
             # Select the action to perform
             action = self.agent.take_action(step_output)
             # Increment step
