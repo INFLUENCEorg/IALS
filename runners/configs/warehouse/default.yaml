@@ -46,7 +46,7 @@ parameters:
 
     influence:
         # Common hyperparameters
-        seq_len: 8
+        seq_len: 100
         episode_length: 100
         data_file: '../influence/data/warehouse/'
         lr: 1.0e-3
