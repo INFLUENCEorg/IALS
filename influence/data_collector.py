@@ -53,6 +53,7 @@ class DataCollector(object):
                     self.influence.reset()
                 probs = self.influence.predict(obs[25:])
                 obs = np.append(obs, np.concatenate([prob[:-1] for prob in probs]))
+                print(probs)
             action = self.agent.take_action({'obs': [obs], 'done': [done]}, 'eval')[0]
             step += 1
             obs, reward, done, _ = self.sim.step(action)

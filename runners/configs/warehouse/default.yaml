@@ -29,8 +29,8 @@ parameters:
         learning_rate: 2.5e-4
         batch_size: 32
         memory_size: 128
-        influence_train_frequency: 1.0e+5
         influence_model: 'nn'
+        eval_freq: 1.0e+5
 
         fully_connected: true
         num_fc_layers: 2
@@ -57,7 +57,8 @@ parameters:
         output_size: [6,2,6,2,6,2,6,2]
         n_sources: 8
         checkpoint_path: '../influence/models/warehouse/model'
-        influence_aug_obs: True
+        aug_obs: True
         load_model: False
         curriculum: False
-        dataset_size: 1.0e+4
+        dataset_size: 2.0e+4
+        train_freq: 1.0e+6
