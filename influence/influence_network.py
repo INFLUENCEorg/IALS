@@ -49,15 +49,14 @@ class InfluenceNetwork(object):
             self.strength = 1
 
     def train(self, step):
-        if step % self.parameters['train_freq']  == 0:
-            data = self._read_data(self._data_file)
-            inputs, targets = self._form_sequences(np.array(data))
-            train_inputs, train_targets, test_inputs, test_targets = self._split_train_test(inputs, targets)
-            self._train(train_inputs, train_targets, test_inputs, test_targets)
-            self._test(test_inputs, test_targets)
-            self._save_model()
-            if self.curriculum:
-                self.strength += self.strength_increment
+        data = self._read_data(self._data_file)
+        inputs, targets = self._form_sequences(np.array(data))
+        train_inputs, train_targets, test_inputs, test_targets = self._split_train_test(inputs, targets)
+        self._train(train_inputs, train_targets, test_inputs, test_targets)
+        self._test(test_inputs, test_targets)
+        self._save_model()
+        if self.curriculum:
+            self.strength += self.strength_increment
     
     def predict(self, obs):
         obs_tensor = torch.reshape(torch.FloatTensor(obs), (1,1,-1))

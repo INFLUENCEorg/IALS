@@ -134,12 +134,7 @@ class Experiment(object):
             episode_step += 1
             global_step += 1
             # Get new state and reward given actions a
-            step_output = self.sim.step(action)# influence model parameters need to be loaded every time they are updated because 
-            # each process keeps a separate copy of the influence model
-            self.sim.load_influence_model()
-            # for name, param in self.influence.model.named_parameters():
-            #     print(name, param.data)
-            
+            step_output = self.sim.step(action)
             episode_return += step_output['reward'][0]
             if step_output['done'][0]:
                 end = time.time()

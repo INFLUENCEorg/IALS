@@ -52,7 +52,7 @@ parameters:
         data_file: '../influence/data/warehouse/'
         lr: 1.0e-3
         n_epochs: 100
-        batch_size: 1
+        batch_size: 64
         hidden_layer_size: 32
         input_size: 16
         output_size: [6,2,6,2,6,2,6,2]
