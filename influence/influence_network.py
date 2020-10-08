@@ -132,8 +132,8 @@ class InfluenceNetwork(object):
         inputs = torch.FloatTensor(inputs)
         targets = torch.FloatTensor(targets)
         loss = 0
-        self.model.hidden_cell = (torch.zeros(1, len(inputs), self._hidden_layer_size),
-                                  torch.zeros(1, len(inputs), self._hidden_layer_size))
+        self.model.hidden_cell = (torch.randn(1, len(inputs), self._hidden_layer_size),
+                                  torch.randn(1, len(inputs), self._hidden_layer_size))
         logits, probs = self.model(inputs)
         self.img1 = None
         end = 0
