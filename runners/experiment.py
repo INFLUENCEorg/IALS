@@ -60,6 +60,7 @@ class Experiment(object):
         </ul>
         """
         self.parameters = parameters['main']
+        self.parameters_influence = parameters['influence']
         self.path = self.generate_path(self.parameters['name'])
         self.agent = PPOAgent(4, parameters['main'])
         self.train_frequency = self.parameters['train_frequency']
@@ -73,8 +74,7 @@ class Experiment(object):
             self.influence = None
         self.sim = DistributedSimulation(self.parameters, self.influence, seed)
         global_simulator = Warehouse(seed)
-        self.data_collector = DataCollector(self.agent, global_simulator, self.influence, self.data_file, 
-                                            parameters['influence']['dataset_size'])
+        self.data_collector = DataCollector(self.agent, global_simulator, self.influence, self.data_file)
         tf.reset_default_graph()
         self._run = _run
 
@@ -117,21 +117,26 @@ class Experiment(object):
         start = time.time()
         step_output = self.sim.reset()
         while global_step <= self.maximum_time_steps:
-            if global_step % self.parameters['eval_freq'] == 0:
-                mean_episodic_return = self.data_collector.run()
-                self._run.log_scalar("mean episodic return", mean_episodic_return, global_step)
+            if global_step % self.parameters_influence['train_freq']  == 0:
+                mean_episodic_return = self.data_collector.run(self.parameters_influence['dataset_size'], log=True)
                 self.influence.train(global_step)
                 # influence model parameters need to be loaded every time they are updated because 
                 # each process keeps a separate copy of the influence model
                 self.sim.load_influence_model()
                 os.remove(self.data_file)
+                self._run.log_scalar("mean episodic return", mean_episodic_return, global_step)
+            elif global_step % self.parameters['eval_freq'] == 0:
+                mean_episodic_return = self.data_collector.run(self.parameters['eval_steps'], log=False)
+                self._run.log_scalar("mean episodic return", mean_episodic_return, global_step)
             # Select the action to perform
             action = self.agent.take_action(step_output)
             # Increment step
             episode_step += 1
             global_step += 1
             # Get new state and reward given actions a
-            step_output = self.sim.step(action)
+            step_output = self.sim.step(action)# influence model parameters need to be loaded every time they are updated because 
+            # each process keeps a separate copy of the influence model
+            self.sim.load_influence_model()
             # for name, param in self.influence.model.named_parameters():
             #     print(name, param.data)
             

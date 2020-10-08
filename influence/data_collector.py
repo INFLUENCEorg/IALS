@@ -16,7 +16,7 @@ class DataCollector(object):
     the agent and log results.
     """
 
-    def __init__(self, agent, simulator, influence, data_file, max_steps):
+    def __init__(self, agent, simulator, influence, data_file):
         """
         """
         self.data_file = data_file
@@ -24,7 +24,6 @@ class DataCollector(object):
         self.sim = simulator
         self.agent = agent
         self.influence = influence
-        self.maximum_time_steps = int(max_steps)
 
     def generate_path(self):
         """
@@ -35,7 +34,7 @@ class DataCollector(object):
         if not os.path.exists(data_path):
             os.makedirs(data_path)
 
-    def run(self):
+    def run(self, num_steps, log=False):
         """
         Runs the data collection process.
         """
@@ -46,8 +45,9 @@ class DataCollector(object):
         done = True
         episodic_return = 0
         episodic_returns = []
-        while step < self.maximum_time_steps:
-            self.sim.log_obs(self.data_file)
+        while step < num_steps:
+            if log:
+                self.sim.log_obs(self.data_file)
             if self.influence.parameters['aug_obs']:
                 if done:
                     self.influence.reset()

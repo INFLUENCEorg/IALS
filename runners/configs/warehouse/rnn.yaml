@@ -31,6 +31,7 @@ parameters:
         memory_size: 128
         influence_model: 'nn'
         eval_freq: 1.0e+5
+        eval_steps: 1.0e+4
 
         fully_connected: true
         num_fc_layers: 2
@@ -50,8 +51,8 @@ parameters:
         episode_length: 100
         data_file: '../influence/data/warehouse/'
         lr: 1.0e-3
-        n_epochs: 100
-        batch_size: 16
+        n_epochs: 1000
+        batch_size: 64
         hidden_layer_size: 32
         input_size: 16
         output_size: [6,2,6,2,6,2,6,2]
@@ -60,5 +61,5 @@ parameters:
         aug_obs: True
         load_model: False
         curriculum: False
-        dataset_size: 2.0e+4
-        train_freq: 1.0e+6
+        dataset_size: 1.0e+5
+        train_freq: 3.0e+6
