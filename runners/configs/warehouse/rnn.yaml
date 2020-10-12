@@ -62,4 +62,4 @@ parameters:
         load_model: False
         curriculum: False
         dataset_size: 2.0e+4
-        train_freq: 5.0e+5
+        train_freq: 3.0e+6

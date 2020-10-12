@@ -61,5 +61,5 @@ parameters:
         aug_obs: False
         load_model: False
         curriculum: False
-        dataset_size: 1.0e+5
+        dataset_size: 1.0e+4
         train_freq: 5.0e+5
