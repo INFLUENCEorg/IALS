@@ -25,15 +25,15 @@ ex.add_config('configs/warehouse/default.yaml')
 db_uri = 'mongodb://localhost:27017/scalable-simulations'
 db_name = 'scalable-simulations'
 maxSevSelDelay = 20
-# try:
-#     print("Trying to connect to mongoDB '{}'".format(db_uri))
-#     client = pymongo.MongoClient(db_uri, ssl=False)
-#     client.server_info()
-#     ex.observers.append(MongoObserver.create(db_uri, db_name=db_name, ssl=False))
-#     print("Added MongoDB observer on {}.".format(db_uri))
-# except pymongo.errors.ServerSelectionTimeoutError as e:
-#     print(e)
-print("ONLY FILE STORAGE OBSERVER ADDED")
+try:
+    print("Trying to connect to mongoDB '{}'".format(db_uri))
+    client = pymongo.MongoClient(db_uri, ssl=False)
+    client.server_info()
+    ex.observers.append(MongoObserver.create(db_uri, db_name=db_name, ssl=False))
+    print("Added MongoDB observer on {}.".format(db_uri))
+except pymongo.errors.ServerSelectionTimeoutError as e:
+    print(e)
+    print("ONLY FILE STORAGE OBSERVER ADDED")
 from sacred.observers import FileStorageObserver
 ex.observers.append(FileStorageObserver.create('saved_runs'))
 
