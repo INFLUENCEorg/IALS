@@ -9,15 +9,14 @@ class InfluenceUniform(object):
         """
         self.n_sources = parameters['n_sources']
         self.output_size = parameters['output_size']
+        self.aug_obs = parameters['aug_obs']
         self.strength = 1
 
-    def train(self, step):
+    def train(self):
         pass
 
     def predict(self, obs):
-        probs = []
-        for s in range(self.n_sources):
-            probs.append([1/self.output_size[s]]*self.output_size[s])
+        probs = [[1/self.output_size]*self.output_size]*self.n_sources
         return probs
     
     def reset(self):

@@ -49,7 +49,7 @@ class DataCollector(object):
             if log:
                 self.sim.log(self.inputs_file, 'dset')
                 self.sim.log(self.targets_file, 'infs')
-            if self.influence.parameters['aug_obs']:
+            if self.influence.aug_obs:
                 if done:
                     self.influence.reset()
                 dset = self.sim.get_dset()
