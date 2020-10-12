@@ -283,21 +283,31 @@ class PartialWarehouse(object):
     
     def _sample_ext_robot_locs(self, probs):
         locations = []
-        samples = []
-        for i, prob in enumerate(probs):
+        for neighbor_id, prob in enumerate(probs):
             sample = np.random.uniform(0,1)
             location = None
             if sample <= self.influence.strength:
                 sample = np.random.choice(np.arange(len(prob)), p=prob)
-                if sample < len(prob) - 1:
-                    location = self._find_loc(i, sample)    
+                bitmap = np.zeros(len(prob))
+                bitmap[sample] = 1
+                bitmap = np.reshape(bitmap, (5,5))
+                intersection = np.array(self._get_intersection(neighbor_id, bitmap))
+                if all(intersection == np.zeros(len(intersection))):
+                    location = None
+                else:
+                    location = self._find_loc(neighbor_id, np.where(intersection == 1)[0][0])
             locations.append(location)
         return locations, sample
     
-    def _find_loc(self, ext_robot_id, loc):
+    def _find_loc(self, neighbor_id, loc):
         locations = {0: [loc, 4], 1: [4, 4], 2: [4, loc], 3: [4, 0],
                      4: [loc, 0], 5: [0, 0], 6: [0, loc], 7: [0, 4]}
-        return locations[ext_robot_id]
+        return locations[neighbor_id]
+
+    def _get_intersection(self, neighbor_id, bitmap):
+        intersections = {0: bitmap[:, 0], 1: [bitmap[0, 0]], 2: bitmap[0, :], 3: [bitmap[0, 4]],
+                        4: bitmap[:, 4], 5: [bitmap[4, 4]], 6: bitmap[4, :], 7: [bitmap[4, 0]]}
+        return intersections[neighbor_id]
 
     def load_influence_model(self):
         self.influence._load_model()

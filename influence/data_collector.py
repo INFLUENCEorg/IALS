@@ -16,21 +16,21 @@ class DataCollector(object):
     the agent and log results.
     """
 
-    def __init__(self, agent, simulator, influence, data_file):
+    def __init__(self, agent, simulator, influence, data_path):
         """
         """
-        self.data_file = data_file
-        self.generate_path()
+        self.generate_path(data_path)
+        self.inputs_file = data_path + str('inputs.csv')
+        self.targets_file = data_path + str('targets.csv')
         self.sim = simulator
         self.agent = agent
         self.influence = influence
 
-    def generate_path(self):
+    def generate_path(self, data_path):
         """
         Generate a path to store e.g. logs, models and plots. Check if
         all needed subpaths exist, and if not, create them.
         """
-        data_path = '../influence/data/warehouse'
         if not os.path.exists(data_path):
             os.makedirs(data_path)
 
@@ -47,11 +47,13 @@ class DataCollector(object):
         episodic_returns = []
         while step < num_steps:
             if log:
-                self.sim.log_obs(self.data_file)
+                self.sim.log(self.inputs_file, 'dset')
+                self.sim.log(self.targets_file, 'infs')
             if self.influence.parameters['aug_obs']:
                 if done:
                     self.influence.reset()
-                probs = self.influence.predict(obs[25:])
+                dset = self.sim.get_dset()
+                probs = self.influence.predict(dset)
                 obs = np.append(obs, np.concatenate([prob[:-1] for prob in probs]))
             action = self.agent.take_action({'obs': [obs], 'done': [done]}, 'eval')[0]
             step += 1

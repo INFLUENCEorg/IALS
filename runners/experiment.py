@@ -25,56 +25,43 @@ ex.add_config('configs/warehouse/default.yaml')
 db_uri = 'mongodb://localhost:27017/scalable-simulations'
 db_name = 'scalable-simulations'
 maxSevSelDelay = 20
-try:
-    print("Trying to connect to mongoDB '{}'".format(db_uri))
-    client = pymongo.MongoClient(db_uri, ssl=False)
-    client.server_info()
-    ex.observers.append(MongoObserver.create(db_uri, db_name=db_name, ssl=False))
-    print("Added MongoDB observer on {}.".format(db_uri))
-except pymongo.errors.ServerSelectionTimeoutError as e:
-    print(e)
-    print("ONLY FILE STORAGE OBSERVER ADDED")
-    from sacred.observers import FileStorageObserver
-    ex.observers.append(FileStorageObserver.create('saved_runs'))
+# try:
+#     print("Trying to connect to mongoDB '{}'".format(db_uri))
+#     client = pymongo.MongoClient(db_uri, ssl=False)
+#     client.server_info()
+#     ex.observers.append(MongoObserver.create(db_uri, db_name=db_name, ssl=False))
+#     print("Added MongoDB observer on {}.".format(db_uri))
+# except pymongo.errors.ServerSelectionTimeoutError as e:
+#     print(e)
+print("ONLY FILE STORAGE OBSERVER ADDED")
+from sacred.observers import FileStorageObserver
+ex.observers.append(FileStorageObserver.create('saved_runs'))
 
 class Experiment(object):
     """
-    Creates experiment object to store interact with the environment and
+    Creates experiment object to interact with the environment and
     the agent and log results.
     """
 
     def __init__(self, parameters, _run, seed):
         """
-        Initializes the experiment by extracting the parameters
-        @param parameters a dictionary with many obligatory elements
-        <ul>
-        <li> "env_type" (SUMO, atari, grid_world),
-        <li> algorithm (DQN, PPO)
-        <li> maximum_time_steps
-        <li> maximum_episode_time
-        <li> skip_frames
-        <li> save_frequency
-        <li> step
-        <li> episodes
-        and more TODO
-        </ul>
         """
         self.parameters = parameters['main']
         self.parameters_influence = parameters['influence']
         self.path = self.generate_path(self.parameters['name'])
         self.agent = PPOAgent(4, parameters['main'])
         self.train_frequency = self.parameters['train_frequency']
-        self.data_file = parameters['influence']['data_file'] + str(_run._id) + '.csv'
+        data_path = parameters['influence']['data_path'] + str(_run._id) + '/'
         if self.parameters['simulator'] == 'partial':
             if self.parameters['influence_model'] == 'nn':
-                self.influence = InfluenceNetwork(self.agent, parameters['influence'], self.data_file, _run._id)
+                self.influence = InfluenceNetwork(parameters['influence'], data_path, _run._id)
             else:
                 self.influence = InfluenceUniform(parameters['influence'])
         else:
             self.influence = None
         self.sim = DistributedSimulation(self.parameters, self.influence, seed)
         global_simulator = Warehouse(seed)
-        self.data_collector = DataCollector(self.agent, global_simulator, self.influence, self.data_file)
+        self.data_collector = DataCollector(self.agent, global_simulator, self.influence, data_path)
         tf.reset_default_graph()
         self._run = _run
 
@@ -119,11 +106,10 @@ class Experiment(object):
         while global_step <= self.maximum_time_steps:
             if global_step % self.parameters_influence['train_freq']  == 0:
                 mean_episodic_return = self.data_collector.run(self.parameters_influence['dataset_size'], log=True)
-                self.influence.train(global_step)
+                self.influence.train()
                 # influence model parameters need to be loaded every time they are updated because 
                 # each process keeps a separate copy of the influence model
                 self.sim.load_influence_model()
-                os.remove(self.data_file)
                 self._run.log_scalar("mean episodic return", mean_episodic_return, global_step)
             elif global_step % self.parameters['eval_freq'] == 0:
                 mean_episodic_return = self.data_collector.run(self.parameters['eval_steps'], log=False)

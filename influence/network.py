@@ -16,9 +16,9 @@ class InfluenceModel(nn.Module):
         self.n_sources = n_sources
         self.softmax = nn.Softmax(dim=1)
         self.hidden_layer_size = hidden_layer_size
-        for s in range(self.n_sources):
+        for _ in range(self.n_sources):
             self.linear1.append((nn.Linear(hidden_layer_size, hidden_layer_size)))
-            self.linear2.append(nn.Linear(hidden_layer_size, output_size[s]))
+            self.linear2.append(nn.Linear(hidden_layer_size, output_size))
         self.reset()
 
     def forward(self, input_seq):

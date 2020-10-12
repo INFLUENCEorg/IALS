@@ -140,25 +140,45 @@ class Warehouse(object):
         if seed is not None:
             np.random.seed(seed)
 
-    def log_obs(self, log_file):
+    def get_dset(self):
+        state = self._get_state()
+        robot = self.robots[self.learning_robot_id]
+        obs = robot.observe(state, 'vector')
+        dset = obs[25:]
+        return dset
+    
+    def get_robot_loc_bitmap(self, robot_id):
+        state = self._get_state()
+        obs = self.robots[robot_id].observe(state, 'vector')
+        loc_bitmap = obs[:25]
+        return loc_bitmap
+
+    def log(self, log_file, variable_type):
         """
         Logs observations into a csv file
         """
         with open(log_file,'a') as file:
-            robot = self.robots[self.learning_robot_id]
-            state = self._get_state()
-            obs = robot.observe(state, 'vector')
-            for ext_robot_id in self._get_robot_neighbors(self.learning_robot_id):
-                int_rows, int_columns = self._find_intersection(ext_robot_id, self.learning_robot_id)
-                ext_robot_bitmap = np.reshape(self.robots[ext_robot_id].observe(state, 'vector')[0:25], self.robot_domain_size)
-                intersection = ext_robot_bitmap[int_rows, int_columns]
-                if all(intersection == np.zeros(len(intersection))):
-                    obs = np.append(obs, np.append(intersection, 1))
-                else:
-                    obs = np.append(obs, np.append(intersection, 0))
-
             writer = csv.writer(file)
-            writer.writerow(obs)
+            if variable_type == 'dset':
+                dset = self.get_dset()
+                writer.writerow(dset)
+            elif variable_type == 'infs':
+                robot_neighbors = self._get_robot_neighbors(self.learning_robot_id)
+                infs = np.array([]).astype(np.int)
+                for neighbor_id in robot_neighbors:
+                    loc_bitmap = self.get_robot_loc_bitmap(neighbor_id)
+                    infs = np.append(infs, loc_bitmap)
+                writer.writerow(infs)
+                    # int_rows, int_columns = self._find_intersection(ext_robot_id, self.learning_robot_id)
+                    # ext_robot_bitmap = np.reshape(self.robots[ext_robot_id].observe(state, 'vector')[0:25], self.robot_domain_size)
+                    # intersection = ext_robot_bitmap[int_rows, int_columns]
+                    # if all(intersection == np.zeros(len(intersection))):
+                    #     obs = np.append(obs, np.append(intersection, 1))
+                    # else:
+                    #     obs = np.append(obs, np.append(intersection, 0))
+
+            
+            
 
     def create_graph(self, robot):
         """

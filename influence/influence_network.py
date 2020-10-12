@@ -17,7 +17,7 @@ import yaml
 class InfluenceNetwork(object):
     """
     """
-    def __init__(self, agent, parameters, data_file, run_id):
+    def __init__(self, parameters, data_path, run_id):
         """
         """
         # parameters = read_parameters('../influence/configs/influence.yaml')
@@ -33,11 +33,10 @@ class InfluenceNetwork(object):
         self.curriculum = parameters['curriculum']
         self.aug_obs = parameters['aug_obs']
         self.parameters = parameters
-        self._data_file = data_file
+        self.inputs_file = data_path + 'inputs.csv'
+        self.targets_file = data_path + 'targets.csv'
         self.model = InfluenceModel(self.input_size, self._hidden_layer_size, self.n_sources, self.output_size)
-        weights1 = torch.FloatTensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
-        weights2 = torch.FloatTensor([1.0, 1.0])
-        self.loss_function = [nn.CrossEntropyLoss(weight=weights1),  nn.CrossEntropyLoss(weight=weights2)]
+        self.loss_function = nn.CrossEntropyLoss()
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self._lr, weight_decay=0.001)
         self.checkpoint_path = parameters['checkpoint_path'] + str(run_id)
         if parameters['load_model']:
@@ -48,15 +47,17 @@ class InfluenceNetwork(object):
         else:
             self.strength = 1
 
-    def train(self, step):
-        data = self._read_data(self._data_file)
-        inputs, targets = self._form_sequences(np.array(data))
-        train_inputs, train_targets, test_inputs, test_targets = self._split_train_test(inputs, targets)
-        self._train(train_inputs, train_targets, test_inputs, test_targets)
-        self._test(test_inputs, test_targets)
+    def train(self):
+        inputs = self._read_data(self.inputs_file)
+        targets = self._read_data(self.targets_file)
+        input_seqs, target_seqs = self._form_sequences(inputs, targets)
+        train_input_seqs, train_target_seqs, test_input_seqs, test_target_seqs = self._split_train_test(input_seqs, target_seqs)
+        self._train(train_input_seqs, train_target_seqs, test_input_seqs, test_target_seqs)
         self._save_model()
         if self.curriculum:
             self.strength += self.strength_increment
+        os.remove(self.inputs_file)
+        os.remove(self.targets_file)
     
     def predict(self, obs):
         obs_tensor = torch.reshape(torch.FloatTensor(obs), (1,1,-1))
@@ -78,17 +79,17 @@ class InfluenceNetwork(object):
                 data.append([int(element) for element in row])
         return data
 
-    def _form_sequences(self, data):
-        n_episodes = len(data)//self._episode_length
-        inputs = []
-        targets = []
+    def _form_sequences(self, inputs, targets):
+        n_episodes = len(inputs)//self._episode_length
+        input_seq = []
+        target_seq = []
         for episode in range(n_episodes):
             for seq in range(self._episode_length - (self._seq_len - 1)):
                 start = episode*self._episode_length+seq
                 end = episode*self._episode_length+seq+self._seq_len
-                inputs.append(data[start:end, 25:41])
-                targets.append(data[start:end, 41:])
-        return inputs, targets
+                input_seq.append(inputs[start:end])
+                target_seq.append(targets[start:end])
+        return input_seq, target_seq
 
     def _split_train_test(self, inputs, targets):
         test_size = int(0.1*len(inputs))
@@ -116,10 +117,10 @@ class InfluenceNetwork(object):
                 loss = 0
                 for s in range(self.n_sources):
                     start = end 
-                    end += self.output_size[s]
+                    end += self.output_size
                     # breakpoint()
                     # single_loss = self.loss_function[s % 2](logits[s][:,-1,:], torch.argmax(targets_batch[:, start:end], dim=1))
-                    single_loss = self.loss_function[s % 2](logits[s].view(-1, self.output_size[s]), torch.argmax(targets_batch[:, :, start:end], dim=2).view(-1))
+                    single_loss = self.loss_function(logits[s].view(-1, self.output_size), torch.argmax(targets_batch[:, :, start:end], dim=2).view(-1))
                     loss += single_loss
                 loss.backward()
                 self.optimizer.step()
@@ -139,10 +140,10 @@ class InfluenceNetwork(object):
         targets_counts = []
         for s in range(self.n_sources):
             start = end
-            end += self.output_size[s]
+            end += self.output_size
             # loss += self.loss_function[s % 2](logits[s][:,-1,:], torch.argmax(targets[:, start:end], dim=1))
             # breakpoint()
-            loss += self.loss_function[s % 2](logits[s].view(-1, self.output_size[s]), torch.argmax(targets[:, :, start:end], dim=2).view(-1))
+            loss += self.loss_function(logits[s].view(-1, self.output_size), torch.argmax(targets[:, :, start:end], dim=2).view(-1))
             # from collections import Counter
             # targets_counts = Counter(torch.argmax(targets[:, start:end], dim=1).detach().numpy())
             # print(targets_counts)
@@ -189,8 +190,10 @@ def read_parameters(config_file):
 
 
 if __name__ == '__main__':
-    simulator = Warehouse()
+    simulator = Warehouse(0)
     agent = RandomAgent(simulator.action_space.n, None)
     parameters = read_parameters('../influence/configs/influence.yaml')
-    trainer = InfluenceNetwork(agent, simulator, parameters, 0)
-    trainer.train()
+    influence = InfluenceNetwork(parameters, parameters['data_path'], 0)
+    data_collector = DataCollector(agent, simulator, influence, parameters['data_path'])
+    data_collector.run(parameters['dataset_size'], log=True)
+    influence.train()
