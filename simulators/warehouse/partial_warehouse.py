@@ -49,31 +49,29 @@ class PartialWarehouse(object):
         """
         self.robot_id = 0
         self._place_robots()
-        probs = self.influence.predict(np.zeros(16))
+        probs = self.influence.predict(self.get_dset())
         self.item_id = 0
         self.items = []
         self._add_items()
-        self.obs = self._get_observation()
+        obs = self._get_observation()
         self.influence.reset()
         self.episode_length = 0
         # Influence-augmented observations
         if self.influence.aug_obs:
-            ia_obs = np.append(self.obs, np.concatenate([prob[:-1] for prob in probs]))
-            return ia_obs
-        else:
-            return self.obs
+            obs = np.append(obs, self.influence.get_hidden_state())
+        return obs
 
     def step(self, action):
         """
         Performs a single step in the environment.
         """
+        probs = self.influence.predict(self.get_dset())
         self._robots_act(action)
-        probs = self.influence.predict(self.obs[25:])
-        ext_robot_locs, sample = self._sample_ext_robot_locs(probs)
+        ext_robot_locs = self._sample_ext_robot_locs(probs)
         reward = self._compute_reward(self.robots[self.learning_robot_id])
         self._remove_items(ext_robot_locs)
         self._add_items()
-        self.obs = self._get_observation()
+        obs = self._get_observation()
         self.episode_length += 1
         self.total_steps += 1
         done = (self.max_episode_length <= self.episode_length)
@@ -83,10 +81,8 @@ class PartialWarehouse(object):
             self.render(ext_robot_locs, self.parameters['render_delay'])
         # Influence-augmented observations
         if self.influence.aug_obs:
-            ia_obs = np.append(self.obs, np.concatenate([prob[:-1] for prob in probs]))
-            return ia_obs, reward, done, []
-        else:
-            return self.obs, reward, done, []
+            obs = np.append(obs, self.influence.get_hidden_state())
+        return obs, reward, done, []
         
 
     @property
@@ -162,6 +158,13 @@ class PartialWarehouse(object):
                     graph.add_edge(tuple(cell), tuple(neighbor))
         return graph
 
+    def get_dset(self):
+        state = self._get_state()
+        robot = self.robots[self.learning_robot_id]
+        obs = robot.observe(state, 'vector')
+        dset = obs[25:]
+        return dset
+        
     ######################### Private Functions ###########################
 
     def _place_robots(self):
@@ -297,7 +300,7 @@ class PartialWarehouse(object):
                 else:
                     location = self._find_loc(neighbor_id, np.where(intersection == 1)[0][0])
             locations.append(location)
-        return locations, sample
+        return locations
     
     def _find_loc(self, neighbor_id, loc):
         locations = {0: [loc, 4], 1: [4, 4], 2: [4, loc], 3: [4, 0],

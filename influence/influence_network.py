@@ -4,15 +4,53 @@ import numpy as np
 import csv
 import sys
 sys.path.append("..") 
-from influence.network import InfluenceModel
 from influence.data_collector import DataCollector
 from agents.random_agent import RandomAgent
 from simulators.warehouse.warehouse import Warehouse
-import torch.nn as nn
 import random
 import matplotlib.pyplot as plt
 import os
 import yaml
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+
+class Network(nn.Module):
+    """
+    """
+    def __init__(self, input_size, hidden_layer_size, n_sources, output_size):
+        super().__init__()
+        # self.fc = nn.Linear(input_size, hidden_layer_size)
+        self.relu = nn.ReLU()
+        self.lstm = nn.LSTM(input_size, hidden_layer_size, batch_first=True)
+        self.linear1 = nn.ModuleList()
+        self.linear2 = nn.ModuleList()
+        self.n_sources = n_sources
+        self.softmax = nn.Softmax(dim=1)
+        self.hidden_layer_size = hidden_layer_size
+        for _ in range(self.n_sources):
+            self.linear1.append((nn.Linear(hidden_layer_size, hidden_layer_size)))
+            self.linear2.append(nn.Linear(hidden_layer_size, output_size))
+        self.reset()
+
+    def forward(self, input_seq):
+        # linear_out = self.relu(self.fc(input_seq))
+        # print(self.hidden_cell)
+        lstm_out, self.hidden_cell = self.lstm(input_seq, self.hidden_cell)
+        # print(self.hidden_cell)
+        logits = []
+        probs = []
+        for k in range(self.n_sources):
+            linear1_out = self.relu(self.linear1[k](lstm_out))
+            linear2_out = self.linear2[k](linear1_out)
+            logits.append(linear2_out)
+            probs.append(self.softmax(linear2_out[:, -1, :]).detach().numpy())
+        return logits, probs
+    
+    def reset(self):
+        self.hidden_cell = (torch.zeros(1,1,self.hidden_layer_size),
+                            torch.zeros(1,1,self.hidden_layer_size))
 
 class InfluenceNetwork(object):
     """
@@ -35,7 +73,7 @@ class InfluenceNetwork(object):
         self.parameters = parameters
         self.inputs_file = data_path + 'inputs.csv'
         self.targets_file = data_path + 'targets.csv'
-        self.model = InfluenceModel(self.input_size, self._hidden_layer_size, self.n_sources, self.output_size)
+        self.model = Network(self.input_size, self._hidden_layer_size, self.n_sources, self.output_size)
         self.loss_function = nn.CrossEntropyLoss()
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self._lr, weight_decay=0.001)
         self.checkpoint_path = parameters['checkpoint_path'] + str(run_id)
@@ -67,6 +105,9 @@ class InfluenceNetwork(object):
     
     def reset(self):
         self.model.reset()
+    
+    def get_hidden_state(self):
+        return self.model.hidden_cell[0].detach().numpy()[0][0]
 
 
 ### Private methods ###        
