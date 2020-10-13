@@ -111,16 +111,6 @@ class Experiment(object):
 
         self.sim.close()
 
-
-def read_parameters(config_file):
-    with open(config_file) as file:
-        parameters = yaml.load(file, Loader=yaml.FullLoader)
-    return parameters
-
-ex = sacred.Experiment('scalable-simulations')
-ex.add_config('configs/warehouse/default.yaml')
-add_mongodb_observer()
-
 def add_mongodb_observer():
     """
     connects the experiment instance to the mongodb database
@@ -138,6 +128,10 @@ def add_mongodb_observer():
         print("ONLY FILE STORAGE OBSERVER ADDED")
     from sacred.observers import FileStorageObserver
     ex.observers.append(FileStorageObserver.create('saved_runs'))
+    
+ex = sacred.Experiment('scalable-simulations')
+ex.add_config('configs/warehouse/default.yaml')
+add_mongodb_observer()
 
 @ex.automain
 def main(parameters, seed, _run):
