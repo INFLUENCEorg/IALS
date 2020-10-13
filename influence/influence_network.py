@@ -30,7 +30,8 @@ class Network(nn.Module):
         self.softmax = nn.Softmax(dim=1)
         self.hidden_memory_size = hidden_memory_size
         for _ in range(self.n_sources):
-            self.linear1.append((nn.Linear(hidden_memory_size, output_size)))
+            self.linear1.append((nn.Linear(hidden_memory_size, hidden_memory_size)))
+            self.linear2.append((nn.Linear(hidden_memory_size, output_size)))
         self.reset()
 
     def forward(self, input_seq):
@@ -41,10 +42,10 @@ class Network(nn.Module):
         logits = []
         probs = []
         for k in range(self.n_sources):
-            # linear1_out = self.relu(self.linear1[k](lstm_out))
-            linear1_out = self.linear1[k](lstm_out)
-            logits.append(linear1_out)
-            probs.append(self.softmax(linear1_out[:, -1, :]).detach().numpy())
+            linear1_out = self.relu(self.linear1[k](lstm_out))
+            linear2_out = self.linear2[k](linear1_out)
+            logits.append(linear2_out)
+            probs.append(self.softmax(linear2_out[:, -1, :]).detach().numpy())
         return logits, probs
     
     def reset(self):
