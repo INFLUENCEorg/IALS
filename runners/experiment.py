@@ -7,7 +7,7 @@ from agents.random_agent import RandomAgent
 from simulators.distributed_simulation import DistributedSimulation
 from influence.influence_network import InfluenceNetwork
 from influence.influence_uniform import InfluenceUniform
-from influence.influence_uniform import DataCollector
+from influence.data_collector import DataCollector
 from simulators.warehouse.warehouse import Warehouse
 import argparse
 import yaml
@@ -15,27 +15,6 @@ import time
 import sacred
 from sacred.observers import MongoObserver
 import pymongo
-
-ex = sacred.Experiment('scalable-simulations')
-
-# load default configuration
-ex.add_config('configs/warehouse/default.yaml')
-
-# connect the experiment instance to the mongodb database
-db_uri = 'mongodb://localhost:27017/scalable-simulations'
-db_name = 'scalable-simulations'
-maxSevSelDelay = 20
-try:
-    print("Trying to connect to mongoDB '{}'".format(db_uri))
-    client = pymongo.MongoClient(db_uri, ssl=False)
-    client.server_info()
-    ex.observers.append(MongoObserver.create(db_uri, db_name=db_name, ssl=False))
-    print("Added MongoDB observer on {}.".format(db_uri))
-except pymongo.errors.ServerSelectionTimeoutError as e:
-    print(e)
-    print("ONLY FILE STORAGE OBSERVER ADDED")
-from sacred.observers import FileStorageObserver
-ex.observers.append(FileStorageObserver.create('saved_runs'))
 
 class Experiment(object):
     """
@@ -132,16 +111,33 @@ class Experiment(object):
 
         self.sim.close()
 
-# def get_parameters():
-#     parser = argparse.ArgumentParser(description='RL')
-#     parser.add_argument('--config', default=None, help='config file')
-#     args = parser.parse_args()
-#     return args
 
 def read_parameters(config_file):
     with open(config_file) as file:
         parameters = yaml.load(file, Loader=yaml.FullLoader)
     return parameters
+
+ex = sacred.Experiment('scalable-simulations')
+ex.add_config('configs/warehouse/default.yaml')
+add_mongodb_observer()
+
+def add_mongodb_observer():
+    """
+    connects the experiment instance to the mongodb database
+    """
+    db_uri = 'mongodb://localhost:27017/scalable-simulations'
+    db_name = 'scalable-simulations'
+    try:
+        print("Trying to connect to mongoDB '{}'".format(db_uri))
+        client = pymongo.MongoClient(db_uri, ssl=False)
+        client.server_info()
+        ex.observers.append(MongoObserver.create(db_uri, db_name=db_name, ssl=False))
+        print("Added MongoDB observer on {}.".format(db_uri))
+    except pymongo.errors.ServerSelectionTimeoutError as e:
+        print(e)
+        print("ONLY FILE STORAGE OBSERVER ADDED")
+    from sacred.observers import FileStorageObserver
+    ex.observers.append(FileStorageObserver.create('saved_runs'))
 
 @ex.automain
 def main(parameters, seed, _run):
