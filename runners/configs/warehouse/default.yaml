@@ -53,7 +53,7 @@ parameters:
         lr: 1.0e-3
         n_epochs: 200
         batch_size: 64
-        hidden_layer_size: 32
+        hidden_memory_size: 32
         input_size: 16
         output_size: 25
         n_sources: 8

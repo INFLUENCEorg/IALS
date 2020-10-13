@@ -4,9 +4,9 @@ parameters:
     episode_length: 100
     data_path: '../influence/data/warehouse/'
     lr: 1.0e-3
-    n_epochs: 200
+    n_epochs: 1000
     batch_size: 32
-    hidden_layer_size: 32
+    hidden_memory_size: 4
     input_size: 16
     output_size: 25
     n_sources: 8

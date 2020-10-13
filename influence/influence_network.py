@@ -19,19 +19,18 @@ import torch.optim as optim
 class Network(nn.Module):
     """
     """
-    def __init__(self, input_size, hidden_layer_size, n_sources, output_size):
+    def __init__(self, input_size, hidden_memory_size, n_sources, output_size):
         super().__init__()
-        # self.fc = nn.Linear(input_size, hidden_layer_size)
+        # self.fc = nn.Linear(input_size, hidden_memory_size)
         self.relu = nn.ReLU()
-        self.lstm = nn.LSTM(input_size, hidden_layer_size, batch_first=True)
+        self.lstm = nn.LSTM(input_size, hidden_memory_size, batch_first=True)
         self.linear1 = nn.ModuleList()
         self.linear2 = nn.ModuleList()
         self.n_sources = n_sources
         self.softmax = nn.Softmax(dim=1)
-        self.hidden_layer_size = hidden_layer_size
+        self.hidden_memory_size = hidden_memory_size
         for _ in range(self.n_sources):
-            self.linear1.append((nn.Linear(hidden_layer_size, hidden_layer_size)))
-            self.linear2.append(nn.Linear(hidden_layer_size, output_size))
+            self.linear1.append((nn.Linear(hidden_memory_size, output_size)))
         self.reset()
 
     def forward(self, input_seq):
@@ -42,15 +41,15 @@ class Network(nn.Module):
         logits = []
         probs = []
         for k in range(self.n_sources):
-            linear1_out = self.relu(self.linear1[k](lstm_out))
-            linear2_out = self.linear2[k](linear1_out)
-            logits.append(linear2_out)
-            probs.append(self.softmax(linear2_out[:, -1, :]).detach().numpy())
+            # linear1_out = self.relu(self.linear1[k](lstm_out))
+            linear1_out = self.linear1[k](lstm_out)
+            logits.append(linear1_out)
+            probs.append(self.softmax(linear1_out[:, -1, :]).detach().numpy())
         return logits, probs
     
     def reset(self):
-        self.hidden_cell = (torch.zeros(1,1,self.hidden_layer_size),
-                            torch.zeros(1,1,self.hidden_layer_size))
+        self.hidden_cell = (torch.zeros(1,1,self.hidden_memory_size),
+                            torch.zeros(1,1,self.hidden_memory_size))
 
 class InfluenceNetwork(object):
     """
@@ -63,7 +62,7 @@ class InfluenceNetwork(object):
         self._episode_length = parameters['episode_length']
         self._lr = parameters['lr']
         self._n_epochs = parameters['n_epochs']
-        self._hidden_layer_size = parameters['hidden_layer_size']
+        self._hidden_memory_size = parameters['hidden_memory_size']
         self._batch_size = parameters['batch_size']
         self.n_sources = parameters['n_sources']
         self.input_size = parameters['input_size']
@@ -73,7 +72,7 @@ class InfluenceNetwork(object):
         self.parameters = parameters
         self.inputs_file = data_path + 'inputs.csv'
         self.targets_file = data_path + 'targets.csv'
-        self.model = Network(self.input_size, self._hidden_layer_size, self.n_sources, self.output_size)
+        self.model = Network(self.input_size, self._hidden_memory_size, self.n_sources, self.output_size)
         self.loss_function = nn.CrossEntropyLoss()
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self._lr, weight_decay=0.001)
         self.checkpoint_path = parameters['checkpoint_path'] + str(run_id)
@@ -94,8 +93,8 @@ class InfluenceNetwork(object):
         self._save_model()
         if self.curriculum:
             self.strength += self.strength_increment
-        os.remove(self.inputs_file)
-        os.remove(self.targets_file)
+        # os.remove(self.inputs_file)
+        # os.remove(self.targets_file)
     
     def predict(self, obs):
         obs_tensor = torch.reshape(torch.FloatTensor(obs), (1,1,-1))
@@ -110,7 +109,7 @@ class InfluenceNetwork(object):
         return self.model.hidden_cell[0].detach().numpy()[0][0]
 
 
-### Private methods ###        
+    ### Private methods ###        
 
     def _read_data(self, data_file):
         data = []
@@ -143,15 +142,15 @@ class InfluenceNetwork(object):
         targets = torch.FloatTensor(train_targets)
         for e in range(self._n_epochs):
             permutation = torch.randperm(len(seqs))
-            if e % 10 == 0:
+            if e % 50 == 0:
                 test_loss = self._test(test_inputs, test_targets)
                 print(f'epoch: {e:3} test loss: {test_loss.item():10.8f}')
             for i in range(0, len(seqs) - len(seqs) % self._batch_size, self._batch_size):
                 indices = permutation[i:i+self._batch_size]
                 seqs_batch = seqs[indices]
                 targets_batch = targets[indices]
-                self.model.hidden_cell = (torch.randn(1, self._batch_size, self._hidden_layer_size),
-                                          torch.randn(1, self._batch_size, self._hidden_layer_size))
+                self.model.hidden_cell = (torch.randn(1, self._batch_size, self._hidden_memory_size),
+                                          torch.randn(1, self._batch_size, self._hidden_memory_size))
                 logits, probs = self.model(seqs_batch)
                 end = 0
                 self.optimizer.zero_grad()
@@ -173,8 +172,8 @@ class InfluenceNetwork(object):
         inputs = torch.FloatTensor(inputs)
         targets = torch.FloatTensor(targets)
         loss = 0
-        self.model.hidden_cell = (torch.randn(1, len(inputs), self._hidden_layer_size),
-                                  torch.randn(1, len(inputs), self._hidden_layer_size))
+        self.model.hidden_cell = (torch.randn(1, len(inputs), self._hidden_memory_size),
+                                  torch.randn(1, len(inputs), self._hidden_memory_size))
         logits, probs = self.model(inputs)
         self.img1 = None
         end = 0

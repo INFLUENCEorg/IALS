@@ -77,7 +77,7 @@ class PartialWarehouse(object):
         done = (self.max_episode_length <= self.episode_length)
         if done:
             self.reset()
-        if self.parameters['render']:
+        if self.parameters['render']:   
             self.render(ext_robot_locs, self.parameters['render_delay'])
         # Influence-augmented observations
         if self.influence.aug_obs:
