@@ -21,7 +21,7 @@ class Network(nn.Module):
     """
     def __init__(self, input_size, hidden_memory_size, n_sources, output_size):
         super().__init__()
-        # self.fc = nn.Linear(input_size, hidden_memory_size)
+        # self.fc = nn.Linear(input_size, 16)
         self.relu = nn.ReLU()
         self.lstm = nn.LSTM(input_size, hidden_memory_size, batch_first=True)
         self.linear1 = nn.ModuleList()
