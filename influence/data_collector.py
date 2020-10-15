@@ -3,6 +3,7 @@ import sys
 sys.path.append("..") 
 from agents.random_agent import RandomAgent
 from simulators.warehouse.warehouse import Warehouse
+from simulators.distributed_simulation import DistributedSimulation
 import argparse
 import yaml
 import time
@@ -18,16 +19,17 @@ class DataCollector(object):
     the agent and log results.
     """
 
-    def __init__(self, agent, simulator, num_workers, influence, data_path):
+    def __init__(self, agent, env, num_workers, influence, data_path, seed):
         """
         """
         self.generate_path(data_path)
         self.inputs_file = data_path + str('inputs.csv')
         self.targets_file = data_path + str('targets.csv')
-        self.sim = simulator
         self.agent = agent
         self.influence = influence
         self.num_workers = num_workers
+        self.env = env
+        self.seed = seed
 
     def generate_path(self, data_path):
         """
@@ -42,8 +44,9 @@ class DataCollector(object):
         Runs the data collection process.
         """
         print('collecting data...')
+        sim = DistributedSimulation(self.env, 'global', self.num_workers, self.influence, self.seed)
         step = 0
-        step_output = self.sim.reset()
+        step_output = sim.reset()
         episodic_return = 0
         episodic_returns = []
         infs = []
@@ -59,12 +62,12 @@ class DataCollector(object):
                 infs.append(np.array(step_output['infs']))
             action = self.agent.take_action(step_output, 'eval')
             step += 1
-            step_output = self.sim.step(action)
+            step_output = sim.step(action)
             episodic_return += np.mean(step_output['reward'])
             if step_output['done']:
                 episodic_returns.append(episodic_return)
                 episodic_return = 0
-        self.sim.close()
+        sim.close()
         print('Done!')
         mean_episodic_return = np.mean(episodic_returns)
         return mean_episodic_return

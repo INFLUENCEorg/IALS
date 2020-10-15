@@ -4,9 +4,9 @@ import numpy as np
 import csv
 import sys
 sys.path.append("..") 
-from influence.data_collector import DataCollector
-from agents.random_agent import RandomAgent
-from simulators.warehouse.warehouse import Warehouse
+# from influence.data_collector import DataCollector
+# from agents.random_agent import RandomAgent
+# from simulators.warehouse.warehouse import Warehouse
 import random
 import matplotlib.pyplot as plt
 import os

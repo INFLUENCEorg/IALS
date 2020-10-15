@@ -10,7 +10,6 @@ import networkx as nx
 import csv
 sys.path.append("..") 
 from influence.influence_network import InfluenceNetwork
-from influence.data_collector import DataCollector
 import torch
 
 class PartialWarehouse(object):

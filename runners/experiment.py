@@ -40,10 +40,8 @@ class Experiment(object):
             self.influence = None
         self.sim = DistributedSimulation(self.parameters['env'], self.parameters['simulator'], 
                                          self.parameters['num_workers'], self.influence, seed)
-        global_simulator = DistributedSimulation(self.parameters['env'], 'global', self.parameters['num_workers'], 
-                                                 self.influence, seed)
-        self.data_collector = DataCollector(self.agent, global_simulator, self.parameters['num_workers'], 
-                                            self.influence, data_path)
+        self.data_collector = DataCollector(self.agent, self.parameters['env'], self.parameters['num_workers'], 
+                                            self.influence, data_path, seed)
         tf.reset_default_graph()
         self._run = _run
 
