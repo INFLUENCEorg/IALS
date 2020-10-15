@@ -49,17 +49,19 @@ class PartialWarehouse(object):
         """
         self.robot_id = 0
         self._place_robots()
-        probs = self.influence.predict(self.get_dset())
+        self.influence.reset()
+        self.influence.predict(self.get_dset())
         self.item_id = 0
         self.items = []
         self._add_items()
         obs = self._get_observation()
-        self.influence.reset()
         self.episode_length = 0
         # Influence-augmented observations
         if self.influence.aug_obs:
             obs = np.append(obs, self.influence.get_hidden_state())
-        return obs
+        reward = 0
+        done = False
+        return obs, reward, done, [], []
 
     def step(self, action):
         """
@@ -75,14 +77,12 @@ class PartialWarehouse(object):
         self.episode_length += 1
         self.total_steps += 1
         done = (self.max_episode_length <= self.episode_length)
-        if done:
-            self.reset()
-        if self.parameters['render']:   
+        if self.parameters['render']:
             self.render(ext_robot_locs, self.parameters['render_delay'])
         # Influence-augmented observations
         if self.influence.aug_obs:
             obs = np.append(obs, self.influence.get_hidden_state())
-        return obs, reward, done, []
+        return obs, reward, done, [], []
         
 
     @property

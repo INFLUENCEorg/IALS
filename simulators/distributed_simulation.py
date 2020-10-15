@@ -10,13 +10,12 @@ class DistributedSimulation(object):
     the same policy
     """
 
-    def __init__(self, parameters, influence_model, seed):
-        print('cpu count', mp.cpu_count())
-        if parameters['num_workers'] < mp.cpu_count():
-            self.num_workers = parameters['num_workers']
-        else:
-            self.num_workers = mp.cpu_count()
-        self.workers = [Worker(parameters, i, influence_model, seed) for i in range(self.num_workers)]
+    def __init__(self, env, simulator, num_workers, influence_model, seed):
+        print('Total number of CPUs {}'.format(mp.cpu_count()))
+        if num_workers > mp.cpu_count():
+            num_workers = mp.cpu_count()
+        print("Number of workers {}. ".format(num_workers))            
+        self.workers = [Worker(env, simulator, i, influence_model, seed) for i in range(num_workers)]
 
     def reset(self):
         """
@@ -24,13 +23,14 @@ class DistributedSimulation(object):
         """
         for worker in self.workers:
             worker.child.send(('reset', None))
-        output = {'obs': [], 'prev_action': [], 'done': [], 'reward': []}
+        output = {'obs': [], 'prev_action': [], 'done': [], 'reward': [], 'dset': [], 'infs': []}
         for worker in self.workers:
-            obs = worker.child.recv()
+            obs, reward, done, dset, infs = worker.child.recv()
             output['obs'].append(obs)
-            output['prev_action'].append(-1)
-            output['done'].append(False)
-            output['reward'].append(0)
+            output['done'].append(done)
+            output['reward'].append(reward)
+            output['dset'].append(dset)
+            output['infs'].append(infs)
         return output
 
     def step(self, actions):
@@ -40,15 +40,15 @@ class DistributedSimulation(object):
         for worker, action in zip(self.workers, actions):
             worker.child.send(('step', action))
         output = {'obs': [], 'reward': [], 'done': [], 'prev_action': [],
-                  'info': []}
+                  'dset': [], 'infs': []}
 
         for worker in self.workers:
-            obs, reward, done, info = worker.child.recv()
+            obs, reward, done, dset, infs = worker.child.recv()
             output['obs'].append(obs)
             output['reward'].append(reward)
             output['done'].append(done)
-            output['info'].append(info)
-        output['prev_action'] = actions
+            output['dset'].append(dset)
+            output['infs'].append(infs)
         return output
 
     def action_space(self):

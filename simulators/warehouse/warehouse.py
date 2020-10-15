@@ -19,7 +19,7 @@ class Warehouse(object):
                2: 'LEFT',
                3: 'RIGHT'}
 
-    def __init__(self, seed):
+    def __init__(self, influence, seed):
         parameters = read_parameters('warehouse.yaml')
         # parameters = parse_arguments()
         self.n_columns = parameters['n_columns']
@@ -31,13 +31,13 @@ class Warehouse(object):
         self.prob_item_appears = parameters['prob_item_appears']
         # The learning robot
         self.learning_robot_id = parameters['learning_robot_id']
-        self.n_steps_episode = parameters['n_steps_episode']
+        self.max_episode_length = parameters['n_steps_episode']
         self.obs_type = parameters['obs_type']
         self.items = []
         self.img = None
         self.parameters = parameters
+        self.influence = influence
         self.seed(seed)
-        self.reset()
 
     ############################## Override ###############################
 
@@ -47,17 +47,31 @@ class Warehouse(object):
         """
         self.robot_id = 0
         self._place_robots()
+        # influence predicts robots locations
+        self.influence.reset()
+        dset = self.get_dset()
+        infs = self.get_infs()
+        self.influence.predict(dset)
         self.item_id = 0
         self.items = []
         self._add_items()
         obs = self._get_observation()
-        self.num_steps = 0
-        return obs
+        self.episode_length = 0
+        # Influence-augmented observations
+        if self.influence.aug_obs:
+            obs = np.append(obs, self.influence.get_hidden_state())
+        reward = 0
+        done = False
+        return obs, reward, done, dset, infs
 
     def step(self, action):
         """
         Performs a single step in the environment.
         """
+        # influence predicts robots locations
+        dset = self.get_dset()
+        self.influence.predict(dset)
+        # external robots take an action
         actions = []
         for robot in self.robots:
             state = self._get_state()
@@ -65,24 +79,19 @@ class Warehouse(object):
             actions.append(robot.select_naive_action(obs))
         actions[self.learning_robot_id] = action
         self._robots_act(actions)
-        self._increase_item_waiting_time()
+        # influence sources
+        infs = self.get_infs()
         reward = self._compute_reward(self.robots[self.learning_robot_id])
         self._remove_items()
         self._add_items()
         obs = self._get_observation()
-        # Check whether learning robot is done
-        # done = self.robots[self.learning_robot_id].done
-        self.num_steps += 1
-        done = (self.n_steps_episode <= self.num_steps)
-        if done:
-            self.reset()
+        self.episode_length += 1
+        done = (self.max_episode_length <= self.episode_length)
         if self.parameters['render']:
             self.render(self.parameters['render_delay'])
-        # Experiment.py resets the environment when done
-        # if done is True:
-        #     # Reset the environment to start a new episode.
-        #     self.reset()
-        return obs, reward, done, []
+        if self.influence.aug_obs:
+            obs = np.append(obs, self.influence.get_hidden_state())
+        return obs, reward, done, dset, infs
 
     @property
     def observation_space(self):
@@ -153,6 +162,14 @@ class Warehouse(object):
         loc_bitmap = obs[:25]
         return loc_bitmap
 
+    def get_infs(self):
+        robot_neighbors = self._get_robot_neighbors(self.learning_robot_id)
+        infs = np.array([]).astype(np.int)
+        for neighbor_id in robot_neighbors:
+            loc_bitmap = self.get_robot_loc_bitmap(neighbor_id)
+            infs = np.append(infs, loc_bitmap)
+        return infs
+
     def log(self, log_file, variable_type):
         """
         Logs observations into a csv file
@@ -162,12 +179,7 @@ class Warehouse(object):
             if variable_type == 'dset':
                 dset = self.get_dset()
                 writer.writerow(dset)
-            elif variable_type == 'infs':
-                robot_neighbors = self._get_robot_neighbors(self.learning_robot_id)
-                infs = np.array([]).astype(np.int)
-                for neighbor_id in robot_neighbors:
-                    loc_bitmap = self.get_robot_loc_bitmap(neighbor_id)
-                    infs = np.append(infs, loc_bitmap)
+            elif variable_type == 'infs':                
                 writer.writerow(infs)
                     # int_rows, int_columns = self._find_intersection(ext_robot_id, self.learning_robot_id)
                     # ext_robot_bitmap = np.reshape(self.robots[ext_robot_id].observe(state, 'vector')[0:25], self.robot_domain_size)
@@ -210,7 +222,7 @@ class Warehouse(object):
                 robot_position = [robot_domain[0] + self.robot_domain_size[0]//2,
                                   robot_domain[1] + self.robot_domain_size[1]//2]
                 self.robots.append(Robot(self.robot_id, robot_position,
-                                                  robot_domain))
+                                         robot_domain))
                 self.robot_id += 1
 
     def _add_items(self):

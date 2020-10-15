@@ -34,13 +34,13 @@ parameters:
         eval_steps: 1.0e+4
 
         fully_connected: true
-        num_fc_layers: 2
-        num_fc_units: [16, 8]
+        num_fc_layers: 1
+        num_fc_units: [16]
         # Convolutional module
         convolutional: false
         # Recurrent module
-        recurrent: False
-        num_rec_units: 64
+        recurrent: True
+        num_rec_units: 8
         seq_len: 8
         # Influence-aware memory
         influence: false
@@ -52,7 +52,7 @@ parameters:
         data_path: '../influence/data/warehouse/'
         lr: 1.0e-3
         n_epochs: 1500
-        batch_size: 32
+        batch_size: 64
         hidden_memory_size: 6
         input_size: 16
         output_size: 25
@@ -61,5 +61,5 @@ parameters:
         aug_obs: False
         load_model: False
         curriculum: False
-        dataset_size: 5.0e+4
+        dataset_size: 4.0e+4
         train_freq: 3.0e+6

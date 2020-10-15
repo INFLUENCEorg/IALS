@@ -5,26 +5,26 @@ from simulators.warehouse.partial_warehouse import PartialWarehouse
 import os
 
 
-def worker_process(remote: multiprocessing.connection.Connection, parameters,
-                   worker_id, influence, seed):
+def worker_process(remote: multiprocessing.connection.Connection, env,
+                   simulator, worker_id, influence, seed):
     """
     This function is used as target by each of the threads in the multiprocess
     to build environment instances and define the commands that can be executed
     by each of the workers.
     """
-    # The Atari wrappers are now imported from openAI baselines
-    # https://github.com/openai/baselines
-    if parameters['env'] == 'warehouse':
-        if parameters['simulator'] == 'partial':
+    if env == 'warehouse':
+        if simulator == 'partial':
             env = PartialWarehouse(influence, seed+worker_id)
         else:
-            env = Warehouse(seed+worker_id)
+            env = Warehouse(influence, seed+worker_id)
         
     while True:
         cmd, data = remote.recv()
         if cmd == 'step':
-            obs, reward, done, info = env.step(data)
-            remote.send((obs, reward, done, info))
+            obs, reward, done, dset, infs = env.step(data)
+            if done:
+                obs, _, _, dset, infs = env.reset()
+            remote.send((obs, reward, done, dset, infs))
         elif cmd == 'reset':
             remote.send(env.reset())
         elif cmd == 'action_space':
@@ -44,8 +44,8 @@ class Worker(object):
     multiprocess. Commands can be send and outputs received by calling
     child.send() and child.recv() respectively
     """
-    def __init__(self, parameters, worker_id, influence, seed):
+    def __init__(self, env, simulator, worker_id, influence, seed):
 
         self.child, parent = mp.Pipe()
-        self.process = mp.Process(target=worker_process, args=(parent, parameters, worker_id, influence, seed))
+        self.process = mp.Process(target=worker_process, args=(parent, env, simulator, worker_id, influence, seed))
         self.process.start()

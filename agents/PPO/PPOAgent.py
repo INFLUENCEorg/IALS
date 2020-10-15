@@ -23,7 +23,6 @@ class PPOAgent(object):
         self.episode_step = 0
         self.episodes = 0
         self.t = 0
-        self._prev_action = -1
         self.stats = {"cumulative_rewards": [],
                       "episode_length": [],
                       "value": [],
@@ -46,33 +45,38 @@ class PPOAgent(object):
         self._step_output = None
         self._prev_action = [-1]*self.parameters['num_workers']
 
-    def take_action(self, step_output, mode='train', prev_action=None):
+    def take_action(self, step_output, mode='train'):
         """
         Get each factor's action based on its local observation. Append the given
         state to the factor's replay memory.
         """
-        if mode == 'train' and self.step != 0:
-            # Store experiences in buffer.
-            self._add_to_memory(self._prev_step_output, step_output,
-                                self._prev_action_output)
-            # Estimate the returns using value function when time
-            # horizon has been reached
-            self._bootstrap(step_output)    
-            self._update()
-            self._write_summary()
-            self._save_graph()
-        take_action_output = self.model.evaluate_policy(step_output['obs'], prev_action)
+        take_action_output = self.model.evaluate_policy(step_output['obs'], self._prev_action)
         if mode == 'train':
-            self._prev_step_output = step_output
-            self._prev_action_output = take_action_output
+            if self.step != 0:
+                # Store experiences in buffer.
+                self._add_to_memory(self._prev_step_output, step_output,
+                                    self._prev_action_output, self._prev_action)
+                # Estimate the returns using value function when time
+                # horizon has been reached
+                self._bootstrap(step_output['obs'], self._prev_action)    
+                self._update()
+                self._write_summary()
+                self._save_graph()
             self._increment_step()
-
+        self._prev_step_output = step_output
+        self._prev_action_output = take_action_output
+        # copying values using np.copy otherwise the prev action object mutates
+        self._prev_action = np.copy(take_action_output['action'])
+        for worker in range(self.parameters['num_workers']):
+            if step_output['done'][worker]:
+                # setting prev_action to -1 for next episode
+                self._prev_action[worker] = -1
         return take_action_output['action']
 
 
     ######################### Private Functions ###########################
 
-    def _add_to_memory(self, step_output, next_step_output, get_actions_output):
+    def _add_to_memory(self, step_output, next_step_output, get_actions_output, prev_action):
         """
         Append the last transition to buffer and to stats
         """
@@ -94,11 +98,11 @@ class PPOAgent(object):
         if self.parameters['recurrent']:
             self.buffer['states_in'].append(
                     np.transpose(get_actions_output['state_in'], (1,0,2)))
-            self.buffer['prev_actions'].append(step_output['prev_action'])
+            self.buffer['prev_actions'].append(prev_action)
         if self.parameters['influence']:
             self.buffer['inf_states_in'].append(
                     np.transpose(get_actions_output['inf_state_in'], (1,0,2)))
-            self.buffer['inf_prev_actions'].append(step_output['prev_action'])
+            self.buffer['inf_prev_actions'].append(prev_action)
         if next_step_output['done'][0]:
             self.episodes += 1
             self.stats['cumulative_rewards'].append(self.cumulative_rewards)
@@ -120,7 +124,7 @@ class PPOAgent(object):
                         self.buffer.zero_padding(missing, worker)
                         self.t += missing
 
-    def _bootstrap(self, next_step_output):
+    def _bootstrap(self, obs, prev_action):
         """
         Computes GAE and returns for a given time horizon
         """
@@ -128,9 +132,7 @@ class PPOAgent(object):
         # number of steps in an episode has been reached.
         self.t += 1
         if self.t >= self.parameters['time_horizon']:
-            evaluate_value_output = self.model.evaluate_value(
-                                        next_step_output['obs'],
-                                        next_step_output['prev_action'])
+            evaluate_value_output = self.model.evaluate_value(obs, prev_action)
             next_value = evaluate_value_output['value']
             batch = self.buffer.get_last_entries(self.t, ['rewards', 'values',
                                                           'dones'])
@@ -156,7 +158,7 @@ class PPOAgent(object):
             n_sequences = self.parameters['batch_size'] // self.seq_len
             n_batches = self.parameters['memory_size'] // \
                 self.parameters['batch_size']
-            for e in range(self.parameters['num_epoch']):
+            for _ in range(self.parameters['num_epoch']):
                 self.buffer.shuffle()
                 for b in range(n_batches):
                     batch = self.buffer.sample(b, n_sequences)
