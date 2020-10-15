@@ -47,8 +47,8 @@ class DataCollector(object):
         sim = DistributedSimulation(self.env, 'global', self.num_workers, self.influence, self.seed)
         step = 0
         step_output = sim.reset()
-        episodic_return = 0
         episodic_returns = []
+        episodic_return = 0
         infs = []
         dset = []
         while step <= num_steps//self.num_workers:
@@ -64,7 +64,8 @@ class DataCollector(object):
             step += 1
             step_output = sim.step(action)
             episodic_return += np.mean(step_output['reward'])
-            if step_output['done']:
+            # Think what to do if episodes are not same length
+            if step_output['done'][0]:
                 episodic_returns.append(episodic_return)
                 episodic_return = 0
         sim.close()
