@@ -6,7 +6,7 @@ parameters:
         name: 'partial'
         algorithm: PPO
         env: 'warehouse'
-        simulator: 'global'
+        simulator: 'partial'
         max_steps: 2.0e+6
         max_episode_steps: 5.0e+3
         train_frequency: 1
@@ -21,7 +21,7 @@ parameters:
         epsilon: 0.1
         time_horizon: 16
         obs_type: 'vector'
-        obs_size: 45
+        obs_size: 41
         c1: 1
         num_epoch: 3
         gamma: 0.99
@@ -34,14 +34,14 @@ parameters:
         eval_steps: 1.0e+4
 
         fully_connected: true
-        num_fc_layers: 2
-        num_fc_units: [256, 256]
+        num_fc_layers: 1
+        num_fc_units: [256]
         # Convolutional module
         convolutional: false
         # Recurrent module
-        recurrent: False
-        num_rec_units: 8
-        seq_len: 8
+        recurrent: True
+        num_rec_units: 128
+        seq_len: 16
         # Influence-aware memory
         influence: false
 
@@ -53,12 +53,12 @@ parameters:
         lr: 1.0e-3
         n_epochs: 2000
         batch_size: 32
-        hidden_memory_size: 4
+        hidden_memory_size: 8
         input_size: 16
         output_size: 25
         n_sources: 8
         checkpoint_path: '../influence/models/warehouse/model'
-        aug_obs: True
+        aug_obs: False
         load_model: False
         curriculum: False
         dataset_size: 5.0e+4
