@@ -7,6 +7,7 @@ from agents.random_agent import RandomAgent
 from simulators.distributed_simulation import DistributedSimulation
 from influence.influence_network import InfluenceNetwork
 from influence.influence_uniform import InfluenceUniform
+from influence.influence_dummy import InfluenceDummy
 from influence.data_collector import DataCollector
 from simulators.warehouse.warehouse import Warehouse
 import argparse
@@ -37,7 +38,7 @@ class Experiment(object):
             else:
                 self.influence = InfluenceUniform(parameters['influence'])
         else:
-            self.influence = None
+            self.influence = InfluenceDummy(parameters['influence'])
         self.sim = DistributedSimulation(self.parameters['env'], self.parameters['simulator'], 
                                          self.parameters['num_workers'], self.influence, seed)
         self.data_collector = DataCollector(self.agent, self.parameters['env'], self.parameters['num_workers'], 
@@ -84,7 +85,7 @@ class Experiment(object):
         start = time.time()
         step_output = self.sim.reset()
         while global_step <= self.maximum_time_steps:
-            if global_step % self.parameters_influence['train_freq']  == 0:
+            if global_step % self.parameters_influence['train_freq']  == 0 and self.parameters['simulator'] == 'partial':
                 mean_episodic_return = self.data_collector.run(self.parameters_influence['dataset_size'], log=True)
                 self.influence.train()
                 # influence model parameters need to be loaded every time they are updated because 

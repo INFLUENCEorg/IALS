@@ -6,7 +6,7 @@ parameters:
         name: 'partial'
         algorithm: PPO
         env: 'warehouse'
-        simulator: 'partial'
+        simulator: 'global'
         max_steps: 2.0e+6
         max_episode_steps: 5.0e+3
         train_frequency: 1

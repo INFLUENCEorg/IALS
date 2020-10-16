@@ -1,0 +1,16 @@
+parameters:
+    main:
+        # Common hyperparameters
+        simulator: 'global'
+
+        fully_connected: true
+        num_fc_layers: 1
+        num_fc_units: [256]
+        # Convolutional module
+        convolutional: false
+        # Recurrent module
+        recurrent: True
+        num_rec_units: 256
+        seq_len: 8
+        # Influence-aware memory
+        influence: false
