@@ -121,17 +121,17 @@ def add_mongodb_observer():
     MONGO_HOST = 'TUD-tm2'
     MONGO_DB = 'scalable-simulations'
     PKEY = '~/.ssh/id_rsa'
-    DB_URI = 'mongodb://localhost:27017/scalable-simulations'
     try:
         print("Trying to connect to mongoDB '{}'".format(MONGO_DB))
         server = SSHTunnelForwarder(
             MONGO_HOST,
             ssh_pkey=PKEY,
-            remote_bind_address=('127.0.0.1', 27017),
-            local_bind_address=('127.0.0.1', 27017)
+            remote_bind_address=('127.0.0.1', 27017)
             )
         server.start()
-        ex.observers.append(MongoObserver.create(DB_URI, db_name=MONGO_DB, ssl=False))
+        DB_URI = 'mongodb://localhost:{}/scalable-simulations'.format(server.local_bind_port)
+        # pymongo.MongoClient('127.0.0.1', server.local_bind_port)
+        MongoObserver.create(DB_URI, db_name=MONGO_DB, ssl=False)
         print("Added MongoDB observer on {}.".format(MONGO_DB))
     except pymongo.errors.ServerSelectionTimeoutError as e:
         print(e)
