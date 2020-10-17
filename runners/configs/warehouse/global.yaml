@@ -2,8 +2,6 @@ parameters:
     main:
         # Common hyperparameters
         simulator: 'global'
-        num_workers: 1
-        load: True
         fully_connected: true
         num_fc_layers: 2
         num_fc_units: [256, 256]
