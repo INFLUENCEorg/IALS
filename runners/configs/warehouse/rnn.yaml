@@ -41,7 +41,7 @@ parameters:
         # Recurrent module
         recurrent: True
         num_rec_units: 128
-        seq_len: 6
+        seq_len: 8
         # Influence-aware memory
         influence: false
 
