@@ -86,16 +86,16 @@ class Experiment(object):
         start = time.time()
         step_output = self.sim.reset()
         while global_step <= self.maximum_time_steps:
-            if global_step % self.parameters_influence['train_freq']  == 0 and self.parameters['simulator'] == 'partial':
-                mean_episodic_return = self.data_collector.run(self.parameters_influence['dataset_size'], log=True)
-                self.influence.train()
-                # influence model parameters need to be loaded every time they are updated because 
-                # each process keeps a separate copy of the influence model
-                self.sim.load_influence_model()
-                self._run.log_scalar("mean episodic return", mean_episodic_return, global_step)
-            elif global_step % self.parameters['eval_freq'] == 0:
-                mean_episodic_return = self.data_collector.run(self.parameters['eval_steps'], log=False)
-                self._run.log_scalar("mean episodic return", mean_episodic_return, global_step)
+            # if global_step % self.parameters_influence['train_freq']  == 0 and self.parameters['simulator'] == 'partial':
+            #     mean_episodic_return = self.data_collector.run(self.parameters_influence['dataset_size'], log=True)
+            #     self.influence.train()
+            #     # influence model parameters need to be loaded every time they are updated because 
+            #     # each process keeps a separate copy of the influence model
+            #     self.sim.load_influence_model()
+            #     self._run.log_scalar("mean episodic return", mean_episodic_return, global_step)
+            # elif global_step % self.parameters['eval_freq'] == 0:
+            #     mean_episodic_return = self.data_collector.run(self.parameters['eval_steps'], log=False)
+            #     self._run.log_scalar("mean episodic return", mean_episodic_return, global_step)
             # Select the action to perform
             action = self.agent.take_action(step_output)
             # Increment step
@@ -121,23 +121,24 @@ def add_mongodb_observer():
     MONGO_HOST = 'TUD-tm2'
     MONGO_DB = 'scalable-simulations'
     PKEY = '~/.ssh/id_rsa'
-    try:
-        print("Trying to connect to mongoDB '{}'".format(MONGO_DB))
-        server = SSHTunnelForwarder(
-            MONGO_HOST,
-            ssh_pkey=PKEY,
-            remote_bind_address=('127.0.0.1', 27017)
-            )
-        server.start()
-        DB_URI = 'mongodb://localhost:{}/scalable-simulations'.format(server.local_bind_port)
-        # pymongo.MongoClient('127.0.0.1', server.local_bind_port)
-        ex.observers.append(MongoObserver.create(DB_URI, db_name=MONGO_DB, ssl=False))
-        print("Added MongoDB observer on {}.".format(MONGO_DB))
-    except pymongo.errors.ServerSelectionTimeoutError as e:
-        print(e)
-        print("ONLY FILE STORAGE OBSERVER ADDED")
-        from sacred.observers import FileStorageObserver
-        ex.observers.append(FileStorageObserver.create('saved_runs'))
+    # global server
+    # try:
+    #     print("Trying to connect to mongoDB '{}'".format(MONGO_DB))
+    #     server = SSHTunnelForwarder(
+    #         MONGO_HOST,
+    #         ssh_pkey=PKEY,
+    #         remote_bind_address=('127.0.0.1', 27017)
+    #         )
+    #     server.start()
+    #     DB_URI = 'mongodb://localhost:{}/scalable-simulations'.format(server.local_bind_port)
+    #     # pymongo.MongoClient('127.0.0.1', server.local_bind_port)
+    #     ex.observers.append(MongoObserver.create(DB_URI, db_name=MONGO_DB, ssl=False))
+    #     print("Added MongoDB observer on {}.".format(MONGO_DB))
+    # except pymongo.errors.ServerSelectionTimeoutError as e:
+        # print(e)
+    print("ONLY FILE STORAGE OBSERVER ADDED")
+    from sacred.observers import FileStorageObserver
+    ex.observers.append(FileStorageObserver.create('saved_runs'))
     
 ex = sacred.Experiment('scalable-simulations')
 ex.add_config('configs/warehouse/default.yaml')
@@ -147,3 +148,4 @@ add_mongodb_observer()
 def main(parameters, seed, _run):
     exp = Experiment(parameters, _run, seed)
     exp.run()
+    # server.stop()

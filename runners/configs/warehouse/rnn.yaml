@@ -3,7 +3,7 @@ parameters:
         # Common hyperparameters
         mode: 'train'
         load: False
-        name: 'partial'
+        name: 'partial-rnn'
         algorithm: PPO
         env: 'warehouse'
         simulator: 'partial'
@@ -34,14 +34,14 @@ parameters:
         eval_steps: 1.0e+4
 
         fully_connected: true
-        num_fc_layers: 2
-        num_fc_units: [256, 128]
+        num_fc_layers: 1
+        num_fc_units: [256]
         # Convolutional module
         convolutional: false
         # Recurrent module
-        recurrent: False
+        recurrent: True
         num_rec_units: 128
-        seq_len: 16
+        seq_len: 6
         # Influence-aware memory
         influence: false
 
