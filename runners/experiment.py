@@ -131,7 +131,7 @@ def add_mongodb_observer():
         server.start()
         DB_URI = 'mongodb://localhost:{}/scalable-simulations'.format(server.local_bind_port)
         # pymongo.MongoClient('127.0.0.1', server.local_bind_port)
-        MongoObserver.create(DB_URI, db_name=MONGO_DB, ssl=False)
+        ex.observers.append(MongoObserver.create(DB_URI, db_name=MONGO_DB, ssl=False))
         print("Added MongoDB observer on {}.".format(MONGO_DB))
     except pymongo.errors.ServerSelectionTimeoutError as e:
         print(e)
