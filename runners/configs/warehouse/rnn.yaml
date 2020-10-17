@@ -41,7 +41,7 @@ parameters:
         # Recurrent module
         recurrent: True
         num_rec_units: 128
-        seq_len: 6
+        seq_len: 8
         # Influence-aware memory
         influence: false
 
@@ -61,5 +61,5 @@ parameters:
         aug_obs: False
         load_model: False
         curriculum: False
-        dataset_size: 5.0e+4
+        dataset_size: 1.0e+3
         train_freq: 3.0e+6
