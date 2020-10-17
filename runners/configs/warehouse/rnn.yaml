@@ -3,7 +3,7 @@ parameters:
         # Common hyperparameters
         mode: 'train'
         load: False
-        name: 'partial-rnn'
+        name: 'partial'
         algorithm: PPO
         env: 'warehouse'
         simulator: 'partial'
