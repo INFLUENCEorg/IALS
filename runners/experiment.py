@@ -148,4 +148,4 @@ add_mongodb_observer()
 def main(parameters, seed, _run):
     exp = Experiment(parameters, _run, seed)
     exp.run()
-    server.stop()
+    # server.stop()
