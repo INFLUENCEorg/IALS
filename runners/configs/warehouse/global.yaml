@@ -11,5 +11,6 @@ parameters:
         recurrent: False
         num_rec_units: 256
         seq_len: 8
+        num_workers: 8
         # Influence-aware memory
         influence: false

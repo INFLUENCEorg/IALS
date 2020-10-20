@@ -81,7 +81,7 @@ class Warehouse(object):
         self._robots_act(actions)
         # influence sources
         infs = self.get_infs()
-        reward = self._compute_reward(self.robots[self.learning_robot_id])
+        reward = self._compute_reward()
         self._remove_items()
         self._add_items()
         obs = self._get_observation()
@@ -298,20 +298,24 @@ class Warehouse(object):
         for action,robot in zip(actions, self.robots):
             robot.act(action)
 
-    def _compute_reward(self, robot):
+    def _compute_reward(self):
         """
         Computes reward for the learning robot.
         """
         reward = 0
-        robot_pos = robot.get_position
-        robot_domain = robot.get_domain
+        learn_robot_domain = self.robots[self.learning_robot_id].get_domain
+        robot_ids = self._get_robot_neighbors(self.learning_robot_id)
+        robot_ids.append(self.learning_robot_id)
         for item in self.items:
             item_pos = item.get_position
-            # if robot_domain[0] <= item_pos[0] <= robot_domain[2] and \
-            #    robot_domain[1] <= item_pos[1] <= robot_domain[3]:
-            #     reward += -0.1 #*item.get_waiting_time
-            if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
-                reward += 1
+            if learn_robot_domain[0] <= item_pos[0] <= learn_robot_domain[2] and \
+               learn_robot_domain[1] <= item_pos[1] <= learn_robot_domain[3]:
+                for robot_id in robot_ids:
+                    robot_pos = self.robots[robot_id].get_position
+                    # reward += -0.1 #*item.get_waiting_time
+                    if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
+                        reward += 1
+                        break # maximum one reward per item
         return reward
 
 

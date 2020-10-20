@@ -5,9 +5,9 @@ warehouse:
   n_robots_column: 6
   distance_between_shelves: 4
   robot_domain_size: [5, 5]
-  prob_item_appears: 0.005
+  prob_item_appears: 0.03
   learning_robot_id: 20 # the learning robot
   obs_type: 'image'
   n_steps_episode: 100
-  render: False
+  render: True
   render_delay: 0.5
