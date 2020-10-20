@@ -69,7 +69,7 @@ class PartialWarehouse(object):
         probs = self.influence.predict(self.get_dset())
         self._robots_act(action)
         ext_robot_locs = self._sample_ext_robot_locs(probs)
-        reward = self._compute_reward(self.robots[self.learning_robot_id])
+        reward = self._compute_reward(self.robots[self.learning_robot_id], ext_robot_locs)
         self._remove_items(ext_robot_locs)
         self._add_items()
         obs = self._get_observation()
@@ -239,20 +239,25 @@ class PartialWarehouse(object):
         """
         self.robots[self.learning_robot_id].act(action)
 
-    def _compute_reward(self, robot):
+    def _compute_reward(self, robot, ext_robot_pos):
         """
         Computes reward for the learning robot.
         """
         reward = 0
         robot_pos = robot.get_position
-        robot_domain = robot.get_domain
+        # robot_domain = robot.get_domain
+        all_robots_pos = ext_robot_pos
+        all_robots_pos.append(robot_pos)
         for item in self.items:
             item_pos = item.get_position
             # if robot_domain[0] <= item_pos[0] <= robot_domain[2] and \
             #    robot_domain[1] <= item_pos[1] <= robot_domain[3]:
             #     # reward += -0.1 #*item.get_waiting_time
-            if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
-                reward += 1
+            for position in all_robots_pos:
+                if position is not None:
+                    if position[0] == item_pos[0] and position[1] == item_pos[1]:
+                        reward += 1
+                        break
         return reward
 
     def _remove_items(self, ext_robot_pos):
