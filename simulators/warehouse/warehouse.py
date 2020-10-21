@@ -302,20 +302,35 @@ class Warehouse(object):
         """
         Computes reward for the learning robot.
         """
+        # GIVES REWARD OF +1 EVERY TIME AN ITEM IN THE LEARNING AGENT'S REGION IS PICKED UP BY ANY AGENT.
+        # reward = 0
+        # learn_robot_domain = self.robots[self.learning_robot_id].get_domain
+        # robot_ids = self._get_robot_neighbors(self.learning_robot_id)
+        # robot_ids.append(self.learning_robot_id)
+        # for item in self.items:
+        #     item_pos = item.get_position
+        #     if learn_robot_domain[0] <= item_pos[0] <= learn_robot_domain[2] and \
+        #        learn_robot_domain[1] <= item_pos[1] <= learn_robot_domain[3]:
+        #         for robot_id in robot_ids:
+        #             robot_pos = self.robots[robot_id].get_position
+        #             # reward += -0.1 #*item.get_waiting_time
+        #             if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
+        #                 reward += 1
+        #                 break # maximum one reward per item
+        # GIVES REWARD OF +1 ONLY IF THE LEARNING AGENT PICKS UP AN ITEM.
         reward = 0
-        learn_robot_domain = self.robots[self.learning_robot_id].get_domain
-        robot_ids = self._get_robot_neighbors(self.learning_robot_id)
-        robot_ids.append(self.learning_robot_id)
+        robot = self.robots[self.learning_robot_id]
+        robot_pos = robot.get_position
+        # robot_domain = robot.get_domain
         for item in self.items:
             item_pos = item.get_position
-            if learn_robot_domain[0] <= item_pos[0] <= learn_robot_domain[2] and \
-               learn_robot_domain[1] <= item_pos[1] <= learn_robot_domain[3]:
-                for robot_id in robot_ids:
-                    robot_pos = self.robots[robot_id].get_position
-                    # reward += -0.1 #*item.get_waiting_time
-                    if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
-                        reward += 1
-                        break # maximum one reward per item
+            # if robot_domain[0] <= item_pos[0] <= robot_domain[2] and \
+            #    robot_domain[1] <= item_pos[1] <= robot_domain[3]:
+            #     reward += -0.1 #*item.get_waiting_time
+            if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
+                reward += 1
+        return reward
+
         return reward
 
 
