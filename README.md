@@ -10,7 +10,6 @@ To run a new experiment do:
 
 ```console
 cd runners
-python experimentor.py --config=./configs/Warehouse/agent.yaml
+python experimentor.py with ./configs/Warehouse/partial.yaml
 ```
-You can choose to use the global or partial simulator, by setting the variable `simulator` in the [config file](runners/configs/Warehouse/agent.yaml) to `global` or `partial`
-
+This will train a new policy on the partial simulator. To train on the global simulator change the config file path to `./configs/Warehouse/global.yaml`.
