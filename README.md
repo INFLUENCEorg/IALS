@@ -12,4 +12,4 @@ To run a new experiment do:
 cd runners
 python experimentor.py with ./configs/Warehouse/partial.yaml
 ```
-This will train a new policy on the warehouse partial simulator. To train on the original global simulator change the config file to `global.yaml`.
+This will train a new policy on the partial simulator. To train on the global simulator change the config file path to `./configs/Warehouse/global.yaml`.
