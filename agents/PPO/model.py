@@ -67,18 +67,18 @@ class Model(object):
             self.observation = tf.placeholder(shape=[None, self.parameters['obs_size']],
                                               dtype=tf.float32, name='observation')
 
-        hidden = self.observation
+        self.feature_vector = self.observation
         if self.convolutional:
-            self.hidden_conv = net.cnn(self.observation,
-                                       self.parameters["num_conv_layers"],
-                                       self.parameters["num_filters"],
-                                       self.parameters["kernel_sizes"],
-                                       self.parameters["strides"],
-                                       tf.nn.relu, False, 'cnn')
-            hidden = c_layers.flatten(self.hidden_conv)
+            self.feature_vector = net.cnn(self.observation,
+                                          self.parameters["num_conv_layers"],
+                                          self.parameters["num_filters"],
+                                          self.parameters["kernel_sizes"],
+                                          self.parameters["strides"],
+                                          tf.nn.relu, False, 'cnn')
+            hidden = c_layers.flatten(self.feature_vector)
 
         if self.fully_connected:
-            hidden = net.fcn(hidden, self.parameters["num_fc_layers"],
+            hidden = net.fcn(self.feature_vector, self.parameters["num_fc_layers"],
                              self.parameters["num_fc_units"],
                              tf.nn.relu, 'fcn')
 
@@ -108,60 +108,69 @@ class Model(object):
         """
         Builds influence model
         """
-        def manual_dpatch(hidden_conv):
+        def manual_dpatch(hidden):
             """
             """
             inf_hidden = []
-            for predictor in range(self.parameters['inf_num_predictors']):
-                center = np.array(self.parameters['inf_box_center'][predictor])
-                height = self.parameters['inf_box_height'][predictor]
-                width = self.parameters['inf_box_width'][predictor]
-                predictor_hidden = hidden_conv[:, center[0]: center[0] + height,
-                                               center[1]: center[1] + width, :]
-                predictor_hidden = c_layers.flatten(predictor_hidden)
-                inf_hidden.append(predictor_hidden)
+            if self.parameters['obs_type'] == 'image':
+                for predictor in range(self.parameters['inf_num_predictors']):
+                    center = np.array(self.parameters['inf_box_center'][predictor])
+                    height = self.parameters['inf_box_height'][predictor]
+                    width = self.parameters['inf_box_width'][predictor]
+                    predictor_hidden = hidden[:, center[0]: center[0] + height,
+                                                center[1]: center[1] + width, :]
+                    predictor_hidden = c_layers.flatten(predictor_hidden)
+                    inf_hidden.append(predictor_hidden)
 
-            inf_hidden = tf.stack(inf_hidden, axis=1)
-            hidden_size = inf_hidden.get_shape().as_list()[2]*self.parameters['inf_num_predictors']
-            inf_hidden = tf.reshape(inf_hidden, shape=[-1, hidden_size])
+                inf_hidden = tf.stack(inf_hidden, axis=1)
+                hidden_size = inf_hidden.get_shape().as_list()[2]*self.parameters['inf_num_predictors']
+                inf_hidden = tf.reshape(inf_hidden, shape=[-1, hidden_size])
+            else:
+                for predictor in range(self.parameters['inf_num_predictors']):
+                    predictor_hidden = hidden[:, self.parameters['dset'][predictor]]
+                    inf_hidden.append(predictor_hidden)
+                inf_hidden = tf.stack(inf_hidden, axis=1)
             return inf_hidden
 
-        def automatic_dpatch(hidden_conv):
+        def automatic_dpatch(hidden):
             """
             """
+            inf_hidden = []
             if self.parameters['obs_type'] == 'image':
-                shape = hidden_conv.get_shape().as_list()
+                shape = hidden.get_shape().as_list()
                 num_regions = shape[1]*shape[2]
-                hidden_conv = tf.reshape(hidden_conv, [-1, num_regions, shape[3]])
-                inf_hidden = []
+                hidden = tf.reshape(hidden, [-1, num_regions, shape[3]])
                 for predictor in range(self.parameters['inf_num_predictors']):
                     name = "weights"+str(predictor)
                     weights = tf.get_variable(name, shape=(num_regions,1), dtype=tf.dtypes.float32,
                                               initializer=tf.ones_initializer, trainable=True)
                     # softmax_weights = tf.contrib.distributions.RelaxedOneHotCategorical(0.1, weights)
                     # softmax_weights = tf.reshape(softmax_weights,[num_regions,1])
-                    softmax_weights = tf.nn.softmax(weights/self.parameters['temperature'], axis=0)
-                    inf_hidden.append(tf.reduce_sum(softmax_weights*hidden_conv, axis=1))
+                    softmax_weights = tf.nn.softmax(weights, axis=0)
+                    inf_hidden.append(tf.reduce_sum(softmax_weights*hidden, axis=1))
+                inf_hidden = tf.stack(inf_hidden, axis=1)
+                hidden_size = inf_hidden.get_shape().as_list()[2]*self.parameters['inf_num_predictors']
+                inf_hidden = tf.reshape(inf_hidden, shape=[-1, hidden_size])
             else:
-                hidden_conv 
+                shape = hidden.get_shape().as_list()
+                num_variables = shape[1]
                 for predictor in range(self.parameters['inf_num_predictors']):
                     name = "weights"+str(predictor)
-                    weights = tf.get_variable(name, shape(num_variables,1), dtype=tf.dtypes.float32,
+                    weights = tf.get_variable(name, shape=(1, num_variables), dtype=tf.dtypes.float32,
                                               initializer=tf.ones_initializer, trainable=True)
-                    softmax_weights = tf.nn.softmax(weights/self.parameters['temperature'], axis=0)
-                    inf_hidden.append(tf.reduce_sum(softmax_weights*hidden_conv, axis=1))
-            inf_hidden = tf.stack(inf_hidden, axis=1)
-            hidden_size = inf_hidden.get_shape().as_list()[2]*self.parameters['inf_num_predictors']
-            inf_hidden = tf.reshape(inf_hidden, shape=[-1, hidden_size])
+                    softmax_weights = tf.nn.softmax(weights, axis=0)
+                    inf_hidden.append(tf.reduce_sum(softmax_weights*hidden, axis=1))
+                inf_hidden = tf.stack(inf_hidden, axis=1)
+                breakpoint()   
             return inf_hidden#, softmax_weights
-            
-        def attention(hidden_conv, inf_hidden):
+
+        def attention(hidden, inf_hidden):
             """
             """
-            shape = hidden_conv.get_shape().as_list()
+            shape = hidden.get_shape().as_list()
             num_regions = shape[1]*shape[2]
-            hidden_conv = tf.reshape(hidden_conv, [-1, num_regions, shape[3]])
-            linear_conv = net.fcn(hidden_conv, 1,
+            hidden = tf.reshape(hidden, [-1, num_regions, shape[3]])
+            linear_conv = net.fcn(hidden, 1,
                                   self.parameters['num_att_units'], None,
                                   'att', 'att1_{}')
             linear_hidden = net.fcn(inf_hidden, 1,
@@ -170,7 +179,7 @@ class Model(object):
             context = tf.nn.tanh(linear_conv + tf.expand_dims(linear_hidden, 1))
             attention_weights = net.fcn(context, 1, [1], None, 'att')
             attention_weights = tf.nn.softmax(attention_weights, axis=1)
-            d_patch = tf.reduce_sum(attention_weights*hidden_conv, axis=1)
+            d_patch = tf.reduce_sum(attention_weights*hidden, axis=1)
             inf_hidden = tf.concat([d_patch, tf.reshape(attention_weights, shape=[-1, num_regions])], axis=1)
             return inf_hidden
 
@@ -178,9 +187,9 @@ class Model(object):
             """
             """
             hidden_conv = tf.cond(self.update_bool,
-                                  lambda: tf.gather_nd(self.hidden_conv,
+                                  lambda: tf.gather_nd(self.feature_vector,
                                                        self.indices+iter),
-                                  lambda: self.hidden_conv)
+                                  lambda: self.feature_vector)
             inf_prev_action = tf.cond(self.update_bool,
                                       lambda: tf.gather_nd(self.inf_prev_action,
                                                            self.indices+iter),

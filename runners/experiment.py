@@ -111,8 +111,8 @@ class Experiment(object):
                 self.print_results(episode_return, episode_step, global_step)
                 episode_return = 0
                 episode_step = 0
-
         self.sim.close()
+        server.stop()
 
 def add_mongodb_observer():
     """
@@ -148,4 +148,3 @@ add_mongodb_observer()
 def main(parameters, seed, _run):
     exp = Experiment(parameters, _run, seed)
     exp.run()
-    # server.stop()
