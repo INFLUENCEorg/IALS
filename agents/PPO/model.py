@@ -83,11 +83,11 @@ class Model(object):
                              tf.nn.relu, 'fcn')
 
         if self.recurrent:
-            self.prev_action = tf.placeholder(shape=[None], dtype=tf.int32,
-                                              name='prev_action')
-            self.prev_action_onehot = c_layers.one_hot_encoding(self.prev_action,
-                                                                self.act_size)
-            hidden = tf.concat([hidden, self.prev_action_onehot], axis=1)
+            # self.prev_action = tf.placeholder(shape=[None], dtype=tf.int32,
+            #                                   name='prev_action')
+            # self.prev_action_onehot = c_layers.one_hot_encoding(self.prev_action,
+            #                                                     self.act_size)
+            # hidden = tf.concat([hidden, self.prev_action_onehot], axis=1)
 
             c_in = tf.placeholder(tf.float32, [None,
                                                self.parameters['num_rec_units']],
@@ -190,10 +190,10 @@ class Model(object):
                                   lambda: tf.gather_nd(self.feature_vector,
                                                        self.indices+iter),
                                   lambda: self.feature_vector)
-            inf_prev_action = tf.cond(self.update_bool,
-                                      lambda: tf.gather_nd(self.inf_prev_action,
-                                                           self.indices+iter),
-                                      lambda: self.inf_prev_action)
+            # inf_prev_action = tf.cond(self.update_bool,
+            #                           lambda: tf.gather_nd(self.inf_prev_action,
+            #                                                self.indices+iter),
+            #                           lambda: self.inf_prev_action)
             inf_hidden = state.h
 
             if self.parameters['attention']:
@@ -204,9 +204,9 @@ class Model(object):
                 inf_hidden = manual_dpatch(hidden_conv)
 
 
-            inf_prev_action_onehot = c_layers.one_hot_encoding(inf_prev_action,
-                                                               self.act_size)
-            inf_hidden = tf.concat([inf_hidden, inf_prev_action_onehot], axis=1)
+            # inf_prev_action_onehot = c_layers.one_hot_encoding(inf_prev_action,
+            #                                                    self.act_size)
+            # inf_hidden = tf.concat([inf_hidden, inf_prev_action_onehot], axis=1)
             inf_hidden, state = net.rnn(inf_hidden, state,
                                         self.parameters['inf_num_rec_units'],
                                         self.inf_seq_len, 'inf_rnn')
@@ -229,8 +229,8 @@ class Model(object):
                                           name='inf_sequence_length')
         self.n_iterations = tf.placeholder(tf.int32, None,
                                           name='n_iterations')
-        self.inf_prev_action = tf.placeholder(shape=[None], dtype=tf.int32,
-                                              name='inf_prev_action')
+        # self.inf_prev_action = tf.placeholder(shape=[None], dtype=tf.int32,
+        #                                       name='inf_prev_action')
         size = self.parameters['batch_size']*self.parameters['num_workers']
         self.indices = np.arange(0, size, self.parameters['inf_seq_len'])
         self.indices = tf.constant(np.reshape(self.indices, [-1, 1]),

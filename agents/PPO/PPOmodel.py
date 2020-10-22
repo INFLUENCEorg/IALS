@@ -148,13 +148,13 @@ class PPOmodel(Model):
         if self.recurrent:
             feed_dict[self.state_in] = self.state_in_value
             feed_dict[self.seq_len] = 1
-            feed_dict[self.prev_action] = prev_action
+            # feed_dict[self.prev_action] = prev_action
             run_dict['state_out'] = self.state_out
         if self.influence:
             feed_dict[self.inf_state_in] = self.inf_state_in_value
             feed_dict[self.inf_seq_len] = 1
             feed_dict[self.n_iterations] = 1
-            feed_dict[self.inf_prev_action] = prev_action
+            # feed_dict[self.inf_prev_action] = prev_action
             feed_dict[self.update_bool] = False
             run_dict['inf_state_out'] = self.inf_state_out
         start = time.time()
@@ -171,7 +171,7 @@ class PPOmodel(Model):
             self.inf_state_in_value = output_dict['inf_state_out']
         return output_dict
 
-    def evaluate_value(self, observation, prev_action):
+    def evaluate_value(self, observation, prev_action=None):
         """
         Evaluates value given current observation and previous action
         """
@@ -180,12 +180,12 @@ class PPOmodel(Model):
         if self.recurrent:
             feed_dict[self.state_in] = self.state_in_value
             feed_dict[self.seq_len] = 1
-            feed_dict[self.prev_action] = prev_action
+            # feed_dict[self.prev_action] = prev_action
         if self.influence:
             feed_dict[self.inf_state_in] = self.inf_state_in_value
             feed_dict[self.inf_seq_len] = 1
             feed_dict[self.n_iterations] = 1
-            feed_dict[self.inf_prev_action] = prev_action
+            # feed_dict[self.inf_prev_action] = prev_action
             feed_dict[self.update_bool] = False
         output_list = self.sess.run(list(run_dict.values()),
                                     feed_dict=feed_dict)
@@ -222,7 +222,7 @@ class PPOmodel(Model):
             state_in = (c_in, h_in)
             feed_dict[self.state_in] = state_in
             feed_dict[self.seq_len] = self.parameters['seq_len']
-            feed_dict[self.prev_action] = np.reshape(batch['prev_actions'], -1)
+            # feed_dict[self.prev_action] = np.reshape(batch['prev_actions'], -1)
         if self.influence:
             start_sequence_idx = np.arange(0, np.shape(batch['inf_states_in'])[1],
                                            self.parameters['inf_seq_len'])
@@ -236,7 +236,7 @@ class PPOmodel(Model):
             feed_dict[self.inf_state_in] = inf_state_in
             feed_dict[self.inf_seq_len] = 1
             feed_dict[self.n_iterations] = self.parameters['inf_seq_len']
-            feed_dict[self.inf_prev_action] = np.reshape(batch['inf_prev_actions'], -1)
+            # feed_dict[self.inf_prev_action] = np.reshape(batch['inf_prev_actions'], -1)
             feed_dict[self.update_bool] = True
         run_dict = {'value_loss': self.value_loss,
                     'policy_loss': self.policy_loss,
