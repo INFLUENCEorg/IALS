@@ -129,23 +129,32 @@ class Model(object):
         def automatic_dpatch(hidden_conv):
             """
             """
-            shape = hidden_conv.get_shape().as_list()
-            num_regions = shape[1]*shape[2]
-            hidden_conv = tf.reshape(hidden_conv, [-1, num_regions, shape[3]])
-            inf_hidden = []
-            for predictor in range(self.parameters['inf_num_predictors']):
-                name = "weights"+str(predictor)
-                weights = tf.get_variable(name, shape=(num_regions,1), dtype=tf.dtypes.float32,
-                                          initializer=tf.ones_initializer, trainable=True)
-                # softmax_weights = tf.contrib.distributions.RelaxedOneHotCategorical(0.1, weights)
-                # softmax_weights = tf.reshape(softmax_weights,[num_regions,1])
-                softmax_weights = tf.nn.softmax(weights/self.parameters['temperature'], axis=0)
-                inf_hidden.append(tf.reduce_sum(softmax_weights*hidden_conv, axis=1))
+            if self.parameters['obs_type'] == 'image':
+                shape = hidden_conv.get_shape().as_list()
+                num_regions = shape[1]*shape[2]
+                hidden_conv = tf.reshape(hidden_conv, [-1, num_regions, shape[3]])
+                inf_hidden = []
+                for predictor in range(self.parameters['inf_num_predictors']):
+                    name = "weights"+str(predictor)
+                    weights = tf.get_variable(name, shape=(num_regions,1), dtype=tf.dtypes.float32,
+                                              initializer=tf.ones_initializer, trainable=True)
+                    # softmax_weights = tf.contrib.distributions.RelaxedOneHotCategorical(0.1, weights)
+                    # softmax_weights = tf.reshape(softmax_weights,[num_regions,1])
+                    softmax_weights = tf.nn.softmax(weights/self.parameters['temperature'], axis=0)
+                    inf_hidden.append(tf.reduce_sum(softmax_weights*hidden_conv, axis=1))
+            else:
+                hidden_conv 
+                for predictor in range(self.parameters['inf_num_predictors']):
+                    name = "weights"+str(predictor)
+                    weights = tf.get_variable(name, shape(num_variables,1), dtype=tf.dtypes.float32,
+                                              initializer=tf.ones_initializer, trainable=True)
+                    softmax_weights = tf.nn.softmax(weights/self.parameters['temperature'], axis=0)
+                    inf_hidden.append(tf.reduce_sum(softmax_weights*hidden_conv, axis=1))
             inf_hidden = tf.stack(inf_hidden, axis=1)
             hidden_size = inf_hidden.get_shape().as_list()[2]*self.parameters['inf_num_predictors']
             inf_hidden = tf.reshape(inf_hidden, shape=[-1, hidden_size])
             return inf_hidden#, softmax_weights
-        
+            
         def attention(hidden_conv, inf_hidden):
             """
             """

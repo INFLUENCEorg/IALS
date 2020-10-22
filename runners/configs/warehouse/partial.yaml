@@ -43,8 +43,10 @@ parameters:
         num_rec_units: 128
         seq_len: 8
         # Influence-aware memory
-        influence: false
+        influence: true
 
+
+        
     influence:
         # Common hyperparameters
         seq_len: 100

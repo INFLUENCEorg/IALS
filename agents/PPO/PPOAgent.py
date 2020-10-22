@@ -66,7 +66,7 @@ class PPOAgent(object):
         self._prev_step_output = step_output
         self._prev_action_output = take_action_output
         # copying values using np.copy otherwise the prev action object mutates
-        self._prev_action = [-1]*self.parameters['num_workers']#np.copy(take_action_output['action'])
+        self._prev_action = np.copy(take_action_output['action']) # [-1]*self.parameters['num_workers']
         for worker in range(self.parameters['num_workers']):
             if step_output['done'][worker]:
                 # setting prev_action to -1 for next episode
