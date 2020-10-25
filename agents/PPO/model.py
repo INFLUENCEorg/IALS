@@ -161,7 +161,6 @@ class Model(object):
                     softmax_weights = tf.nn.softmax(weights, axis=0)
                     inf_hidden.append(tf.reduce_sum(softmax_weights*hidden, axis=1))
                 inf_hidden = tf.stack(inf_hidden, axis=1)
-                breakpoint()   
             return inf_hidden#, softmax_weights
 
         def attention(hidden, inf_hidden):
