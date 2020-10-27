@@ -57,7 +57,7 @@ parameters:
         inf_num_fc_units: [128]
         # Influence recurrent module
         inf_num_rec_units: 8
-        inf_seq_len: 4
+        inf_seq_len: 8
 
     influence:
         # Common hyperparameters
@@ -76,6 +76,6 @@ parameters:
         aug_obs: False
         load_model: False
         curriculum: False
-        dataset_size1: 5.0e+5
-        dataset_size2: 1.0e+5
+        dataset_size1: 5.0e+4
+        dataset_size2: 1.0e+4
         train_freq: 5.0e+5
