@@ -87,8 +87,14 @@ class Experiment(object):
         step_output = self.sim.reset()
         while global_step <= self.maximum_time_steps:
             if global_step % self.parameters_influence['train_freq']  == 0 and self.parameters['simulator'] == 'partial':
-                mean_episodic_return = self.data_collector.run(self.parameters_influence['dataset_size'], log=True)
-                self.influence.train()
+                if global_step == 0:
+                    dataset_size = self.parameters_influence['dataset_size1']
+                    num_epochs = self.parameters_influence['n_epochs1']
+                else:
+                    dataset_size = self.parameters_influence['dataset_size2']
+                    num_epochs = self.parameters_influence['n_epochs2']
+                mean_episodic_return = self.data_collector.run(dataset_size, log=True)
+                self.influence.train(num_epochs)
                 # influence model parameters need to be loaded every time they are updated because 
                 # each process keeps a separate copy of the influence model
                 self.sim.load_influence_model()
@@ -142,7 +148,7 @@ def add_mongodb_observer():
     
 ex = sacred.Experiment('scalable-simulations')
 ex.add_config('configs/warehouse/default.yaml')
-add_mongodb_observer()
+# add_mongodb_observer()
 
 @ex.automain
 def main(parameters, seed, _run):

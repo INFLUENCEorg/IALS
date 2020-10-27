@@ -85,12 +85,12 @@ class InfluenceNetwork(object):
         else:
             self.strength = 1
 
-    def train(self):
+    def train(self, n_epochs):
         inputs = self._read_data(self.inputs_file)
         targets = self._read_data(self.targets_file)
         input_seqs, target_seqs = self._form_sequences(inputs, targets)
         train_input_seqs, train_target_seqs, test_input_seqs, test_target_seqs = self._split_train_test(input_seqs, target_seqs)
-        self._train(train_input_seqs, train_target_seqs, test_input_seqs, test_target_seqs)
+        self._train(train_input_seqs, train_target_seqs, test_input_seqs, test_target_seqs, n_epochs)
         self._save_model()
         if self.curriculum:
             self.strength += self.strength_increment
@@ -138,10 +138,10 @@ class InfluenceNetwork(object):
         test_inputs, test_targets = inputs[-test_size:], targets[-test_size:]
         return train_inputs, train_targets, test_inputs, test_targets
 
-    def _train(self, train_inputs, train_targets, test_inputs, test_targets):
+    def _train(self, train_inputs, train_targets, test_inputs, test_targets, n_epochs):
         seqs = torch.FloatTensor(train_inputs)
         targets = torch.FloatTensor(train_targets)
-        for e in range(self._n_epochs):
+        for e in range(n_epochs):
             permutation = torch.randperm(len(seqs))
             if e % 50 == 0:
                 test_loss = self._test(test_inputs, test_targets)
