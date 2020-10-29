@@ -55,6 +55,7 @@ class Warehouse(object):
         self.item_id = 0
         self.items = []
         self._add_items()
+        self._increase_item_waiting_time()
         obs = self._get_observation()
         self.episode_length = 0
         # Influence-augmented observations
@@ -84,6 +85,7 @@ class Warehouse(object):
         reward = self._compute_reward()
         self._remove_items()
         self._add_items()
+        self._increase_item_waiting_time()
         obs = self._get_observation()
         self.episode_length += 1
         done = (self.max_episode_length <= self.episode_length)
@@ -328,7 +330,7 @@ class Warehouse(object):
             #    robot_domain[1] <= item_pos[1] <= robot_domain[3]:
             #     reward += -0.1 #*item.get_waiting_time
             if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
-                reward += 1/(item.get_waiting_time+1)
+                reward += 1/item.get_waiting_time
         return reward
 
         return reward
