@@ -328,7 +328,7 @@ class Warehouse(object):
             #    robot_domain[1] <= item_pos[1] <= robot_domain[3]:
             #     reward += -0.1 #*item.get_waiting_time
             if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
-                reward += 1/(item.get_waiting_time+0.0001)
+                reward += 1/(item.get_waiting_time+1)
         return reward
 
         return reward
