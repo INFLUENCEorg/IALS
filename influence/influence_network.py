@@ -28,6 +28,7 @@ class Network(nn.Module):
         self.linear2 = nn.ModuleList()
         self.n_sources = n_sources
         self.softmax = nn.Softmax(dim=1)
+        self.sigmoid = nn.Sigmoid()
         self.hidden_memory_size = hidden_memory_size
         for _ in range(self.n_sources):
             self.linear1.append((nn.Linear(hidden_memory_size, hidden_memory_size)))
@@ -45,7 +46,10 @@ class Network(nn.Module):
             linear1_out = self.relu(self.linear1[k](lstm_out))
             linear2_out = self.linear2[k](linear1_out)
             logits.append(linear2_out)
-            probs.append(self.softmax(linear2_out[:, -1, :]).detach().numpy())
+            if np.shape(linear2_out[:, -1, :])[1] > 1: 
+                probs.append(self.softmax(linear2_out[:, -1, :]).detach().numpy())
+            else:
+                probs.append(self.sigmoid(linear2_out[:, -1, :]).detach().numpy())
         return logits, probs
     
     def reset(self):
@@ -62,7 +66,6 @@ class InfluenceNetwork(object):
         self._seq_len = parameters['seq_len']
         self._episode_length = parameters['episode_length']
         self._lr = parameters['lr']
-        self._n_epochs = parameters['n_epochs']
         self._hidden_memory_size = parameters['hidden_memory_size']
         self._batch_size = parameters['batch_size']
         self.n_sources = parameters['n_sources']
@@ -74,7 +77,10 @@ class InfluenceNetwork(object):
         self.inputs_file = data_path + 'inputs.csv'
         self.targets_file = data_path + 'targets.csv'
         self.model = Network(self.input_size, self._hidden_memory_size, self.n_sources, self.output_size)
-        self.loss_function = nn.CrossEntropyLoss()
+        if self.output_size > 1:
+            self.loss_function = nn.CrossEntropyLoss()
+        else:
+            self.loss_function = nn.BCEWithLogitsLoss()
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self._lr, weight_decay=0.001)
         self.checkpoint_path = parameters['checkpoint_path'] + str(run_id)
         if parameters['load_model']:
@@ -94,8 +100,8 @@ class InfluenceNetwork(object):
         self._save_model()
         if self.curriculum:
             self.strength += self.strength_increment
-        # os.remove(self.inputs_file)
-        # os.remove(self.targets_file)
+        os.remove(self.inputs_file)
+        os.remove(self.targets_file)
     
     def predict(self, obs):
         obs_tensor = torch.reshape(torch.FloatTensor(obs), (1,1,-1))
@@ -159,9 +165,11 @@ class InfluenceNetwork(object):
                 for s in range(self.n_sources):
                     start = end 
                     end += self.output_size
-                    # breakpoint()
-                    # single_loss = self.loss_function[s % 2](logits[s][:,-1,:], torch.argmax(targets_batch[:, start:end], dim=1))
-                    single_loss = self.loss_function(logits[s].view(-1, self.output_size), torch.argmax(targets_batch[:, :, start:end], dim=2).view(-1))
+                    target = targets_batch[:, :, start:end].view(-1, self.output_size)
+                    logit =  logits[s].view(-1, self.output_size)
+                    if self.output_size > 1:
+                        target = torch.argmax(target, dim=2).view(-1)
+                    single_loss = self.loss_function(logit, target)
                     loss += single_loss
                 loss.backward()
                 self.optimizer.step()
@@ -184,7 +192,11 @@ class InfluenceNetwork(object):
             end += self.output_size
             # loss += self.loss_function[s % 2](logits[s][:,-1,:], torch.argmax(targets[:, start:end], dim=1))
             # breakpoint()
-            loss += self.loss_function(logits[s].view(-1, self.output_size), torch.argmax(targets[:, :, start:end], dim=2).view(-1))
+            target = targets[:, :, start:end].view(-1, self.output_size)
+            logit =  logits[s].view(-1, self.output_size)
+            if self.output_size > 1:
+                target = torch.argmax(target, dim=2).view(-1)
+            loss += self.loss_function(logit, target)
             # from collections import Counter
             # targets_counts = Counter(torch.argmax(targets[:, start:end], dim=1).detach().numpy())
             # print(targets_counts)
@@ -231,10 +243,15 @@ def read_parameters(config_file):
 
 
 if __name__ == '__main__':
-    simulator = Warehouse(0)
-    agent = RandomAgent(simulator.action_space.n, None)
-    parameters = read_parameters('../influence/configs/influence.yaml')
-    influence = InfluenceNetwork(parameters, parameters['data_path'], 0)
-    data_collector = DataCollector(agent, simulator, influence, parameters['data_path'])
-    data_collector.run(parameters['dataset_size'], log=True)
-    influence.train()
+    sys.path.append("..") 
+    from agents.random_agent import RandomAgent
+    from simulators.warehouse.warehouse import Warehouse
+    from influence_dummy import InfluenceDummy
+    from data_collector import DataCollector
+    agent = RandomAgent(2)
+    parameters = {'n_sources': 4, 'output_size': 1, 'aug_obs': False}
+    parameters = read_parameters('./configs/influence.yaml')
+    influence = InfluenceNetwork(parameters, './data/traffic/', None)
+    # data_collector = DataCollector(agent, 'traffic', 8, influence, './data/traffic/', 0)
+    # data_collector.run(parameters['dataset_size'], log=True)
+    influence.train(2000)
