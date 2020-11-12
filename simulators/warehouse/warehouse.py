@@ -38,7 +38,7 @@ class Warehouse(object):
         self.parameters = parameters
         self.influence = influence
         self.seed(seed)
-
+        self.i = 0
     ############################## Override ###############################
 
     def reset(self):
@@ -55,7 +55,6 @@ class Warehouse(object):
         self.item_id = 0
         self.items = []
         self._add_items()
-        self._increase_item_waiting_time()
         obs = self._get_observation()
         self.episode_length = 0
         # Influence-augmented observations
@@ -85,7 +84,6 @@ class Warehouse(object):
         reward = self._compute_reward()
         self._remove_items()
         self._add_items()
-        self._increase_item_waiting_time()
         obs = self._get_observation()
         self.episode_length += 1
         done = (self.max_episode_length <= self.episode_length)
@@ -143,6 +141,8 @@ class Warehouse(object):
             self.img.set_data(im)
         plt.pause(delay)
         plt.draw()
+        # plt.savefig('../video/' + str(self.i))
+        # self.i += 1
 
     def close(self):
         pass
@@ -170,29 +170,7 @@ class Warehouse(object):
         for neighbor_id in robot_neighbors:
             loc_bitmap = self.get_robot_loc_bitmap(neighbor_id)
             infs = np.append(infs, loc_bitmap)
-        return infs
-
-    def log(self, log_file, variable_type):
-        """
-        Logs observations into a csv file
-        """
-        with open(log_file,'a') as file:
-            writer = csv.writer(file)
-            if variable_type == 'dset':
-                dset = self.get_dset()
-                writer.writerow(dset)
-            elif variable_type == 'infs':                
-                writer.writerow(infs)
-                    # int_rows, int_columns = self._find_intersection(ext_robot_id, self.learning_robot_id)
-                    # ext_robot_bitmap = np.reshape(self.robots[ext_robot_id].observe(state, 'vector')[0:25], self.robot_domain_size)
-                    # intersection = ext_robot_bitmap[int_rows, int_columns]
-                    # if all(intersection == np.zeros(len(intersection))):
-                    #     obs = np.append(obs, np.append(intersection, 1))
-                    # else:
-                    #     obs = np.append(obs, np.append(intersection, 0))
-
-            
-            
+        return infs            
 
     def create_graph(self, robot):
         """
@@ -239,20 +217,32 @@ class Warehouse(object):
                 for column in range(self.n_columns):
                     loc = [row, column]
                     loc_free = True
+                    region_free = True
                     if item_locs is not None:
+                        region = int(column//self.distance_between_shelves)
+                        columns_occupied = [item_loc[1] for item_loc in item_locs if item_loc[0] == row]
+                        regions_occupied = [int(column//self.distance_between_shelves) for column in columns_occupied]
+                        region_free = region not in regions_occupied
                         loc_free = loc not in item_locs
-                    if np.random.uniform() < self.prob_item_appears and loc_free:
+                    if np.random.uniform() < self.prob_item_appears and region_free:
                         self.items.append(Item(self.item_id, loc))
                         self.item_id += 1
+                        item_locs = [item.get_position for item in self.items]
             else:
                 for column in range(0, self.n_rows, self.distance_between_shelves):
                     loc = [row, column]
                     loc_free = True
+                    region_free = True
                     if item_locs is not None:
+                        region = int(row//self.distance_between_shelves)
+                        rows_occupied = [item_loc[0] for item_loc in item_locs if item_loc[1] == column]
+                        regions_occupied = [int(row//self.distance_between_shelves) for row in rows_occupied]
+                        region_free = region not in regions_occupied
                         loc_free = loc not in item_locs
-                    if np.random.uniform() < self.prob_item_appears and loc_free:
+                    if np.random.uniform() < self.prob_item_appears and region_free:
                         self.items.append(Item(self.item_id, loc))
                         self.item_id += 1
+                        item_locs = [item.get_position for item in self.items]
 
     def _get_state(self):
         """
@@ -330,9 +320,7 @@ class Warehouse(object):
             #    robot_domain[1] <= item_pos[1] <= robot_domain[3]:
             #     reward += -0.1 #*item.get_waiting_time
             if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
-                reward += 1/item.get_waiting_time
-        return reward
-
+                reward += 1
         return reward
 
 
