@@ -165,12 +165,12 @@ class InfluenceNetwork(object):
                 for s in range(self.n_sources):
                     start = end 
                     end += self.output_size
-                    target = targets_batch[:, :, start:end].view(-1, self.output_size)
+                    target = targets_batch[:, :, start:end]
                     logit =  logits[s].view(-1, self.output_size)
                     if self.output_size > 1:
-                        target = torch.argmax(target, dim=2).view(-1)
-                    single_loss = self.loss_function(logit, target)
-                    loss += single_loss
+                        target = torch.argmax(target, dim=2)
+                    target = target.view(-1)
+                    loss += self.loss_function(logit, target)
                 loss.backward()
                 self.optimizer.step()
         test_loss = self._test(test_inputs, test_targets)
@@ -191,11 +191,11 @@ class InfluenceNetwork(object):
             start = end
             end += self.output_size
             # loss += self.loss_function[s % 2](logits[s][:,-1,:], torch.argmax(targets[:, start:end], dim=1))
-            # breakpoint()
-            target = targets[:, :, start:end].view(-1, self.output_size)
+            target = targets[:, :, start:end]
             logit =  logits[s].view(-1, self.output_size)
             if self.output_size > 1:
-                target = torch.argmax(target, dim=2).view(-1)
+                target = torch.argmax(target, dim=2)
+            target = target.view(-1)
             loss += self.loss_function(logit, target)
             # from collections import Counter
             # targets_counts = Counter(torch.argmax(targets[:, start:end], dim=1).detach().numpy())
