@@ -2,21 +2,27 @@ import multiprocessing as mp
 import multiprocessing.connection
 from simulators.warehouse.warehouse import Warehouse
 from simulators.warehouse.partial_warehouse import PartialWarehouse
-import os
+from simulators.traffic.global_traffic import GlobalTraffic
+from simulators.traffic.partial_traffic import PartialTraffic
 
 
-def worker_process(remote: multiprocessing.connection.Connection, env,
+def worker_process(remote: multiprocessing.connection.Connection, env_type,
                    simulator, worker_id, influence, seed):
     """
     This function is used as target by each of the threads in the multiprocess
     to build environment instances and define the commands that can be executed
     by each of the workers.
     """
-    if env == 'warehouse':
+    if env_type == 'warehouse':
         if simulator == 'partial':
             env = PartialWarehouse(influence, seed+worker_id)
         else:
             env = Warehouse(influence, seed+worker_id)
+    if env_type == 'traffic':
+        if simulator == 'partial':
+            env = PartialTraffic(influence, seed+worker_id)
+        else:
+            env = GlobalTraffic(seed+worker_id)
         
     while True:
         cmd, data = remote.recv()

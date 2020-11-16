@@ -1,6 +1,7 @@
 import numpy as np
 import networkx as nx
 import random
+import math
 
 class Robot():
     """
@@ -94,12 +95,27 @@ class Robot():
     
     def select_naive_action(self, obs):
         """
-        Make one step towards the closest item
+        Take one step towards the closest item
         """
         if self._graph is None:
             self._graph = self._create_graph(obs)
             self._path_dict = dict(nx.all_pairs_dijkstra_path(self._graph))
         path = self._path_to_closest_item(obs)
+        if path is None or len(path) < 2:
+            action = random.randint(0, self._action_space - 1)
+        else:
+            action = self._get_first_action(path)
+        return action
+    
+    def select_naive_action2(self, obs, items):
+        """
+        Take one step towards the oldest item
+        """
+        if self._graph is None:
+            self._graph = self._create_graph(obs)
+            self._path_dict = dict(nx.all_pairs_dijkstra_path(self._graph))
+        items_robot_region = self._get_items_robot_region(items)
+        path = self._path_to_oldest_item(items_robot_region)
         if path is None or len(path) < 2:
             action = random.randint(0, self._action_space - 1)
         else:
@@ -131,6 +147,7 @@ class Robot():
         closest_item_path = None
         robot_pos = (self._pos[0]-self._robot_domain[0], self._pos[1]-self._robot_domain[1])
         for index, item in np.ndenumerate(obs):
+            print(index)
             if item == 1:
                 path = self._path_dict[robot_pos][index]
                 distance = len(path) - 1
@@ -146,3 +163,34 @@ class Robot():
         delta = tuple(np.array(path[1]) - np.array(path[0]))
         action = self._action_mapping.get(delta)
         return action
+
+    def _path_to_oldest_item(self, items):
+        """
+        Returns the path to the oldest item in the robot's domain.
+        """
+        oldest_item_path = None
+        min_waiting_time = math.inf
+        for index, item in enumerate(items):
+            waiting_time = item.get_waiting_time
+            if waiting_time < min_waiting_time:
+                min_waiting_time = waiting_time
+                min_index = index
+        if len(items) > 0:
+            item_global_pos = items[min_index].get_position
+            domain_size = self._robot_domain[2] - self._robot_domain[0] + 1
+            item_relative_pos = (item_global_pos[0]-self._robot_domain[0], item_global_pos[1]-self._robot_domain[1])
+            robot_pos = (self._pos[0]-self._robot_domain[0], self._pos[1]-self._robot_domain[1])
+            oldest_item_path = self._path_dict[robot_pos][item_relative_pos]
+        return oldest_item_path
+    
+    def _get_items_robot_region(self, items):
+        """
+        From a list of items returns the ones that are in the robot's region
+        """
+        items_robot_region = []
+        for item in items:
+            pos = item.get_position
+            if (self._robot_domain[0] <= pos[0] <= self._robot_domain[2] and \
+              self._robot_domain[1] <= pos[1] <= self._robot_domain[3]):
+                items_robot_region.append(item)
+        return items_robot_region

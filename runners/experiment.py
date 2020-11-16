@@ -30,7 +30,7 @@ class Experiment(object):
         self.parameters = parameters['main']
         self.parameters_influence = parameters['influence']
         self.path = self.generate_path(self.parameters['name'])
-        self.agent = PPOAgent(4, parameters['main'])
+        self.agent = PPOAgent(self.parameters['num_actions'], self.parameters)
         self.train_frequency = self.parameters['train_frequency']
         data_path = parameters['influence']['data_path'] + str(_run._id) + '/'
         if self.parameters['simulator'] == 'partial':
@@ -148,7 +148,7 @@ def add_mongodb_observer():
     
 ex = sacred.Experiment('scalable-simulations')
 ex.add_config('configs/warehouse/default.yaml')
-add_mongodb_observer()
+# add_mongodb_observer()
 
 @ex.automain
 def main(parameters, seed, _run):

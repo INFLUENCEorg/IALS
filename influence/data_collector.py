@@ -1,8 +1,6 @@
 import os
 import sys
 sys.path.append("..") 
-from agents.random_agent import RandomAgent
-from simulators.warehouse.warehouse import Warehouse
 from simulators.distributed_simulation import DistributedSimulation
 import argparse
 import yaml
@@ -91,8 +89,12 @@ def read_parameters(config_file):
     return parameters['parameters']
 
 if __name__ == "__main__":
-    simulator = Warehouse()
-    
-    agent = RandomAgent(simulator.action_space.n)
-    exp = DataCollector(agent, simulator)
-    exp.run()
+    sys.path.append("..") 
+    from agents.random_agent import RandomAgent
+    from simulators.warehouse.warehouse import Warehouse
+    from influence_dummy import InfluenceDummy
+    agent = RandomAgent(2)
+    parameters = {'n_sources': 4, 'output_size': 1, 'aug_obs': False}
+    influence = InfluenceDummy(parameters)
+    exp = DataCollector(agent, 'traffic', 8, influence, './data/traffic/', 0)
+    exp.run(10000, log=True)
