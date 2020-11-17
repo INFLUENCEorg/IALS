@@ -197,12 +197,12 @@ class PartialWarehouse(object):
                         loc_free = True
                         region_free = True
                         if item_locs is not None:
-                            region = int(column//self.distance_between_shelves)
-                            columns_occupied = [item_loc[1] for item_loc in item_locs if item_loc[0] == row]
-                            regions_occupied = [int(column//self.distance_between_shelves) for column in columns_occupied]
-                            region_free = region not in regions_occupied
+                            # region = int(column//self.distance_between_shelves)
+                            # columns_occupied = [item_loc[1] for item_loc in item_locs if item_loc[0] == row]
+                            # regions_occupied = [int(column//self.distance_between_shelves) for column in columns_occupied]
+                            # region_free = region not in regions_occupied
                             loc_free = loc not in item_locs
-                        if np.random.uniform() < self.prob_item_appears and region_free:
+                        if np.random.uniform() < self.prob_item_appears and loc_free:
                             self.items.append(Item(self.item_id, loc))
                             self.item_id += 1
                             item_locs = [item.get_position for item in self.items]
@@ -212,12 +212,12 @@ class PartialWarehouse(object):
                         loc_free = True
                         region_free = True
                         if item_locs is not None:
-                            region = int(row//self.distance_between_shelves)
-                            rows_occupied = [item_loc[0] for item_loc in item_locs if item_loc[1] == column]
-                            regions_occupied = [int(row//self.distance_between_shelves) for row in rows_occupied]
-                            region_free = region not in regions_occupied
+                            # region = int(row//self.distance_between_shelves)
+                            # rows_occupied = [item_loc[0] for item_loc in item_locs if item_loc[1] == column]
+                            # regions_occupied = [int(row//self.distance_between_shelves) for row in rows_occupied]
+                            # region_free = region not in regions_occupied
                             loc_free = loc not in item_locs
-                        if np.random.uniform() < self.prob_item_appears and region_free:
+                        if np.random.uniform() < self.prob_item_appears and loc_free:
                             self.items.append(Item(self.item_id, loc))
                             self.item_id += 1
                             item_locs = [item.get_position for item in self.items]
