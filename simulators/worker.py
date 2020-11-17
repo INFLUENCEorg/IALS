@@ -2,8 +2,8 @@ import multiprocessing as mp
 import multiprocessing.connection
 from simulators.warehouse.warehouse import Warehouse
 from simulators.warehouse.partial_warehouse import PartialWarehouse
-# from simulators.traffic.global_traffic import GlobalTraffic
-# from simulators.traffic.partial_traffic import PartialTraffic
+from simulators.traffic.global_traffic import GlobalTraffic
+from simulators.traffic.partial_traffic import PartialTraffic
 
 
 def worker_process(remote: multiprocessing.connection.Connection, env_type,
