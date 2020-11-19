@@ -332,13 +332,13 @@ class PartialWarehouse(object):
         return locations
     
     def _find_loc(self, neighbor_id, loc):
-        locations = {0: [loc, 7], 1: [7, 7], 2: [7, loc], 3: [7, 0],
-                     4: [loc, 0], 5: [0, 0], 6: [0, loc], 7: [0, 7]}
+        locations = {0: [loc, 6], 1: [6, 6], 2: [6, loc], 3: [6, 0],
+                     4: [loc, 0], 5: [0, 0], 6: [0, loc], 7: [0, 6]}
         return locations[neighbor_id]
 
     def _get_intersection(self, neighbor_id, bitmap):
-        intersections = {0: bitmap[:, 0], 1: [bitmap[0, 0]], 2: bitmap[0, :], 3: [bitmap[0, 7]],
-                        4: bitmap[:, 7], 5: [bitmap[7, 7]], 6: bitmap[7, :], 7: [bitmap[7, 0]]}
+        intersections = {0: bitmap[:, 0], 1: [bitmap[0, 0]], 2: bitmap[0, :], 3: [bitmap[0, 6]],
+                        4: bitmap[:, 6], 5: [bitmap[6, 6]], 6: bitmap[6, :], 7: [bitmap[6, 0]]}
         return intersections[neighbor_id]
 
     def load_influence_model(self):
