@@ -1,15 +1,15 @@
 parameters:
     # Common hyperparameters
-    seq_len: 200
-    episode_length: 200
-    data_path: '../influence/data/traffic/'
+    seq_len: 100
+    episode_length: 100
+    data_path: '../influence/data/warehouse/'
     lr: 1.0e-3
     n_epochs: 1500
-    batch_size: 16
+    batch_size: 32
     hidden_memory_size: 6
-    input_size: 40
-    output_size: 1
-    n_sources: 4
+    input_size: 16
+    output_size: 25
+    n_sources: 8
     checkpoint_path: 'models/influence'
     aug_obs: False
     load_model: False

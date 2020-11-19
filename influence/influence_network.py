@@ -252,6 +252,6 @@ if __name__ == '__main__':
     parameters = {'n_sources': 4, 'output_size': 1, 'aug_obs': False}
     parameters = read_parameters('./configs/influence.yaml')
     influence = InfluenceNetwork(parameters, './data/traffic/', None)
-    # data_collector = DataCollector(agent, 'traffic', 8, influence, './data/traffic/', 0)
+    # data_collector = DataCollector(agent, 'warehouse', 8, influence, './data/warehouse/', 0)
     # data_collector.run(parameters['dataset_size'], log=True)
     influence.train(2000)

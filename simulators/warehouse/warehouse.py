@@ -76,7 +76,7 @@ class Warehouse(object):
         for robot in self.robots:
             state = self._get_state()
             obs = robot.observe(state, self.obs_type)
-            actions.append(robot.select_naive_action2(obs, self.items))
+            actions.append(robot.select_naive_action(obs)) #, self.items))
         actions[self.learning_robot_id] = action
         self._robots_act(actions)
         # influence sources
@@ -155,13 +155,13 @@ class Warehouse(object):
         state = self._get_state()
         robot = self.robots[self.learning_robot_id]
         obs = robot.observe(state, 'vector')
-        dset = obs[25:]
+        dset = obs[49:]
         return dset
     
     def get_robot_loc_bitmap(self, robot_id):
         state = self._get_state()
         obs = self.robots[robot_id].observe(state, 'vector')
-        loc_bitmap = obs[:25]
+        loc_bitmap = obs[:49]
         return loc_bitmap
 
     def get_infs(self):

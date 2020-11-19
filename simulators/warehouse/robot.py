@@ -147,7 +147,6 @@ class Robot():
         closest_item_path = None
         robot_pos = (self._pos[0]-self._robot_domain[0], self._pos[1]-self._robot_domain[1])
         for index, item in np.ndenumerate(obs):
-            print(index)
             if item == 1:
                 path = self._path_dict[robot_pos][index]
                 distance = len(path) - 1
