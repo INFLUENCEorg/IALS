@@ -322,7 +322,7 @@ class PartialWarehouse(object):
                 sample = np.random.choice(np.arange(len(prob)), p=prob)
                 bitmap = np.zeros(len(prob))
                 bitmap[sample] = 1
-                bitmap = np.reshape(bitmap, (5,5))
+                bitmap = np.reshape(bitmap, (self.robot_domain_size[0], self.robot_domain_size[1]))
                 intersection = np.array(self._get_intersection(neighbor_id, bitmap))
                 if all(intersection == np.zeros(len(intersection))):
                     location = None
