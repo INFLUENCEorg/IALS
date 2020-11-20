@@ -2,7 +2,7 @@ parameters:
     main:
         # Common hyperparameters
         mode: 'train'
-        load: false
+        load: true
         name: 'partial'
         algorithm: PPO
         env: 'warehouse'
@@ -44,7 +44,7 @@ parameters:
         num_rec_units: 128
         seq_len: 8
         # Influence-aware memory
-        influence: true
+        influence: false
         # Attention
         attention: false
         automatic_dpatch: false
@@ -70,7 +70,7 @@ parameters:
         n_epochs2: 500
         batch_size: 32
         hidden_memory_size: 8
-        input_size: 24
+        input_size: 73
         output_size: 49
         n_sources: 8
         checkpoint_path: '../influence/models/warehouse/model'

@@ -155,7 +155,8 @@ class Warehouse(object):
         state = self._get_state()
         robot = self.robots[self.learning_robot_id]
         obs = robot.observe(state, 'vector')
-        dset = obs[49:]
+        # dset = obs[49:]
+        dset = obs
         return dset
     
     def get_robot_loc_bitmap(self, robot_id):
