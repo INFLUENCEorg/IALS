@@ -35,12 +35,12 @@ parameters:
         eval_steps: 1.0e+4
 
         fully_connected: true
-        num_fc_layers: 2
-        num_fc_units: [256, 128]
+        num_fc_layers: 1
+        num_fc_units: [128]
         # Convolutional module
         convolutional: false
         # Recurrent module
-        recurrent: false
+        recurrent: true
         num_rec_units: 128
         seq_len: 8
         # Influence-aware memory
@@ -77,6 +77,6 @@ parameters:
         aug_obs: False
         load_model: False
         curriculum: False
-        dataset_size1: 5.0e+4
+        dataset_size1: 1.0e+4
         dataset_size2: 1.0e+4
         train_freq: 3.0e+6
