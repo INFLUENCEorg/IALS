@@ -2,7 +2,7 @@ parameters:
     main:
         # Common hyperparameters
         mode: 'train'
-        load: true
+        load: false
         name: 'partial'
         algorithm: PPO
         env: 'warehouse'
