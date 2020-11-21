@@ -86,7 +86,9 @@ class Experiment(object):
         start = time.time()
         step_output = self.sim.reset()
         while global_step <= self.maximum_time_steps:
-            if global_step % self.parameters_influence['train_freq']  == 0 and self.parameters['simulator'] == 'partial':
+            if global_step % self.parameters_influence['train_freq']  == 0 and \
+               self.parameters['simulator'] == 'partial' and \
+               self.parameters['influence_model'] == 'nn':
                 if global_step == 0:
                     dataset_size = self.parameters_influence['dataset_size1']
                     num_epochs = self.parameters_influence['n_epochs1']
