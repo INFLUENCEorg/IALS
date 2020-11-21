@@ -20,7 +20,7 @@ parameters:
         max_steps: 2.0e+6
         beta: 1.0e-2
         epsilon: 0.1
-        time_horizon: 16
+        time_horizon: 32
         obs_type: 'vector'
         obs_size: 73
         c1: 1
@@ -41,8 +41,8 @@ parameters:
         convolutional: false
         # Recurrent module
         recurrent: true
-        num_rec_units: 128
-        seq_len: 8
+        num_rec_units: 64
+        seq_len: 16
         # Influence-aware memory
         influence: false
         # Attention
@@ -77,6 +77,6 @@ parameters:
         aug_obs: False
         load_model: False
         curriculum: False
-        dataset_size1: 1.0e+4
+        dataset_size1: 5.0e+4
         dataset_size2: 1.0e+4
         train_freq: 3.0e+6

@@ -1,3 +1,4 @@
 parameters:
     main:
         influence_model: 'uniform'
+        name: 'uniform'
