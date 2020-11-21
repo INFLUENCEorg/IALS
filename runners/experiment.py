@@ -150,7 +150,7 @@ def add_mongodb_observer():
     
 ex = sacred.Experiment('scalable-simulations')
 ex.add_config('configs/warehouse/default.yaml')
-# add_mongodb_observer()
+add_mongodb_observer()
 
 @ex.automain
 def main(parameters, seed, _run):
