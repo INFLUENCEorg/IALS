@@ -189,14 +189,9 @@ class Model(object):
                                   lambda: tf.gather_nd(self.feature_vector,
                                                        self.indices+iter),
                                   lambda: self.feature_vector)
-            # inf_prev_action = tf.cond(self.update_bool,
-            #                           lambda: tf.gather_nd(self.inf_prev_action,
-            #                                                self.indices+iter),
-            #                           lambda: self.inf_prev_action)
-            inf_hidden = state.h
 
             if self.parameters['attention']:
-                inf_hidden = attention(hidden_conv, inf_hidden)
+                inf_hidden = attention(hidden_conv, state.h)
             elif self.parameters['automatic_dpatch']:
                 inf_hidden = automatic_dpatch(hidden_conv)
             else:

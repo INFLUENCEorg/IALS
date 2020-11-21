@@ -250,7 +250,6 @@ class PPOmodel(Model):
         output_dict = dict(zip(list(run_dict.keys()), output_list))
         end = time.time()
         self.backward_pass_times.append(end-start)
-        # breakpoint()
         # print(np.max(output_dict['softmax_weights']))
         # print(np.argmax(output_dict['softmax_weights']))
         return output_dict
