@@ -14,8 +14,10 @@ class DistributedSimulation(object):
         print('Total number of CPUs {}'.format(mp.cpu_count()))
         if num_workers > mp.cpu_count():
             num_workers = mp.cpu_count()
-        print("Number of workers {}. ".format(num_workers))            
-        self.workers = [Worker(env, simulator, i, influence_model, seed) for i in range(num_workers)]
+        print("Number of workers {}. ".format(num_workers))        
+        # Random seed is different for each worker (seed + worker_id). Otherwise multiprocessing takes the current system time
+        # which is the same for all workers!  
+        self.workers = [Worker(env, simulator, influence_model, seed + worker_id) for worker_id in range(num_workers)]
 
     def reset(self):
         """

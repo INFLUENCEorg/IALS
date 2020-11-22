@@ -7,7 +7,7 @@ from simulators.warehouse.partial_warehouse import PartialWarehouse
 
 
 def worker_process(remote: multiprocessing.connection.Connection, env_type,
-                   simulator, worker_id, influence, seed):
+                   simulator, influence, seed):
     """
     This function is used as target by each of the threads in the multiprocess
     to build environment instances and define the commands that can be executed
@@ -15,14 +15,14 @@ def worker_process(remote: multiprocessing.connection.Connection, env_type,
     """
     if env_type == 'warehouse':
         if simulator == 'partial':
-            env = PartialWarehouse(influence, seed+worker_id)
+            env = PartialWarehouse(influence, seed)
         else:
-            env = Warehouse(influence, seed+worker_id)
+            env = Warehouse(influence, seed)
     if env_type == 'traffic':
         if simulator == 'partial':
-            env = PartialTraffic(influence, seed+worker_id)
+            env = PartialTraffic(influence, seed)
         else:
-            env = GlobalTraffic(seed+worker_id)
+            env = GlobalTraffic(seed)
         
     while True:
         cmd, data = remote.recv()
@@ -50,8 +50,8 @@ class Worker(object):
     multiprocess. Commands can be send and outputs received by calling
     child.send() and child.recv() respectively
     """
-    def __init__(self, env, simulator, worker_id, influence, seed):
+    def __init__(self, env, simulator, influence, seed):
 
         self.child, parent = mp.Pipe()
-        self.process = mp.Process(target=worker_process, args=(parent, env, simulator, worker_id, influence, seed))
+        self.process = mp.Process(target=worker_process, args=(parent, env, simulator, influence, seed))
         self.process.start()

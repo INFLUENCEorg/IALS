@@ -68,6 +68,7 @@ class DataCollector(object):
                 episodic_return = 0
         sim.close()
         print('Done!')
+        self.seed += self.num_workers # Changing seed for the next run
         mean_episodic_return = np.mean(episodic_returns)
         return mean_episodic_return
     
