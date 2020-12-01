@@ -1,3 +1,5 @@
+# import sys
+# sys.path.append("../..")
 from flow.core.params import NetParams
 from flow.networks.traffic_light_grid import TrafficLightGridNetwork
 from flow.envs import TrafficLightGridBitmapEnv
@@ -13,8 +15,8 @@ V_ENTER = 15
 INNER_LENGTH = 100
 LONG_LENGTH = 100
 SHORT_LENGTH = 100
-N_ROWS = 2
-N_COLUMNS = 3
+N_ROWS = 5
+N_COLUMNS = 5
 NUM_CARS_LEFT = 0
 NUM_CARS_RIGHT = 0
 NUM_CARS_TOP = 0
@@ -44,15 +46,18 @@ phases = [{'duration': '31', 'minDur': '8', 'maxDur': '45', 'state': 'GrGr'},
           {'duration': '6', 'minDur': '3', 'maxDur': '6', 'state': 'yryr'},
           {'duration': '31', 'minDur': '8', 'maxDur': '45', 'state': 'rGrG'},
           {'duration': '6', 'minDur': '3', 'maxDur': '6', 'state': 'ryry'}]
-nodes = ['center0', 'center2', 'center3', 'center4', 'center5']
+nodes = []
+for node in range(N_ROWS*N_COLUMNS):
+    nodes.append('center'+str(node))
+nodes.pop(12)
 additional_env_params = {'target_velocity': 50,
                          'switch_time': 3.0,
                          'num_observed': 2,
                          'discrete': True,
                          'tl_type': 'actuated',
-                         'tl_controlled': ['center1'],
+                         'tl_controlled': ['center12'],
                          'scale': 10}
-horizon = 200
+horizon = 300
 
 def gen_edges(col_num, row_num):
     edges = []
@@ -90,7 +95,7 @@ def get_inflow_params(col_num, row_num, additional_net_params):
 class GlobalTraffic(TrafficLightGridBitmapEnv):
     """
     """
-    def __init__(self, seed):
+    def __init__(self, seed, render=False):
         tl_logic = TrafficLightParams()
         for node in nodes:
             tl_logic.add(node,
@@ -127,13 +132,14 @@ class GlobalTraffic(TrafficLightGridBitmapEnv):
                                           traffic_lights=tl_logic)
         
         env_params = EnvParams(horizon=horizon, additional_params=additional_env_params)
-        sim_params = SumoParams(render=False, restart_instance=True, sim_step=1, print_warnings=False, seed=seed)
-        super().__init__(env_params, sim_params, network, simulator='traci')
+        sim_params = SumoParams(render=render, restart_instance=True, sim_step=1, print_warnings=False, seed=seed)
+        super().__init__(env_params, sim_params, network)
     
     # override
     def reset(self):
         state = super().reset()
-        node_edges = self.network.node_mapping[int(self.tl_controlled[0][-1])][1]
+        node = self.tl_controlled[0]
+        node_edges = dict(self.network.node_mapping)[node]
         observation = []
         infs = []
         for edge in range(len(node_edges)):
@@ -141,7 +147,7 @@ class GlobalTraffic(TrafficLightGridBitmapEnv):
             infs.append(state[edge][-1]) # last bit is influence source
         observation.append(state[-1]) #  append traffic light info
         observation = np.concatenate(observation)
-        infs = np.array(infs)
+        infs = np.array(infs, dtype='object')
         dset = observation
         reward = 0
         done = False
@@ -150,15 +156,16 @@ class GlobalTraffic(TrafficLightGridBitmapEnv):
     # override
     def step(self, rl_actions):
         state, reward, done, _ = super().step(rl_actions)
-        node_edges = self.network.node_mapping[int(self.tl_controlled[0][-1])][1]
+        node = self.tl_controlled[0]
+        node_edges = dict(self.network.node_mapping)[node]
         observation = []
         infs = []
         for edge in range(len(node_edges)):
             observation.append(state[edge][:-1])
             infs.append(state[edge][-1]) # last bit is influence source
-        observation.append(state[-1]) #  append traffic light info again
+        observation.append(state[-1]) #  append traffic light info
         observation = np.concatenate(observation)
-        infs = np.array(infs)
+        infs = np.array(infs, dtype='object')
         dset = observation
         return observation, reward, done, dset, infs
     
@@ -169,3 +176,6 @@ class GlobalTraffic(TrafficLightGridBitmapEnv):
 
     def _get_influence_sources(self):
         pass
+
+    def close(self):
+        self.terminate()

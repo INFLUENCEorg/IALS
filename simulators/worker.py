@@ -1,10 +1,5 @@
 import multiprocessing as mp
 import multiprocessing.connection
-from simulators.warehouse.warehouse import Warehouse
-from simulators.warehouse.partial_warehouse import PartialWarehouse
-# from simulators.traffic.global_traffic import GlobalTraffic
-# from simulators.traffic.partial_traffic import PartialTraffic
-
 
 def worker_process(remote: multiprocessing.connection.Connection, env_type,
                    simulator, influence, seed):
@@ -15,13 +10,17 @@ def worker_process(remote: multiprocessing.connection.Connection, env_type,
     """
     if env_type == 'warehouse':
         if simulator == 'partial':
+            from simulators.warehouse.partial_warehouse import PartialWarehouse
             env = PartialWarehouse(influence, seed)
         else:
+            from simulators.warehouse.warehouse import Warehouse
             env = Warehouse(influence, seed)
     if env_type == 'traffic':
         if simulator == 'partial':
+            from simulators.traffic.partial_traffic import PartialTraffic
             env = PartialTraffic(influence, seed)
         else:
+            from simulators.traffic.global_traffic import GlobalTraffic
             env = GlobalTraffic(seed)
         
     while True:
@@ -38,6 +37,7 @@ def worker_process(remote: multiprocessing.connection.Connection, env_type,
         elif cmd == 'load':
             env.load_influence_model()
         elif cmd == 'close':
+            env.close()
             remote.close()
             break
         else:
@@ -54,4 +54,5 @@ class Worker(object):
 
         self.child, parent = mp.Pipe()
         self.process = mp.Process(target=worker_process, args=(parent, env, simulator, influence, seed))
+        print(self.process)
         self.process.start()

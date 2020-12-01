@@ -1,0 +1,21 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+tensorflow = "==1.13.1"
+gym = "*"
+torch = "*"
+matplotlib = "*"
+pyyaml = "*"
+networkx = "*"
+sacred = "*"
+flow = {path = "./flow"}
+
+[dev-packages]
+pymongo = "*"
+sshtunnel = "*"
+
+[requires]
+python_version = "3.7"

@@ -36,10 +36,7 @@ class Network(nn.Module):
         self.reset()
 
     def forward(self, input_seq):
-        # linear_out = self.relu(self.fc(input_seq))
-        # print(self.hidden_cell)
         lstm_out, self.hidden_cell = self.lstm(input_seq, self.hidden_cell)
-        # print(self.hidden_cell)
         logits = []
         probs = []
         for k in range(self.n_sources):
@@ -166,10 +163,13 @@ class InfluenceNetwork(object):
                     start = end 
                     end += self.output_size
                     target = targets_batch[:, :, start:end]
-                    logit =  logits[s].view(-1, self.output_size)
+                    logit =  logits[s]
                     if self.output_size > 1:
-                        target = torch.argmax(target, dim=2)
-                    target = target.view(-1)
+                        logit = logit.view(-1, self.output_size)
+                        target = torch.argmax(target, dim=2).view(-1)
+                    else:
+                        logit = logit.view(-1)
+                        target = target.view(-1)
                     loss += self.loss_function(logit, target)
                 loss.backward()
                 self.optimizer.step()
@@ -194,8 +194,9 @@ class InfluenceNetwork(object):
             target = targets[:, :, start:end]
             logit =  logits[s].view(-1, self.output_size)
             if self.output_size > 1:
-                target = torch.argmax(target, dim=2)
-            target = target.view(-1)
+                target = torch.argmax(target, dim=2).view(-1)
+            else:
+                target = target.view(-1, 1)
             loss += self.loss_function(logit, target)
             # from collections import Counter
             # targets_counts = Counter(torch.argmax(targets[:, start:end], dim=1).detach().numpy())
