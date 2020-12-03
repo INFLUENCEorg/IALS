@@ -19,7 +19,7 @@ parameters:
         recurrent: false
         num_rec_units: 32
         seq_len: 16
-        num_workers: 1
+        num_workers: 8
         # Influence-aware memory
         influence: false
         # Attention

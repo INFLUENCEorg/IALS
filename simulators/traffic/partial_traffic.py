@@ -83,7 +83,7 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
         state = super().reset()
         node = self.tl_controlled[0]
         node_edges = dict(self.network.node_mapping)[node]
-        self.veh_id = 0
+        # self.veh_id = 0
         for i, edge in enumerate(node_edges):
             sample = np.random.uniform(0,1)
             if sample < probs[i]:

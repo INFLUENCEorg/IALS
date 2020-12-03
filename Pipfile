@@ -4,18 +4,14 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-tensorflow = "==1.13.1"
-gym = "*"
-torch = "*"
-matplotlib = "*"
-pyyaml = "*"
+flow = {path = "./flow"}
 networkx = "*"
 sacred = "*"
-flow = {path = "./flow"}
-
-[dev-packages]
 pymongo = "*"
 sshtunnel = "*"
+torch = "*"
+
+[dev-packages]
 
 [requires]
 python_version = "3.7"

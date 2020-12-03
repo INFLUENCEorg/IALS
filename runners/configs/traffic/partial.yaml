@@ -20,7 +20,7 @@ parameters:
         recurrent: false
         num_rec_units: 32
         seq_len: 16
-        num_workers: 1
+        num_workers: 8
         # Influence-aware memory
         influence: false
         # Attention
@@ -45,7 +45,7 @@ parameters:
         episode_length: 300
         data_path: '../influence/data/traffic/'
         lr: 1.0e-3
-        n_epochs1: 2000
+        n_epochs1: 1500
         n_epochs2: 500
         batch_size: 16
         hidden_memory_size: 8
