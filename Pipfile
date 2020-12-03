@@ -10,6 +10,13 @@ sacred = "*"
 pymongo = "*"
 sshtunnel = "*"
 torch = "*"
+tensorflow = "==1.13.1"
+gym = "*"
+matplotlib = "*"
+pyaml = "*"
+lxml = "*"
+opencv-python = "*"
+imutils = "*"
 
 [dev-packages]
 
