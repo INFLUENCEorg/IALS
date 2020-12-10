@@ -132,7 +132,7 @@ class GlobalTraffic(TrafficLightGridBitmapEnv):
                                           traffic_lights=tl_logic)
         
         env_params = EnvParams(horizon=horizon, additional_params=additional_env_params)
-        sim_params = SumoParams(render=render, restart_instance=True, sim_step=1, print_warnings=False, seed=seed)
+        sim_params = SumoParams(render=render, restart_instance=False, sim_step=1, print_warnings=False, seed=seed)
         super().__init__(env_params, sim_params, network)
     
     # override
