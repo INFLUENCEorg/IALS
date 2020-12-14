@@ -37,6 +37,8 @@ parameters:
         # Influence recurrent module
         inf_num_rec_units: 8
         inf_seq_len: 8
+        eval_freq: 1.0e+5
+        eval_steps: 1.0e+4
 
 
     influence:
@@ -45,9 +47,9 @@ parameters:
         episode_length: 300
         data_path: '../influence/data/traffic/'
         lr: 1.0e-3
-        n_epochs1: 1500
+        n_epochs1: 2000
         n_epochs2: 500
-        batch_size: 16
+        batch_size: 32
         hidden_memory_size: 8
         input_size: 40
         output_size: 1
@@ -56,6 +58,6 @@ parameters:
         aug_obs: False
         load_model: False
         curriculum: False
-        dataset_size1: 1.0e+4
+        dataset_size1: 2.0e+4
         dataset_size2: 1.0e+4
         train_freq: 5.0e+5

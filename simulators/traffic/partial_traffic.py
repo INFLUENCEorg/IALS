@@ -129,6 +129,8 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
                                        edge=edge, lane='allowed', pos=6, speed=10)
                 self.veh_id += 1
         state, reward, done, _ = super().step(rl_actions)
+        # remove pending vehicles that couldn't be added
+        self.k.vehicle.kernel_api.simulation.clearPending()
         node_edges = dict(self.network.node_mapping)[node]
         observation = []
         infs = []

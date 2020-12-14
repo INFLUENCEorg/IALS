@@ -11,3 +11,5 @@ influence/models
 runners/saved_runs/*
 flow
 scalable-simulations.simg
+scalable-simulations.sif
+
