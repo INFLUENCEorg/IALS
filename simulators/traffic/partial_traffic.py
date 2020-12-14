@@ -89,7 +89,7 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
             if sample < probs[i]:
                 # try:
                 self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
-                                    edge=edge, lane='allowed', pos=6, speed=10)
+                                   edge=edge, lane='allowed', pos=6, speed=10)
                     
                 # except:
                     # self.k.vehicle.remove('idm_' + str(self.veh_id))

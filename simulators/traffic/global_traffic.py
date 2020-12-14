@@ -49,7 +49,7 @@ phases = [{'duration': '31', 'minDur': '8', 'maxDur': '45', 'state': 'GrGr'},
 nodes = []
 for node in range(N_ROWS*N_COLUMNS):
     nodes.append('center'+str(node))
-nodes.pop(12)
+# nodes.pop(12)
 additional_env_params = {'target_velocity': 50,
                          'switch_time': 3.0,
                          'num_observed': 2,
