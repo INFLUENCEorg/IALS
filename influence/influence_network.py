@@ -235,6 +235,7 @@ class InfluenceNetwork(object):
     def _load_model(self):
         checkpoint = torch.load(os.path.join(self.checkpoint_path, 'checkpoint'))
         self.model.load_state_dict(checkpoint['model_state_dict'])
+        self.model.eval()
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
 def read_parameters(config_file):
