@@ -79,23 +79,28 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
 
     # override
     def reset(self):
+        self.influence.reset()
         probs = self.influence.predict(np.zeros(40))
-        state = super().reset()
         node = self.tl_controlled[0]
         node_edges = dict(self.network.node_mapping)[node]
-        # self.veh_id = 0
+        self.veh_id = 0
+        # remove pending vehicles that couldn't be added in the previous episode
+        self.k.vehicle.kernel_api.simulation.clearPending()
+        # add new vehicles
         for i, edge in enumerate(node_edges):
             sample = np.random.uniform(0,1)
             if sample < probs[i]:
-                # try:
-                self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
-                                   edge=edge, lane='allowed', pos=6, speed=10)
+                try:
+                    self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
+                                       edge=edge, lane='allowed', pos=6, speed=10)
                     
-                # except:
-                    # self.k.vehicle.remove('idm_' + str(self.veh_id))
-                    # self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
-                                    #    edge=edge, lane='allowed', pos=6, speed=10)
+                except:
+                    
+                    self.k.vehicle.remove('idm_' + str(self.veh_id))
+                    self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
+                                       edge=edge, lane='allowed', pos=6, speed=10)
                 self.veh_id += 1
+        state = super().reset()
         observation = []
         infs = []
         for edge in range(len(node_edges)):
@@ -115,14 +120,13 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
         for i, edge in enumerate(node_edges):
             sample = np.random.uniform(0,1)
             if sample < probs[i]:
-                # try:
-                self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
+                try:
+                    self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
                                    edge=edge, lane='allowed', pos=6, speed=10)
-                    
-                # except:
-                    # self.k.vehicle.remove('idm_' + str(self.veh_id))
-                    # self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
-                                    #    edge=edge, lane='allowed', pos=6, speed=10)
+                except:
+                    self.k.vehicle.remove('idm_' + str(self.veh_id))
+                    self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
+                                       edge=edge, lane='allowed', pos=6, speed=10)
                 self.veh_id += 1
         state, reward, done, _ = super().step(rl_actions)
         node_edges = dict(self.network.node_mapping)[node]
