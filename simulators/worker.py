@@ -21,7 +21,7 @@ def worker_process(remote: multiprocessing.connection.Connection, env_type,
             env = PartialTraffic(influence, seed)
         else:
             from simulators.traffic.global_traffic import GlobalTraffic
-            env = GlobalTraffic(seed)
+            env = GlobalTraffic(influence, seed)
         
     while True:
         cmd, data = remote.recv()
