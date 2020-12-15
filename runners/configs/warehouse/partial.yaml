@@ -1,5 +1,6 @@
 parameters:
     main:
         # Common hyperparameters
-        name: 'partial'
+        name: 'partial_warehouse'
         influence_model: 'nn'
+        simulator: 'partial'

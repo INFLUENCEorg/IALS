@@ -5,6 +5,7 @@ sys.path.append("..")
 from agents.PPO.PPOAgent import PPOAgent
 from agents.random_agent import RandomAgent
 from simulators.distributed_simulation import DistributedSimulation
+from simulators.simulation import Simulation
 from influence.influence_network import InfluenceNetwork
 from influence.influence_uniform import InfluenceUniform
 from influence.influence_dummy import InfluenceDummy
@@ -40,10 +41,17 @@ class Experiment(object):
                 self.influence = InfluenceUniform(parameters['influence'])
         else:
             self.influence = InfluenceDummy(parameters['influence'])
-        self.sim = DistributedSimulation(self.parameters['env'], self.parameters['simulator'], 
-                                         self.parameters['num_workers'], self.influence, seed)
+
         self.data_collector = DataCollector(self.agent, self.parameters['env'], self.parameters['num_workers'], 
                                             self.influence, data_path, seed)
+                                            
+        # if self.parameters['num_workers'] > 1:
+        self.sim = DistributedSimulation(self.parameters['env'], self.parameters['simulator'], 
+                                         self.parameters['num_workers'], self.influence, seed)
+        # else:
+            # self.sim = Simulation(self.parameters['env'], self.parameters['simulator'],
+                                #   self.influence, seed)
+
         tf.reset_default_graph()
         self._run = _run
 
@@ -80,7 +88,6 @@ class Experiment(object):
         global_step = max(self.parameters["iteration"], 0)
         # reset environment
         # self.sim = DistributedSimulation(self.parameters, self.influence)
-        # step_output = self.sim.reset()
         episode_return = 0
         episode_step = 0
         start = time.time()
@@ -89,7 +96,7 @@ class Experiment(object):
             if global_step % self.parameters_influence['train_freq']  == 0 and \
                self.parameters['simulator'] == 'partial' and \
                self.parameters['influence_model'] == 'nn':
-                if global_step == 0:
+                if self.agent.episodes == 0:
                     dataset_size = self.parameters_influence['dataset_size1']
                     num_epochs = self.parameters_influence['n_epochs1']
                 else:
@@ -101,6 +108,8 @@ class Experiment(object):
                 # each process keeps a separate copy of the influence model
                 self.sim.load_influence_model()
                 self._run.log_scalar("mean episodic return", mean_episodic_return, global_step)
+                # if global_step == 0:
+                    # step_output = self.sim.reset()
             elif global_step % self.parameters['eval_freq'] == 0:
                 mean_episodic_return = self.data_collector.run(self.parameters['eval_steps'], log=False)
                 self._run.log_scalar("mean episodic return", mean_episodic_return, global_step)
@@ -149,8 +158,8 @@ def add_mongodb_observer():
         ex.observers.append(FileStorageObserver.create('saved_runs'))
     
 ex = sacred.Experiment('scalable-simulations')
-ex.add_config('configs/warehouse/default.yaml')
-add_mongodb_observer()
+ex.add_config('configs/default.yaml')
+# add_mongodb_observer()
 
 @ex.automain
 def main(parameters, seed, _run):

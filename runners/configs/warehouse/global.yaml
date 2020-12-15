@@ -2,4 +2,4 @@ parameters:
     main:
         # Common hyperparameters
         simulator: 'global'
-        name: 'global'
+        name: 'global_warehouse'
