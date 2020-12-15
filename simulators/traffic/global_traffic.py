@@ -95,7 +95,7 @@ def get_inflow_params(col_num, row_num, additional_net_params):
 class GlobalTraffic(TrafficLightGridBitmapEnv):
     """
     """
-    def __init__(self, seed, render=False):
+    def __init__(self, influence, seed, render=False):
         tl_logic = TrafficLightParams()
         for node in nodes:
             tl_logic.add(node,
@@ -133,10 +133,13 @@ class GlobalTraffic(TrafficLightGridBitmapEnv):
         
         env_params = EnvParams(horizon=horizon, additional_params=additional_env_params)
         sim_params = SumoParams(render=render, restart_instance=False, sim_step=1, print_warnings=False, seed=seed)
+        self.influence = influence
         super().__init__(env_params, sim_params, network)
     
     # override
     def reset(self):
+        # print(len(set(self.total_veh)))
+        # self.total_veh = []
         state = super().reset()
         node = self.tl_controlled[0]
         node_edges = dict(self.network.node_mapping)[node]
@@ -149,6 +152,8 @@ class GlobalTraffic(TrafficLightGridBitmapEnv):
         observation = np.concatenate(observation)
         infs = np.array(infs, dtype='object')
         dset = observation
+        if self.influence.aug_obs:
+            observation = np.append(observation, self.influence.get_hidden_state())
         reward = 0
         done = False
         return observation, reward, done, dset, infs
@@ -167,6 +172,8 @@ class GlobalTraffic(TrafficLightGridBitmapEnv):
         observation = np.concatenate(observation)
         infs = np.array(infs, dtype='object')
         dset = observation
+        if self.influence.aug_obs:
+            observation = np.append(observation, self.influence.get_hidden_state())
         return observation, reward, done, dset, infs
     
     # override

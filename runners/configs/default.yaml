@@ -32,6 +32,8 @@ parameters:
         eval_freq: 1.0e+5
         eval_steps: 1.0e+4
         num_workers: 8
+        eval_freq: 1.0e+5
+        eval_steps: 1.0e+4
 
         load: false
         fully_connected: true
@@ -59,8 +61,6 @@ parameters:
         # Influence recurrent module
         inf_num_rec_units: 8
         inf_seq_len: 8
-        eval_freq: 1.0e+5
-        eval_steps: 1.0e+4
 
 
     influence:

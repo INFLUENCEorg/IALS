@@ -114,6 +114,8 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
         observation.append(state[-1]) #  append traffic light info
         observation = np.concatenate(observation)
         self.dset = observation
+        if self.influence.aug_obs:
+            observation = np.append(observation, self.influence.get_hidden_state())
         reward = 0
         done = False
         return observation, reward, done, infs, self.dset
@@ -148,6 +150,8 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
         observation = np.concatenate(observation)
         infs = np.array(infs)
         self.dset = observation
+        if self.influence.aug_obs:
+            observation = np.append(observation, self.influence.get_hidden_state())
         return observation, reward, done, infs, self.dset
     
     # override
