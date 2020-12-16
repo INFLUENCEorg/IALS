@@ -72,7 +72,7 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
         network = TrafficLightGridNetwork(name='grid', vehicles=vehicles, net_params=net_params, initial_config=initial_config)
         
         env_params = EnvParams(horizon=horizon, additional_params=additional_env_params)
-        sim_params = SumoParams(render=False, restart_instance=False, sim_step=1, print_warnings=False, seed=seed)
+        sim_params = SumoParams(render=True, restart_instance=False, sim_step=1, print_warnings=False, seed=seed)
         super().__init__(env_params, sim_params, network, simulator='traci')
         self.influence = influence
         self.veh_id = 0
@@ -98,19 +98,20 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
                 self.total_veh2 += 1
                 try:
                     self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
-                                       edge=edge, lane='free', pos=0, speed=10)
+                                       edge=edge, lane='free', pos=6, speed=10)
                     
                 except:
                     
                     self.k.vehicle.remove('idm_' + str(self.veh_id))
                     self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
-                                       edge=edge, lane='free', pos=0, speed=10)
+                                       edge=edge, lane='free', pos=6, speed=10)
                 self.veh_id += 1
         state = super().reset()
         observation = []
         infs = []
         for edge in range(len(node_edges)):
             observation.append(state[edge][:-1])
+        print(np.reshape(observation, (4,9)))
         observation.append(state[-1]) #  append traffic light info
         observation = np.concatenate(observation)
         self.dset = observation
@@ -123,6 +124,7 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
     # override
     def step(self, rl_actions):
         probs = self.influence.predict(self.dset)
+        print(probs)
         node = self.tl_controlled[0]
         node_edges = dict(self.network.node_mapping)[node]
         for i, edge in enumerate(node_edges):
@@ -131,11 +133,11 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
                 self.total_veh2 += 1
                 try:
                     self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
-                                   edge=edge, lane='allowed', pos=0, speed=10)
+                                   edge=edge, lane='allowed', pos=6, speed=10)
                 except:
                     self.k.vehicle.remove('idm_' + str(self.veh_id))
                     self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
-                                       edge=edge, lane='allowed', pos=0, speed=10)
+                                       edge=edge, lane='allowed', pos=6, speed=10)
                 self.veh_id += 1
         state, reward, done, _ = super().step(rl_actions)
         # self.k.vehicle.kernel_api.simulation.clearPending()
@@ -146,6 +148,7 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
         for edge in range(len(node_edges)):
             observation.append(state[edge][:-1])
             infs.append(state[edge][-1]) # last bit is influence source
+        print(np.reshape(observation, (4,9)))
         observation.append(state[-1]) #  append traffic light info again
         observation = np.concatenate(observation)
         infs = np.array(infs)
