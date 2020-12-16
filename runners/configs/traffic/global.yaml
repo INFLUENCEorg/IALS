@@ -4,6 +4,3 @@ parameters:
         env: 'traffic'
         simulator: 'global'
         name: 'global_traffic'
-        num_workers: 8
-        # eval_freq: 1.0e+3
-        # eval_steps: 1.0e+3
