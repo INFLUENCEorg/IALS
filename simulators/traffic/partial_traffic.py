@@ -111,7 +111,6 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
         infs = []
         for edge in range(len(node_edges)):
             observation.append(state[edge][:-1])
-        print(np.reshape(observation, (4,9)))
         observation.append(state[-1]) #  append traffic light info
         observation = np.concatenate(observation)
         self.dset = observation
@@ -124,7 +123,6 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
     # override
     def step(self, rl_actions):
         probs = self.influence.predict(self.dset)
-        print(probs)
         node = self.tl_controlled[0]
         node_edges = dict(self.network.node_mapping)[node]
         for i, edge in enumerate(node_edges):
@@ -148,7 +146,6 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
         for edge in range(len(node_edges)):
             observation.append(state[edge][:-1])
             infs.append(state[edge][-1]) # last bit is influence source
-        print(np.reshape(observation, (4,9)))
         observation.append(state[-1]) #  append traffic light info again
         observation = np.concatenate(observation)
         infs = np.array(infs)
