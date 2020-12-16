@@ -82,4 +82,4 @@ parameters:
         curriculum: False
         dataset_size1: 2.0e+4
         dataset_size2: 1.0e+4
-        train_freq: 5.0e+5
+        train_freq: 5.0e+6
