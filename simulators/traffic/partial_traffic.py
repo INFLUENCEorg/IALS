@@ -9,7 +9,7 @@ from flow.envs.ring.accel import AccelEnv, ADDITIONAL_ENV_PARAMS
 from flow.controllers import SimCarFollowingController, GridRouter
 import numpy as np
 
-V_ENTER = 15
+V_ENTER = 10
 INNER_LENGTH = 100
 LONG_LENGTH = 100
 SHORT_LENGTH = 100
@@ -32,7 +32,7 @@ grid_array = {
     "cars_top": NUM_CARS_TOP,
     "cars_bot": NUM_CARS_BOT
 }
-speed_limit = 35
+speed_limit = 10
 horizontal_lanes = 1
 vertical_lanes = 1
 traffic_lights = True
@@ -96,15 +96,14 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
             sample = np.random.uniform(0,1)
             if sample < probs[i]:
                 self.total_veh2 += 1
-                try:
-                    self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
-                                       edge=edge, lane='free', pos=6, speed=10)
-                    
-                except:
-                    
-                    self.k.vehicle.remove('idm_' + str(self.veh_id))
-                    self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
-                                       edge=edge, lane='free', pos=6, speed=10)
+                # try:
+                speed = 9.5
+                self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
+                                   edge=edge, lane='free', pos=6, speed=9.5)
+                # except:          
+                    # self.k.vehicle.remove('idm_' + str(self.veh_id))
+                    # self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
+                                    #    edge=edge, lane='free', pos=6, speed=10)
                 self.veh_id += 1
         state = super().reset()
         observation = []
@@ -129,13 +128,16 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
             sample = np.random.uniform(0,1)
             if sample < probs[i]:
                 self.total_veh2 += 1
-                try:
-                    self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
-                                   edge=edge, lane='allowed', pos=6, speed=10)
-                except:
-                    self.k.vehicle.remove('idm_' + str(self.veh_id))
-                    self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
-                                       edge=edge, lane='allowed', pos=6, speed=10)
+                total_vehicles = len(self.k.vehicle.kernel_api.vehicle.getIDList())
+                speed = 9.5
+                # while len(self.k.vehicle.kernel_api.vehicle.getIDList()) == total_vehicles or speed == 0:
+                    # self.k.vehicle.kernel_api.simulation.clearPending()
+                    # self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
+                                #    edge=edge, lane='allowed', pos=6, speed=speed)
+                    # print(len)
+                    # speed -= 1
+                self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
+                                   edge=edge, lane='allowed', pos=6, speed=speed)
                 self.veh_id += 1
         state, reward, done, _ = super().step(rl_actions)
         # self.k.vehicle.kernel_api.simulation.clearPending()

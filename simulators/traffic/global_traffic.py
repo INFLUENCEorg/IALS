@@ -11,7 +11,7 @@ from flow.envs.ring.accel import AccelEnv, ADDITIONAL_ENV_PARAMS
 from flow.controllers import SimCarFollowingController, GridRouter
 import numpy as np
 
-V_ENTER = 15
+V_ENTER = 10
 INNER_LENGTH = 100
 LONG_LENGTH = 100
 SHORT_LENGTH = 100
@@ -34,7 +34,7 @@ grid_array = {
     "cars_top": NUM_CARS_TOP,
     "cars_bot": NUM_CARS_BOT
 }
-speed_limit = 35
+speed_limit = 10
 horizontal_lanes = 1
 vertical_lanes = 1
 traffic_lights = True
@@ -151,15 +151,18 @@ class GlobalTraffic(TrafficLightGridBitmapEnv):
         observation.append(state[-1]) #  append traffic light info
         observation = np.concatenate(observation)
         infs = np.array(infs, dtype='object')
-        dset = observation
+        self.dset = observation
         if self.influence.aug_obs:
+            self.influence.reset()
             observation = np.append(observation, self.influence.get_hidden_state())
         reward = 0
         done = False
-        return observation, reward, done, dset, infs
+        return observation, reward, done, self.dset, infs
 
     # override
     def step(self, rl_actions):
+        if self.influence.aug_obs:
+            self.influence.predict(self.dset)
         state, reward, done, _ = super().step(rl_actions)
         node = self.tl_controlled[0]
         node_edges = dict(self.network.node_mapping)[node]
@@ -171,10 +174,10 @@ class GlobalTraffic(TrafficLightGridBitmapEnv):
         observation.append(state[-1]) #  append traffic light info
         observation = np.concatenate(observation)
         infs = np.array(infs, dtype='object')
-        dset = observation
+        self.dset = observation
         if self.influence.aug_obs:
             observation = np.append(observation, self.influence.get_hidden_state())
-        return observation, reward, done, dset, infs
+        return observation, reward, done, self.dset, infs
     
     # override
     @property
