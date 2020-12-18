@@ -5,7 +5,7 @@ parameters:
         simulator: 'partial'
         name: 'partial_traffic'
         influence_model: 'nn'
-        obs_size: 48
+        obs_size: 40
         num_workers: 8
 
     influence:
@@ -22,7 +22,7 @@ parameters:
         output_size: 1
         n_sources: 4
         checkpoint_path: '../influence/models/traffic/model'
-        aug_obs: True
+        aug_obs: False
         load_model: False
         curriculum: False
         dataset_size1: 3.0e+4
