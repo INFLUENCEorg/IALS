@@ -4,4 +4,4 @@ parameters:
         env: 'traffic'
         simulator: 'global'
         name: 'global_traffic'
-        num_workers: 1
+        num_workers: 8
