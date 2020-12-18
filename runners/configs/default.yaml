@@ -37,12 +37,12 @@ parameters:
 
         load: false
         fully_connected: true
-        num_fc_layers: 1
+        num_fc_layers: 2
         num_fc_units: [64, 32]
         # Convolutional module
         convolutional: false
         # Recurrent module
-        recurrent: true
+        recurrent: false
         num_rec_units: 32
         seq_len: 8
         # Influence-aware memory
