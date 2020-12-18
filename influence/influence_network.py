@@ -23,7 +23,8 @@ class Network(nn.Module):
         super().__init__()
         # self.fc = nn.Linear(input_size, 16)
         self.relu = nn.ReLU()
-        self.lstm = nn.LSTM(input_size, hidden_memory_size, batch_first=True)
+        # self.lstm = nn.LSTM(input_size, hidden_memory_size, batch_first=True)
+        self.gru = nn.GRU(input_size, hidden_memory_size, batch_first=True)
         self.linear1 = nn.ModuleList()
         self.linear2 = nn.ModuleList()
         self.n_sources = n_sources
@@ -36,7 +37,7 @@ class Network(nn.Module):
         self.reset()
 
     def forward(self, input_seq):
-        lstm_out, self.hidden_cell = self.lstm(input_seq, self.hidden_cell)
+        lstm_out, self.hidden_cell = self.gru(input_seq, self.hidden_cell)
         logits = []
         probs = []
         for k in range(self.n_sources):
@@ -50,8 +51,9 @@ class Network(nn.Module):
         return logits, probs
     
     def reset(self):
-        self.hidden_cell = (torch.zeros(1,1,self.hidden_memory_size),
-                            torch.zeros(1,1,self.hidden_memory_size))
+        # self.hidden_cell = (torch.zeros(1,1,self.hidden_memory_size),
+        #                     torch.zeros(1,1,self.hidden_memory_size))
+        self.hidden_cell = torch.zeros(1,1,self.hidden_memory_size)
 
 class InfluenceNetwork(object):
     """
@@ -94,6 +96,7 @@ class InfluenceNetwork(object):
         input_seqs, target_seqs = self._form_sequences(inputs, targets)
         train_input_seqs, train_target_seqs, test_input_seqs, test_target_seqs = self._split_train_test(input_seqs, target_seqs)
         self._train(train_input_seqs, train_target_seqs, test_input_seqs, test_target_seqs, n_epochs)
+        # torch.set_grad_enabled(False)
         self._save_model()
         if self.curriculum:
             self.strength += self.strength_increment
@@ -110,7 +113,8 @@ class InfluenceNetwork(object):
         self.model.reset()
     
     def get_hidden_state(self):
-        return self.model.hidden_cell[0].detach().numpy()[0][0]
+        # return self.model.hidden_cell[0].detach().numpy()[0][0]
+        return self.model.hidden_cell.detach().numpy()
 
 
     ### Private methods ###        
@@ -153,8 +157,9 @@ class InfluenceNetwork(object):
                 indices = permutation[i:i+self._batch_size]
                 seqs_batch = seqs[indices]
                 targets_batch = targets[indices]
-                self.model.hidden_cell = (torch.randn(1, self._batch_size, self._hidden_memory_size),
-                                          torch.randn(1, self._batch_size, self._hidden_memory_size))
+                # self.model.hidden_cell = (torch.randn(1, self._batch_size, self._hidden_memory_size),
+                #                           torch.randn(1, self._batch_size, self._hidden_memory_size))
+                self.model.hidden_cell = torch.zeros(1, self._batch_size, self._hidden_memory_size)
                 logits, probs = self.model(seqs_batch)
                 end = 0
                 self.optimizer.zero_grad()
@@ -181,8 +186,9 @@ class InfluenceNetwork(object):
         inputs = torch.FloatTensor(inputs)
         targets = torch.FloatTensor(targets)
         loss = 0
-        self.model.hidden_cell = (torch.randn(1, len(inputs), self._hidden_memory_size),
-                                  torch.randn(1, len(inputs), self._hidden_memory_size))
+        # self.model.hidden_cell = (torch.randn(1, len(inputs), self._hidden_memory_size),
+        #                           torch.randn(1, len(inputs), self._hidden_memory_size))
+        self.model.hidden_cell = torch.zeros(1, len(inputs), self._hidden_memory_size)
         logits, probs = self.model(inputs)
         self.img1 = None
         end = 0
@@ -236,6 +242,7 @@ class InfluenceNetwork(object):
         checkpoint = torch.load(os.path.join(self.checkpoint_path, 'checkpoint'))
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.model.eval()
+        torch.set_grad_enabled(False)
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
 def read_parameters(config_file):
