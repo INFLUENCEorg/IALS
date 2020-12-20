@@ -51,7 +51,7 @@ class Network(nn.Module):
             linear2_out = self.relu(self.linear2[k](out))
             linear3_out = self.linear3[k](linear2_out)
             logits.append(linear3_out)
-            if np.shape(linear2_out[:, -1, :])[1] > 1: 
+            if np.shape(linear3_out[:, -1, :])[1] > 1: 
                 probs.append(self.softmax(linear3_out[:, -1, :]).detach().numpy())
             else:
                 probs.append(self.sigmoid(linear3_out[:, -1, :]).detach().numpy())
