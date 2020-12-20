@@ -19,35 +19,42 @@ import torch.optim as optim
 class Network(nn.Module):
     """
     """
-    def __init__(self, input_size, hidden_memory_size, n_sources, output_size):
+    def __init__(self, input_size, hidden_memory_size, n_sources, output_size, recurrent):
         super().__init__()
         # self.fc = nn.Linear(input_size, 16)
         self.relu = nn.ReLU()
         # self.lstm = nn.LSTM(input_size, hidden_memory_size, batch_first=True)
-        self.gru = nn.GRU(input_size, hidden_memory_size, batch_first=True)
-        self.linear1 = nn.ModuleList()
+        self.recurrent = recurrent
+        if self.recurrent:
+            self.gru = nn.GRU(input_size, hidden_memory_size, batch_first=True)
+        else:
+            self.linear1 = nn.Linear(input_size, hidden_memory_size)
         self.linear2 = nn.ModuleList()
+        self.linear3 = nn.ModuleList()
         self.n_sources = n_sources
         self.softmax = nn.Softmax(dim=1)
         self.sigmoid = nn.Sigmoid()
         self.hidden_memory_size = hidden_memory_size
         for _ in range(self.n_sources):
-            self.linear1.append((nn.Linear(hidden_memory_size, hidden_memory_size)))
-            self.linear2.append((nn.Linear(hidden_memory_size, output_size)))
+            self.linear2.append((nn.Linear(hidden_memory_size, hidden_memory_size)))
+            self.linear3.append((nn.Linear(hidden_memory_size, output_size)))
         self.reset()
 
     def forward(self, input_seq):
-        lstm_out, self.hidden_cell = self.gru(input_seq, self.hidden_cell)
+        if self.recurrent:
+            out, self.hidden_cell = self.gru(input_seq, self.hidden_cell)
+        else:
+            out = self.relu(self.linear1(input_seq))
         logits = []
         probs = []
         for k in range(self.n_sources):
-            linear1_out = self.relu(self.linear1[k](lstm_out))
-            linear2_out = self.linear2[k](linear1_out)
-            logits.append(linear2_out)
+            linear2_out = self.relu(self.linear2[k](out))
+            linear3_out = self.linear3[k](linear2_out)
+            logits.append(linear3_out)
             if np.shape(linear2_out[:, -1, :])[1] > 1: 
-                probs.append(self.softmax(linear2_out[:, -1, :]).detach().numpy())
+                probs.append(self.softmax(linear3_out[:, -1, :]).detach().numpy())
             else:
-                probs.append(self.sigmoid(linear2_out[:, -1, :]).detach().numpy())
+                probs.append(self.sigmoid(linear3_out[:, -1, :]).detach().numpy())
         return logits, probs
     
     def reset(self):
@@ -75,7 +82,9 @@ class InfluenceNetwork(object):
         self.parameters = parameters
         self.inputs_file = data_path + 'inputs.csv'
         self.targets_file = data_path + 'targets.csv'
-        self.model = Network(self.input_size, self._hidden_memory_size, self.n_sources, self.output_size)
+        self.recurrent = self._seq_len > 1
+        self.model = Network(self.input_size, self._hidden_memory_size, 
+                             self.n_sources, self.output_size, self.recurrent)
         if self.output_size > 1:
             self.loss_function = nn.CrossEntropyLoss()
         else:
@@ -96,7 +105,6 @@ class InfluenceNetwork(object):
         input_seqs, target_seqs = self._form_sequences(inputs, targets)
         train_input_seqs, train_target_seqs, test_input_seqs, test_target_seqs = self._split_train_test(input_seqs, target_seqs)
         self._train(train_input_seqs, train_target_seqs, test_input_seqs, test_target_seqs, n_epochs)
-        # torch.set_grad_enabled(False)
         self._save_model()
         if self.curriculum:
             self.strength += self.strength_increment
