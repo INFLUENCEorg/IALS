@@ -10,13 +10,13 @@ parameters:
 
     influence:
         # Common hyperparameters
-        seq_len: 1
+        seq_len: 300
         episode_length: 300
         data_path: '../influence/data/traffic/'
         lr: 1.0e-3
         n_epochs1: 2000
         n_epochs2: 500
-        batch_size: 9600
+        batch_size: 32
         hidden_memory_size: 8
         input_size: 40
         output_size: 1
