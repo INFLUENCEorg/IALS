@@ -43,15 +43,15 @@ max_gap = 3.0
 detector_gap = 0.8
 show_detectors = True
 phases = [{'duration': '31', 'minDur': '8', 'maxDur': '45', 'state': 'GrGr'},
-          {'duration': '6', 'minDur': '3', 'maxDur': '6', 'state': 'yryr'},
+          {'duration': '6', 'minDur': '5', 'maxDur': '6', 'state': 'yryr'},
           {'duration': '31', 'minDur': '8', 'maxDur': '45', 'state': 'rGrG'},
-          {'duration': '6', 'minDur': '3', 'maxDur': '6', 'state': 'ryry'}]
+          {'duration': '6', 'minDur': '5', 'maxDur': '6', 'state': 'ryry'}]
 nodes = []
 for node in range(N_ROWS*N_COLUMNS):
     nodes.append('center'+str(node))
 nodes.pop(12)
 additional_env_params = {'target_velocity': 50,
-                         'switch_time': 3.0,
+                         'switch_time': 5.0,
                          'num_observed': 2,
                          'discrete': True,
                          'tl_type': 'actuated',
