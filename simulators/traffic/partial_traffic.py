@@ -75,15 +75,9 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
         sim_params = SumoParams(render=False, restart_instance=False, sim_step=1, print_warnings=False, seed=seed)
         super().__init__(env_params, sim_params, network, simulator='traci')
         self.influence = influence
-        self.veh_id = 0
-        self.total_veh2 = 0
 
     # override
     def reset(self):
-        # print('entered' + str(len(set(self.total_veh))))
-        # print('real:' + str(self.total_veh2))
-        self.total_veh2 = 0
-        self.total_veh = []
         self.influence.reset()
         probs = self.influence.predict(np.zeros(40))
         node = self.tl_controlled[0]
@@ -95,7 +89,6 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
         for i, edge in enumerate(node_edges):
             sample = np.random.uniform(0,1)
             if sample < probs[i]:
-                self.total_veh2 += 1
                 # try:
                 speed = 9.5
                 self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
@@ -127,8 +120,6 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
         for i, edge in enumerate(node_edges):
             sample = np.random.uniform(0,1)
             if sample < probs[i]:
-                self.total_veh2 += 1
-                total_vehicles = len(self.k.vehicle.kernel_api.vehicle.getIDList())
                 speed = 9.5
                 # while len(self.k.vehicle.kernel_api.vehicle.getIDList()) == total_vehicles or speed == 0:
                     # self.k.vehicle.kernel_api.simulation.clearPending()
@@ -154,6 +145,8 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
         self.dset = observation
         if self.influence.aug_obs:
             observation = np.append(observation, self.influence.get_hidden_state())
+        if done:
+            self.k.vehicle.kernel_api.simulation.clearPending()
         return observation, reward, done, infs, self.dset
     
     # override
