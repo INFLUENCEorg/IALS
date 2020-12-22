@@ -37,7 +37,7 @@ horizontal_lanes = 1
 vertical_lanes = 1
 traffic_lights = True
 additional_env_params = {'target_velocity': 50,
-                         'switch_time': 4.0,
+                         'switch_time': 5.0,
                          'num_observed': 2,
                          'discrete': True,
                          'tl_type': 'actuated',
@@ -72,32 +72,32 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
         network = TrafficLightGridNetwork(name='grid', vehicles=vehicles, net_params=net_params, initial_config=initial_config)
         
         env_params = EnvParams(horizon=horizon, additional_params=additional_env_params)
-        sim_params = SumoParams(render=False, restart_instance=False, sim_step=1, print_warnings=False, seed=seed)
+        sim_params = SumoParams(render=True, restart_instance=False, sim_step=1, print_warnings=False, seed=seed)
         super().__init__(env_params, sim_params, network, simulator='traci')
         self.influence = influence
 
     # override
     def reset(self):
         self.influence.reset()
-        probs = self.influence.predict(np.zeros(40))
+        # probs = self.influence.predict(np.zeros(40))
         node = self.tl_controlled[0]
         node_edges = dict(self.network.node_mapping)[node]
         self.veh_id = 0
         # remove pending vehicles that couldn't be added in the previous episode
         self.k.vehicle.kernel_api.simulation.clearPending()
         # add new vehicles
-        for i, edge in enumerate(node_edges):
-            sample = np.random.uniform(0,1)
-            if sample < probs[i]:
-                # try:
-                speed = 9.5
-                self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
-                                   edge=edge, lane='free', pos=6, speed=9.5)
-                # except:          
-                    # self.k.vehicle.remove('idm_' + str(self.veh_id))
-                    # self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
-                                    #    edge=edge, lane='free', pos=6, speed=10)
-                self.veh_id += 1
+        # for i, edge in enumerate(node_edges):
+        #     sample = np.random.uniform(0,1)
+        #     if sample < probs[i]:
+        #         # try:
+        #         speed = 9.5
+        #         self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
+        #                            edge=edge, lane='free', pos=6, speed=9.5)
+        #         # except:          
+        #             # self.k.vehicle.remove('idm_' + str(self.veh_id))
+        #             # self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
+        #                             #    edge=edge, lane='free', pos=6, speed=10)
+        #         self.veh_id += 1
         state = super().reset()
         observation = []
         infs = []
@@ -121,6 +121,8 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
             sample = np.random.uniform(0,1)
             if sample < probs[i]:
                 speed = 9.5
+                if len(self.k.vehicle.get_ids_by_edge(edge)) > 8:
+                    speed = 3
                 # while len(self.k.vehicle.kernel_api.vehicle.getIDList()) == total_vehicles or speed == 0:
                     # self.k.vehicle.kernel_api.simulation.clearPending()
                     # self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
