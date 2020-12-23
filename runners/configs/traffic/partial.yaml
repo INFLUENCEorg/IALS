@@ -17,7 +17,7 @@ parameters:
         n_epochs1: 2000
         n_epochs2: 500
         batch_size: 9600
-        hidden_memory_size: 32
+        hidden_memory_size: 16
         input_size: 40
         output_size: 1
         n_sources: 4
@@ -25,6 +25,6 @@ parameters:
         aug_obs: False
         load_model: False
         curriculum: False
-        dataset_size1: 3.0e+4
+        dataset_size1: 5.0e+4
         dataset_size2: 1.0e+4
         train_freq: 5.0e+6
