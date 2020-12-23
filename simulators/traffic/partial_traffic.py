@@ -37,7 +37,7 @@ horizontal_lanes = 1
 vertical_lanes = 1
 traffic_lights = True
 additional_env_params = {'target_velocity': 50,
-                         'switch_time': 5.0,
+                         'switch_time': 3.0,
                          'num_observed': 2,
                          'discrete': True,
                          'tl_type': 'actuated',
