@@ -6,7 +6,7 @@ parameters:
         name: 'partial_traffic'
         influence_model: 'nn'
         obs_size: 40
-        num_workers: 1
+        num_workers: 8
 
     influence:
         # Common hyperparameters
