@@ -30,14 +30,14 @@ class Network(nn.Module):
         else:
             self.linear1 = nn.Linear(input_size, hidden_memory_size)
         self.linear2 = nn.ModuleList()
-        self.linear3 = nn.ModuleList()
+        # self.linear3 = nn.ModuleList()
         self.n_sources = n_sources
         self.softmax = nn.Softmax(dim=1)
         self.sigmoid = nn.Sigmoid()
         self.hidden_memory_size = hidden_memory_size
         for _ in range(self.n_sources):
-            self.linear2.append((nn.Linear(hidden_memory_size, hidden_memory_size)))
-            self.linear3.append((nn.Linear(hidden_memory_size, output_size)))
+            self.linear2.append((nn.Linear(hidden_memory_size, output_size)))
+            # self.linear3.append((nn.Linear(hidden_memory_size, output_size)))
         self.reset()
 
     def forward(self, input_seq):
@@ -48,13 +48,13 @@ class Network(nn.Module):
         logits = []
         probs = []
         for k in range(self.n_sources):
-            linear2_out = self.relu(self.linear2[k](out))
-            linear3_out = self.linear3[k](linear2_out)
-            logits.append(linear3_out)
-            if np.shape(linear3_out[:, -1, :])[1] > 1: 
-                probs.append(self.softmax(linear3_out[:, -1, :]).detach().numpy())
+            # linear2_out = self.relu(self.linear2[k](out))
+            linear2_out = self.linear2[k](out)
+            logits.append(linear2_out)
+            if np.shape(linear2_out[:, -1, :])[1] > 1: 
+                probs.append(self.softmax(linear2_out[:, -1, :]).detach().numpy())
             else:
-                probs.append(self.sigmoid(linear3_out[:, -1, :]).detach().numpy())
+                probs.append(self.sigmoid(linear2_out[:, -1, :]).detach().numpy())
         return logits, probs
     
     def reset(self):
