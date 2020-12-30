@@ -11,11 +11,14 @@ class InfluenceUniform(object):
         self.output_size = parameters['output_size']
         self.aug_obs = parameters['aug_obs']
         self.strength = 1
+        self.probs = parameters['probs']
 
     def train(self):
         pass
 
     def predict(self, obs):
+        if self.probs is not None:
+            return self.probs
         probs = [[1/self.output_size]*self.output_size]*self.n_sources
         return probs
     
