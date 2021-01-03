@@ -117,6 +117,7 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
         probs = self.influence.predict(self.dset)
         node = self.tl_controlled[0]
         node_edges = dict(self.network.node_mapping)[node]
+        self.k.vehicle.kernel_api.simulation.clearPending()
         for i, edge in enumerate(node_edges):
             sample = np.random.uniform(0,1)
             if sample < probs[i]:
