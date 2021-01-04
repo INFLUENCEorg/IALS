@@ -113,8 +113,9 @@ class Experiment(object):
                     # step_output = self.sim.reset()
             elif global_step % self.parameters['eval_freq'] == 0:
                 mean_episodic_return = self.data_collector.run(self.parameters['eval_steps'], log=True)
-                loss = self.influence.test()
-                self._run.log_scalar('influence loss', loss, global_step)
+                if self.parameters['influence_model'] == 'nn':
+                    loss = self.influence.test()
+                    self._run.log_scalar('influence loss', loss, global_step)
                 self._run.log_scalar('mean episodic return', mean_episodic_return, global_step)
             # Select the action to perform
             action = self.agent.take_action(step_output)
