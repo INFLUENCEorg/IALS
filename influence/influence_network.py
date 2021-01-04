@@ -117,7 +117,7 @@ class InfluenceNetwork(object):
         targets = self._read_data(self.targets_file)
         input_seqs, target_seqs = self._form_sequences(inputs, targets)
         loss = self._test(input_seqs, target_seqs)
-        print(f'Test loss: {loss.item():10.8f}')
+        print(f'Test loss: {loss:10.8f}')
         os.remove(self.inputs_file)
         os.remove(self.targets_file)
         return loss
@@ -201,7 +201,7 @@ class InfluenceNetwork(object):
         test_loss = self._test(test_inputs, test_targets)
         print(f'epoch: {e+1:3} test loss: {test_loss.item():10.8f}')
         self.model.reset()
-        return test_loss
+        return test_loss.item()
 
     def _test(self, inputs, targets):
         inputs = torch.FloatTensor(inputs)
@@ -232,7 +232,7 @@ class InfluenceNetwork(object):
             # print(probs_counts)
             # for i in range(len(inputs)):
                 # self._plot_prediction(probs[s][i], targets[i, start:end])
-        return loss
+        return loss.item()
 
     def _plot_prediction(self, prediction, target):
         prediction = prediction.detach().numpy()
