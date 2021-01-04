@@ -103,16 +103,19 @@ class Experiment(object):
                     dataset_size = self.parameters_influence['dataset_size2']
                     num_epochs = self.parameters_influence['n_epochs2']
                 mean_episodic_return = self.data_collector.run(dataset_size, log=True)
-                self.influence.train(num_epochs)
+                loss = self.influence.train(num_epochs)
                 # influence model parameters need to be loaded every time they are updated because 
                 # each process keeps a separate copy of the influence model
                 self.sim.load_influence_model()
                 self._run.log_scalar("mean episodic return", mean_episodic_return, global_step)
+                self._run.log_scalar('influence loss', loss, global_step)
                 # if global_step == 0:
                     # step_output = self.sim.reset()
             elif global_step % self.parameters['eval_freq'] == 0:
-                mean_episodic_return = self.data_collector.run(self.parameters['eval_steps'], log=False)
-                self._run.log_scalar("mean episodic return", mean_episodic_return, global_step)
+                mean_episodic_return = self.data_collector.run(self.parameters['eval_steps'], log=True)
+                loss = self.influence.test()
+                self._run.log_scalar('influence loss', loss, global_step)
+                self._run.log_scalar('mean episodic return', mean_episodic_return, global_step)
             # Select the action to perform
             action = self.agent.take_action(step_output)
             # Increment step
