@@ -104,12 +104,24 @@ class InfluenceNetwork(object):
         targets = self._read_data(self.targets_file)
         input_seqs, target_seqs = self._form_sequences(inputs, targets)
         train_input_seqs, train_target_seqs, test_input_seqs, test_target_seqs = self._split_train_test(input_seqs, target_seqs)
-        self._train(train_input_seqs, train_target_seqs, test_input_seqs, test_target_seqs, n_epochs)
+        loss = self._train(train_input_seqs, train_target_seqs, test_input_seqs, test_target_seqs, n_epochs)
         self._save_model()
         if self.curriculum:
             self.strength += self.strength_increment
         os.remove(self.inputs_file)
         os.remove(self.targets_file)
+        return loss
+
+    def test(self):
+        inputs = self._read_data(self.inputs_file)
+        targets = self._read_data(self.targets_file)
+        input_seqs, target_seqs = self._form_sequences(inputs, targets)
+        loss = self._test(input_seqs, target_seqs)
+        print(f'Test loss: {loss.item():10.8f}')
+        os.remove(self.inputs_file)
+        os.remove(self.targets_file)
+        return loss
+
     
     def predict(self, obs):
         obs_tensor = torch.reshape(torch.FloatTensor(obs), (1,1,-1))
@@ -189,6 +201,7 @@ class InfluenceNetwork(object):
         test_loss = self._test(test_inputs, test_targets)
         print(f'epoch: {e+1:3} test loss: {test_loss.item():10.8f}')
         self.model.reset()
+        return test_loss
 
     def _test(self, inputs, targets):
         inputs = torch.FloatTensor(inputs)
