@@ -172,7 +172,7 @@ class InfluenceNetwork(object):
             permutation = torch.randperm(len(seqs))
             if e % 50 == 0:
                 test_loss = self._test(test_inputs, test_targets)
-                print(f'epoch: {e:3} test loss: {test_loss.item():10.8f}')
+                print(f'epoch: {e:3} test loss: {test_loss:10.8f}')
             for i in range(0, len(seqs) - len(seqs) % self._batch_size, self._batch_size):
                 indices = permutation[i:i+self._batch_size]
                 seqs_batch = seqs[indices]
@@ -199,9 +199,9 @@ class InfluenceNetwork(object):
                 loss.backward()
                 self.optimizer.step()
         test_loss = self._test(test_inputs, test_targets)
-        print(f'epoch: {e+1:3} test loss: {test_loss.item():10.8f}')
+        print(f'epoch: {e+1:3} test loss: {test_loss:10.8f}')
         self.model.reset()
-        return test_loss.item()
+        return test_loss
 
     def _test(self, inputs, targets):
         inputs = torch.FloatTensor(inputs)

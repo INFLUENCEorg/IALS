@@ -16,7 +16,7 @@ class DistributedSimulation(object):
             num_workers = mp.cpu_count()
         print("Number of workers {}. ".format(num_workers))        
         # Random seed needs to be set different for each worker (seed + worker_id). Otherwise multiprocessing takes 
-        # the current system time, which is the same for all workers!  
+        # the current system time, which is the same for all workers!
         self.workers = [Worker(env, simulator, influence_model, seed + worker_id) for worker_id in range(num_workers)]
 
     def reset(self):

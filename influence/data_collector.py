@@ -2,6 +2,7 @@ import os
 import sys
 sys.path.append("..") 
 from simulators.distributed_simulation import DistributedSimulation
+from simulators.simulation import Simulation
 import argparse
 import yaml
 import time
@@ -41,7 +42,10 @@ class DataCollector(object):
         Runs the data collection process.
         """
         print('collecting data...')
+        # if self.num_workers > 1:
         sim = DistributedSimulation(self.env, 'global', self.num_workers, self.influence, self.seed)
+        # else:
+            # sim = Simulation(self.env, 'global', self.influence, self.seed)
         step = 0
         step_output = sim.reset()
         episodic_returns = []

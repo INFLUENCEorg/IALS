@@ -130,7 +130,7 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
                                 #    edge=edge, lane='allowed', pos=6, speed=speed)
                     # print(len)
                     # speed -= 1
-                self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
+                self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm',
                                    edge=edge, lane='allowed', pos=6, speed=speed)
                 self.veh_id += 1
         state, reward, done, _ = super().step(rl_actions)
