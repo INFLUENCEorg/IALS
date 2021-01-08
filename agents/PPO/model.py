@@ -75,7 +75,7 @@ class Model(object):
                                           self.parameters["kernel_sizes"],
                                           self.parameters["strides"],
                                           tf.nn.relu, False, 'cnn')
-            self.feature_vector = c_layers.flatten(self.feature_vector)
+            hidden = c_layers.flatten(self.feature_vector)
 
         if self.fully_connected:
             hidden = net.fcn(self.feature_vector, self.parameters["num_fc_layers"],
