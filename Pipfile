@@ -17,6 +17,8 @@ pyaml = "*"
 lxml = "*"
 opencv-python = "*"
 imutils = "*"
+ipykernel = "*"
+jupyterlab = "*"
 
 [dev-packages]
 

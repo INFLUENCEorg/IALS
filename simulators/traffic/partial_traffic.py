@@ -120,7 +120,9 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
         self.k.vehicle.kernel_api.simulation.clearPending()
         for i, edge in enumerate(node_edges):
             sample = np.random.uniform(0,1)
+            # print(probs)
             if sample < probs[i]:
+                # print('CAR: ' + str(i))
                 speed = 9.5
                 if len(self.k.vehicle.get_ids_by_edge(edge)) > 8:
                     speed = 3
@@ -136,7 +138,6 @@ class PartialTraffic(TrafficLightGridBitmapEnv):
         state, reward, done, _ = super().step(rl_actions)
         # self.k.vehicle.kernel_api.simulation.clearPending()
         # remove pending vehicles that couldn't be added
-        node_edges = dict(self.network.node_mapping)[node]
         observation = []
         infs = []
         for edge in range(len(node_edges)):
