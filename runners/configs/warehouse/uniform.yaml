@@ -2,3 +2,21 @@ parameters:
     main:
         influence_model: 'uniform'
         name: 'uniform'
+        env: 'warehouse'
+        obs_size: 73
+        time_horizon: 16
+        num_actions: 4
+        simulator: 'partial'
+        fully_connected: true
+        num_fc_layers: 1
+        num_fc_units: [256]
+        # Convolutional module
+        convolutional: false
+        # Recurrent module
+        recurrent: true
+        num_rec_units: 128
+        seq_len: 8
+    influence:
+        probs: 0
+        input_size: 73
+        output_size: 49

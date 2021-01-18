@@ -17,10 +17,10 @@ class InfluenceUniform(object):
         pass
 
     def predict(self, obs):
-        if self.probs is not None:
+        if self.probs != 0:
             return self.probs
-        probs = [[1/self.output_size]*self.output_size]*self.n_sources
-        return probs
+        self.probs = [[1/self.output_size]*self.output_size]*self.n_sources
+        return self.probs
     
     def reset(self):
         pass

@@ -2,4 +2,18 @@ parameters:
     main:
         # Common hyperparameters
         simulator: 'global'
+        env: 'warehouse'
+        obs_size: 73
+        time_horizon: 16
+        num_actions: 4
         name: 'global_warehouse'
+        influence_model: None
+        fully_connected: true
+        num_fc_layers: 1
+        num_fc_units: [256]
+        # Convolutional module
+        convolutional: false
+        # Recurrent module
+        recurrent: true
+        num_rec_units: 128
+        seq_len: 8
