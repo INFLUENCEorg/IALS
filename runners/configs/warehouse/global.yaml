@@ -17,4 +17,3 @@ parameters:
         recurrent: true
         num_rec_units: 128
         seq_len: 8
-        eval_freq: 1.0e+3
