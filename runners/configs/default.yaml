@@ -32,8 +32,6 @@ parameters:
         eval_freq: 1.0e+5
         eval_steps: 1.0e+4
         num_workers: 8
-        eval_freq: 1.0e+5
-        eval_steps: 1.0e+4
 
         load: false
         fully_connected: true

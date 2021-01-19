@@ -6,4 +6,4 @@ parameters:
         name: 'uniform_traffic'
         influence_model: 'uniform'
     influence:
-        probs: [0.5, 0.5, 0.5, 0.5]
+        probs: [0.1, 0.1, 0.1, 0.1]

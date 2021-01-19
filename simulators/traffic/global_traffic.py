@@ -37,11 +37,10 @@ grid_array = {
 speed_limit = 10
 horizontal_lanes = 1
 vertical_lanes = 1
-traffic_lights = True
 program_id = 1
 max_gap = 3.0
 detector_gap = 0.8
-show_detectors = True
+show_detectors = False
 phases = [{'duration': '31', 'minDur': '8', 'maxDur': '45', 'state': 'GrGr'},
           {'duration': '6', 'minDur': '3', 'maxDur': '6', 'state': 'yryr'},
           {'duration': '31', 'minDur': '8', 'maxDur': '45', 'state': 'rGrG'},
@@ -49,13 +48,13 @@ phases = [{'duration': '31', 'minDur': '8', 'maxDur': '45', 'state': 'GrGr'},
 nodes = []
 for node in range(N_ROWS*N_COLUMNS):
     nodes.append('center'+str(node))
-nodes.pop(11)
+nodes.pop(18)
 additional_env_params = {'target_velocity': 50,
                          'switch_time': 3.0,
                          'num_observed': 2,
                          'discrete': True,
                          'tl_type': 'actuated',
-                         'tl_controlled': ['center11'],
+                         'tl_controlled': ['center18'],
                          'scale': 10}
 horizon = 300
 
