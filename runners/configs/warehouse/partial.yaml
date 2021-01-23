@@ -4,7 +4,7 @@ parameters:
         name: 'partial_warehouse'
         influence_model: 'nn'
         env: 'warehouse'
-        obs_size: 81
+        obs_size: 73
         time_horizon: 16
         num_actions: 4
         simulator: 'partial'
@@ -17,7 +17,6 @@ parameters:
         recurrent: false
         num_rec_units: 128
         seq_len: 8
-        num_workers: 2
 
     influence:
         # Common hyperparameters
@@ -33,7 +32,7 @@ parameters:
         output_size: 49
         n_sources: 8
         checkpoint_path: '../influence/models/warehouse/model'
-        aug_obs: True
+        aug_obs: False
         load_model: False
         curriculum: False
         dataset_size1: 5.0e+4
