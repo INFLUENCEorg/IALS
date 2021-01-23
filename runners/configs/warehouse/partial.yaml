@@ -14,7 +14,7 @@ parameters:
         # Convolutional module
         convolutional: false
         # Recurrent module
-        recurrent: false
+        recurrent: true
         num_rec_units: 128
         seq_len: 8
 
