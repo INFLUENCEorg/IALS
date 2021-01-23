@@ -49,7 +49,7 @@ class PartialWarehouse(object):
         self.robot_id = 0
         self._place_robots()
         self.influence.reset()
-        self.influence.predict(self.get_dset())
+        # self.influence.predict(self.get_dset())
         self.item_id = 0
         self.items = []
         self._add_items()

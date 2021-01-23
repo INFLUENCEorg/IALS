@@ -28,6 +28,7 @@ class DataCollector(object):
         self.num_workers = num_workers
         self.env = env
         self.seed = seed
+        self.sim = DistributedSimulation(self.env, 'global', self.num_workers, self.influence, self.seed)
 
     def generate_path(self, data_path):
         """
@@ -37,17 +38,18 @@ class DataCollector(object):
         if not os.path.exists(data_path):
             os.makedirs(data_path)
 
-    def run(self, num_steps, log=False):
+    def run(self, num_steps, log=False, load=False):
         """
         Runs the data collection process.
         """
         print('collecting data...')
         # if self.num_workers > 1:
-        sim = DistributedSimulation(self.env, 'global', self.num_workers, self.influence, self.seed)
+        if load:
+            self.sim.load_influence_model()
         # else:
             # sim = Simulation(self.env, 'global', self.influence, self.seed)
         step = 0
-        step_output = sim.reset()
+        step_output = self.sim.reset()
         episodic_returns = []
         episodic_return = 0
         infs = []
@@ -63,13 +65,12 @@ class DataCollector(object):
                 infs.append(np.array(step_output['infs']))
             action = self.agent.take_action(step_output, 'eval')
             step += 1
-            step_output = sim.step(action)
+            step_output = self.sim.step(action)
             episodic_return += np.mean(step_output['reward'])
             # Think what to do if episodes are not same length
             if step_output['done'][0]:
                 episodic_returns.append(episodic_return)
                 episodic_return = 0
-        sim.close()
         print('Done!')
         self.seed += self.num_workers # Changing seed for the next run. Last iteration seed was self.seed+[0:self.num_workers]
         mean_episodic_return = np.mean(episodic_returns)

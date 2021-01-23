@@ -8,13 +8,13 @@ parameters:
         time_horizon: 16
         num_actions: 4
         simulator: 'partial'
-        fully_connected: true
+        fully_connected: false
         num_fc_layers: 1
-        num_fc_units: [128, 64]
+        num_fc_units: [256, 128]
         # Convolutional module
         convolutional: false
         # Recurrent module
-        recurrent: true
+        recurrent: false
         num_rec_units: 128
         seq_len: 8
 

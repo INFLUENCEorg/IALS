@@ -51,7 +51,7 @@ class Warehouse(object):
         self.influence.reset()
         dset = self.get_dset()
         infs = self.get_infs()
-        self.influence.predict(dset)
+        # self.influence.predict(dset)
         self.item_id = 0
         self.items = []
         self._add_items()
@@ -70,7 +70,7 @@ class Warehouse(object):
         """
         # influence predicts robots locations
         dset = self.get_dset()
-        self.influence.predict(dset)
+        probs = self.influence.predict(dset)
         # external robots take an action
         actions = []
         for robot in self.robots:
@@ -137,6 +137,8 @@ class Warehouse(object):
                                          edgecolor=color, linestyle=linestyle,
                                          facecolor='none')
                 ax.add_patch(rect)
+                self.img.axes.get_xaxis().set_visible(False)
+                self.img.axes.get_yaxis().set_visible(False)
         else:
             self.img.set_data(im)
         plt.pause(delay)
@@ -357,3 +359,6 @@ class Warehouse(object):
         int_rows = list(robot_a_rows.intersection(robot_b_rows)) - robot_a_domain[0]
         int_columns = list(robot_a_columns.intersection(robot_b_columns)) - robot_a_domain[1]
         return int_rows, int_columns
+
+    def load_influence_model(self):
+        self.influence._load_model()
