@@ -38,7 +38,7 @@ class Experiment(object):
             if self.parameters['influence_model'] == 'nn':
                 self.influence = InfluenceNetwork(parameters['influence'], data_path, _run._id)
             else:
-                self.influence = InfluenceUniform(parameters['influence'])
+                self.influence = InfluenceUniform(parameters['influence'], data_path)
         else:
             self.influence = InfluenceDummy(parameters['influence'])
 
@@ -102,7 +102,7 @@ class Experiment(object):
                 else:
                     dataset_size = self.parameters_influence['dataset_size2']
                     num_epochs = self.parameters_influence['n_epochs2']
-                mean_episodic_return = self.data_collector.run(dataset_size, log=True)
+                mean_episodic_return = self.data_collector.run(dataset_size, log=True, load=False)
                 loss = self.influence.train(num_epochs)
                 # influence model parameters need to be loaded every time they are updated because 
                 # each process keeps a separate copy of the influence model
@@ -112,8 +112,9 @@ class Experiment(object):
                 # if global_step == 0:
                     # step_output = self.sim.reset()
             elif global_step % self.parameters['eval_freq'] == 0:
-                mean_episodic_return = self.data_collector.run(self.parameters['eval_steps'], log=True)
-                if self.parameters['influence_model'] == 'nn':
+                log = self.parameters['simulator'] == 'partial'
+                mean_episodic_return = self.data_collector.run(self.parameters['eval_steps'], log=log, load=True)
+                if self.parameters['simulator'] == 'partial':
                     loss = self.influence.test()
                     self._run.log_scalar('influence loss', loss, global_step)
                 self._run.log_scalar('mean episodic return', mean_episodic_return, global_step)
@@ -133,6 +134,7 @@ class Experiment(object):
                 episode_return = 0
                 episode_step = 0
         self.sim.close()
+        self.data_collector.sim.close()
         # server.stop()
 
 def add_mongodb_observer():

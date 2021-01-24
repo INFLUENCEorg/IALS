@@ -48,14 +48,13 @@ class PartialWarehouse(object):
         """
         self.robot_id = 0
         self._place_robots()
-        self.influence.reset()
-        # self.influence.predict(self.get_dset())
         self.item_id = 0
         self.items = []
         self._add_items()
         obs = self._get_observation()
         self.episode_length = 0
-        # Influence-augmented observations
+        self.influence.reset()
+        self.probs = self.influence.predict(self.get_dset())
         if self.influence.aug_obs:
             obs = np.append(obs, self.influence.get_hidden_state())
         reward = 0
@@ -66,9 +65,8 @@ class PartialWarehouse(object):
         """
         Performs a single step in the environment.
         """
-        probs = self.influence.predict(self.get_dset())
         self._robots_act(action)
-        ext_robot_locs = self._sample_ext_robot_locs(probs)
+        ext_robot_locs = self._sample_ext_robot_locs(self.probs)
         reward = self._compute_reward(self.robots[self.learning_robot_id], ext_robot_locs)
         self._remove_items(ext_robot_locs)
         self._add_items()
@@ -76,6 +74,7 @@ class PartialWarehouse(object):
         self.episode_length += 1
         self.total_steps += 1
         done = (self.max_episode_length <= self.episode_length)
+        self.probs = self.influence.predict(self.get_dset())
         if self.parameters['render']:
             self.render(ext_robot_locs, self.parameters['render_delay'])
         # Influence-augmented observations

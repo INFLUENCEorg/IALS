@@ -35,6 +35,7 @@ class Warehouse(object):
         self.obs_type = parameters['obs_type']
         self.items = []
         self.img = None
+        self.seed_value = seed
         self.parameters = parameters
         self.influence = influence
         self.seed(seed)
@@ -47,18 +48,17 @@ class Warehouse(object):
         """
         self.robot_id = 0
         self._place_robots()
-        # influence predicts robots locations
-        self.influence.reset()
-        dset = self.get_dset()
-        infs = self.get_infs()
         # self.influence.predict(dset)
         self.item_id = 0
         self.items = []
         self._add_items()
         obs = self._get_observation()
         self.episode_length = 0
-        # Influence-augmented observations
+        dset = self.get_dset()
+        infs = self.get_infs()
         if self.influence.aug_obs:
+            self.influence.reset()
+            self.influence.predict(dset)
             obs = np.append(obs, self.influence.get_hidden_state())
         reward = 0
         done = False
@@ -67,10 +67,7 @@ class Warehouse(object):
     def step(self, action):
         """
         Performs a single step in the environment.
-        """
-        # influence predicts robots locations
-        dset = self.get_dset()
-        probs = self.influence.predict(dset)
+        """ 
         # external robots take an action
         actions = []
         for robot in self.robots:
@@ -79,17 +76,18 @@ class Warehouse(object):
             actions.append(robot.select_naive_action(obs)) #, self.items))
         actions[self.learning_robot_id] = action
         self._robots_act(actions)
-        # influence sources
-        infs = self.get_infs()
         reward = self._compute_reward()
         self._remove_items()
         self._add_items()
         obs = self._get_observation()
         self.episode_length += 1
+        dset = self.get_dset()
+        infs = self.get_infs()
         done = (self.max_episode_length <= self.episode_length)
         if self.parameters['render']:
             self.render(self.parameters['render_delay'])
         if self.influence.aug_obs:
+            self.influence.predict(dset)
             obs = np.append(obs, self.influence.get_hidden_state())
         return obs, reward, done, dset, infs
 
