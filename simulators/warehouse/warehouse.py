@@ -59,7 +59,7 @@ class Warehouse(object):
         if self.influence.aug_obs:
             self.influence.reset()
             self.influence.predict(dset)
-            obs = np.append(obs, self.influence.get_hidden_state())
+            obs = np.append(obs[:49], self.influence.get_hidden_state())
         reward = 0
         done = False
         return obs, reward, done, dset, infs
@@ -88,7 +88,7 @@ class Warehouse(object):
             self.render(self.parameters['render_delay'])
         if self.influence.aug_obs:
             self.influence.predict(dset)
-            obs = np.append(obs, self.influence.get_hidden_state())
+            obs = np.append(obs[:49], self.influence.get_hidden_state())
         return obs, reward, done, dset, infs
 
     @property
