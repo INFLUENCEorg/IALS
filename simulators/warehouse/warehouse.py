@@ -53,13 +53,13 @@ class Warehouse(object):
         self.items = []
         self._add_items()
         obs = self._get_observation()
+        dset = np.zeros_like(obs)
         self.episode_length = 0
-        dset = self.get_dset()
         infs = self.get_infs()
         if self.influence.aug_obs:
             self.influence.reset()
-            self.influence.predict(dset)
-            obs = np.append(obs[:49], self.influence.get_hidden_state())
+            self.influence.predict(self.get_dset())
+            obs = np.append(obs, self.influence.get_hidden_state())
         reward = 0
         done = False
         return obs, reward, done, dset, infs
@@ -70,25 +70,25 @@ class Warehouse(object):
         """ 
         # external robots take an action
         actions = []
+        dset = self.get_dset()
         for robot in self.robots:
             state = self._get_state()
             obs = robot.observe(state, self.obs_type)
             actions.append(robot.select_naive_action(obs)) #, self.items))
         actions[self.learning_robot_id] = action
         self._robots_act(actions)
+        infs = self.get_infs()
         reward = self._compute_reward()
         self._remove_items()
         self._add_items()
         obs = self._get_observation()
         self.episode_length += 1
-        dset = self.get_dset()
-        infs = self.get_infs()
         done = (self.max_episode_length <= self.episode_length)
         if self.parameters['render']:
             self.render(self.parameters['render_delay'])
         if self.influence.aug_obs:
-            self.influence.predict(dset)
-            obs = np.append(obs[:49], self.influence.get_hidden_state())
+            self.influence.predict(self.get_dset())
+            obs = np.append(obs, self.influence.get_hidden_state())
         return obs, reward, done, dset, infs
 
     @property
