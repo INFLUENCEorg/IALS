@@ -53,12 +53,11 @@ class PartialWarehouse(object):
         self.items = []
         self._add_items()
         obs = self._get_observation()
-        self.influence.reset()
-        self.influence.predict(np.zeros_like(obs))
         self.episode_length = 0
+        self.influence.reset()
         self.probs = self.influence.predict(self.get_dset())
         if self.influence.aug_obs:
-            obs = np.append(obs, self.influence.get_hidden_state())
+            obs = np.append(obs[:49], self.influence.get_hidden_state())
         reward = 0
         done = False
         return obs, reward, done, [], []
@@ -68,9 +67,9 @@ class PartialWarehouse(object):
         Performs a single step in the environment.
         """
         self._robots_act(action)
-        ext_robot_locs = self._sample_ext_robot_locs(self.probs)
-        reward = self._compute_reward(self.robots[self.learning_robot_id], ext_robot_locs)
-        self._remove_items(ext_robot_locs)
+        # ext_robot_locs = self._sample_ext_robot_locs(self.probs)
+        reward = self._compute_reward(self.robots[self.learning_robot_id])
+        self._remove_items(self.probs)
         self._add_items()
         obs = self._get_observation()
         self.episode_length += 1
@@ -78,10 +77,10 @@ class PartialWarehouse(object):
         done = (self.max_episode_length <= self.episode_length)
         self.probs = self.influence.predict(self.get_dset())
         if self.parameters['render']:
-            self.render(ext_robot_locs, self.parameters['render_delay'])
+            self.render(self.parameters['render_delay'])
         # Influence-augmented observations
         if self.influence.aug_obs:
-            obs = np.append(obs, self.influence.get_hidden_state())
+            obs = np.append(obs[:49], self.influence.get_hidden_state())
         return obs, reward, done, [], []
         
 
@@ -101,7 +100,7 @@ class PartialWarehouse(object):
         action_space.n = 4
         return action_space
 
-    def render(self, ext_robot_locs, delay=0.0):
+    def render(self, delay=0.0):
         """
         Renders the environment
         """
@@ -109,9 +108,9 @@ class PartialWarehouse(object):
         position = self.robots[self.learning_robot_id].get_position
         bitmap[position[0], position[1], 1] += 1
         im = bitmap[:, :, 0] - 2*bitmap[:, :, 1]
-        for loc in ext_robot_locs:
-            if loc is not None:
-                im[loc[0], loc[1]] -= 1
+        # for loc in ext_robot_locs:
+            # if loc is not None:
+                # im[loc[0], loc[1]] -= 1
         if self.img is None:
             fig,ax = plt.subplots(1)
             self.img = ax.imshow(im, vmin=-2, vmax=1)
@@ -254,7 +253,7 @@ class PartialWarehouse(object):
         """
         self.robots[self.learning_robot_id].act(action)
 
-    def _compute_reward(self, robot, ext_robot_pos):
+    def _compute_reward(self, robot):
         """
         Computes reward for the learning robot.
         """
@@ -287,23 +286,35 @@ class PartialWarehouse(object):
                 reward += 1
         return reward
 
-    def _remove_items(self, ext_robot_pos):
+    def _remove_items(self, probs):
         """
         Removes items collected by robots. Robots collect items by steping on
         them
         """
+        remove_list = []
         for robot in self.robots:
             robot_pos = robot.get_position
-            for item in self.items:
+            items = np.copy(self.items)
+            for item in items:
                 item_pos = item.get_position
                 if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
                     self.items.remove(item)
-        for pos in ext_robot_pos:
-            if pos is not None:
-                for item in self.items:
-                    item_pos = item.get_position
-                    if pos[0] == item_pos[0] and pos[1] == item_pos[1]:
-                        self.items.remove(item)
+        items = np.copy(self.items)
+        for item in items:
+            item_pos = item.get_position
+            prob = probs[self.item_pos2coor(item_pos)]
+            sample = np.random.uniform(0,1)
+            print(self.item_pos2coor(item_pos),prob)
+            if sample < prob:
+                self.items.remove(item)
+
+    def item_pos2coor(self, pos):
+        bitmap = np.zeros((self.parameters['n_rows'], self.parameters['n_columns']))
+        bitmap[pos[0], pos[1]] = 1
+        vec = np.concatenate((bitmap[[0,-1], :].flatten(),
+                              bitmap[1:-1, [0,-1]].flatten()))
+        coor = np.where(vec == 1)[0][0]
+        return coor
 
     def _increase_item_waiting_time(self):
         """

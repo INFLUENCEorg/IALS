@@ -53,12 +53,13 @@ class Warehouse(object):
         self.items = []
         self._add_items()
         obs = self._get_observation()
-        dset = np.zeros_like(obs)
+        self.prev_obs = obs
         self.episode_length = 0
-        infs = self.get_infs()
+        dset = self.get_dset()
+        infs = self.get_infs(self.prev_obs, obs)
         if self.influence.aug_obs:
             self.influence.reset()
-            self.influence.predict(self.get_dset())
+            self.influence.predict(dset)
             obs = np.append(obs, self.influence.get_hidden_state())
         reward = 0
         done = False
@@ -77,11 +78,12 @@ class Warehouse(object):
             actions.append(robot.select_naive_action(obs)) #, self.items))
         actions[self.learning_robot_id] = action
         self._robots_act(actions)
-        infs = self.get_infs()
         reward = self._compute_reward()
         self._remove_items()
+        infs = self.get_infs(self.prev_obs, self._get_observation())
         self._add_items()
         obs = self._get_observation()
+        self.prev_obs = obs
         self.episode_length += 1
         done = (self.max_episode_length <= self.episode_length)
         if self.parameters['render']:
@@ -165,12 +167,16 @@ class Warehouse(object):
         loc_bitmap = obs[:49]
         return loc_bitmap
 
-    def get_infs(self):
-        robot_neighbors = self._get_robot_neighbors(self.learning_robot_id)
-        infs = np.array([]).astype(np.int)
-        for neighbor_id in robot_neighbors:
-            loc_bitmap = self.get_robot_loc_bitmap(neighbor_id)
-            infs = np.append(infs, loc_bitmap)
+    def get_infs(self, prev_obs, obs):
+        prev_items = prev_obs[49:]
+        items = obs[49:]
+        bitmap = np.reshape(obs[:49], (7,7))
+        # robot_neighbors = self._get_robot_neighbors(self.learning_robot_id)
+        infs =  np.array(prev_items) - np.array(items) - np.concatenate((bitmap[[0,-1], :].flatten(),bitmap[1:-1, [0,-1]].flatten()))
+        infs = np.maximum(np.zeros_like(infs), infs)
+        # for neighbor_id in robot_neighbors:
+        #     loc_bitmap = self.get_robot_loc_bitmap(neighbor_id)
+        #     infs = np.append(infs, loc_bitmap)
         return infs            
 
     def create_graph(self, robot):
