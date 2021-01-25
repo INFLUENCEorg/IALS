@@ -25,10 +25,11 @@ class Network(nn.Module):
         self.relu = nn.ReLU()
         # self.lstm = nn.LSTM(input_size, hidden_memory_size, batch_first=True)
         self.recurrent = recurrent
+        self.linear1 = nn.Linear(input_size, hidden_memory_size)
         if self.recurrent:
             self.gru = nn.GRU(input_size, hidden_memory_size, batch_first=True)
-        else:
-            self.linear1 = nn.Linear(input_size, hidden_memory_size)
+        # else:
+            # self.linear1 = nn.Linear(input_size, hidden_memory_size)
         self.linear2 = nn.ModuleList()
         # self.linear3 = nn.ModuleList()
         self.n_sources = n_sources
@@ -42,6 +43,7 @@ class Network(nn.Module):
 
     def forward(self, input_seq):
         if self.recurrent:
+            # out = self.relu(self.linear1(input_seq))
             out, self.hidden_cell = self.gru(input_seq, self.hidden_cell)
         else:
             out = self.relu(self.linear1(input_seq))
