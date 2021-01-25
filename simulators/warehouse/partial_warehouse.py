@@ -57,7 +57,7 @@ class PartialWarehouse(object):
         self.influence.reset()
         self.probs = self.influence.predict(self.get_dset())
         if self.influence.aug_obs:
-            obs = np.append(obs[:49], self.influence.get_hidden_state())
+            obs = np.append(obs, self.influence.get_hidden_state())
         reward = 0
         done = False
         return obs, reward, done, [], []
@@ -80,7 +80,7 @@ class PartialWarehouse(object):
             self.render(self.parameters['render_delay'])
         # Influence-augmented observations
         if self.influence.aug_obs:
-            obs = np.append(obs[:49], self.influence.get_hidden_state())
+            obs = np.append(obs, self.influence.get_hidden_state())
         return obs, reward, done, [], []
         
 
