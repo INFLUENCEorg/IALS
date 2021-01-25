@@ -304,7 +304,7 @@ class PartialWarehouse(object):
             item_pos = item.get_position
             prob = probs[self.item_pos2coor(item_pos)]
             sample = np.random.uniform(0,1)
-            print(self.item_pos2coor(item_pos),prob)
+            # print(self.item_pos2coor(item_pos),prob)
             if sample < prob:
                 self.items.remove(item)
 
