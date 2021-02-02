@@ -27,7 +27,7 @@ parameters:
         n_epochs1: 2000
         n_epochs2: 50
         batch_size: 32
-        hidden_memory_size: 8
+        hidden_memory_size: 16
         input_size: 73
         output_size: 1
         n_sources: 24
