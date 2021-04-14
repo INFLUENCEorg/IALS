@@ -10,13 +10,19 @@ parameters:
         simulator: 'partial'
         fully_connected: true
         num_fc_layers: 1
-        num_fc_units: [256]
+        num_fc_units: [128, 128]
         # Convolutional module
         convolutional: false
         # Recurrent module
-        recurrent: true
-        num_rec_units: 128
-        seq_len: 8
+        recurrent: false
+        influence: true
+        # Attention
+        attention: false
+        automatic_dpatch: true
+        manual_dpatch: false
+        # Influence recurrent module
+        inf_num_rec_units: 128
+        inf_seq_len: 8
 
     influence:
         # Common hyperparameters
