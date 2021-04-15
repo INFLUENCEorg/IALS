@@ -5,3 +5,4 @@ parameters:
         simulator: 'global'
         name: 'global_traffic'
         influence_model: None
+        eval_steps: 5.0e+4
