@@ -9,7 +9,7 @@ parameters:
         num_workers: 8
         fully_connected: true
         num_fc_layers: 1
-        num_fc_units: [128, 128]
+        num_fc_units: [256, 128]
         # Convolutional module
         convolutional: false
         # Recurrent module
@@ -20,9 +20,8 @@ parameters:
         automatic_dpatch: true
         manual_dpatch: false
         # Influence recurrent module
-        inf_num_rec_units: 128
+        inf_num_rec_units: 32
         inf_seq_len: 8
-        num_workers: 1
 
     influence:
         # Common hyperparameters
@@ -30,7 +29,7 @@ parameters:
         episode_length: 300
         data_path: '../influence/data/traffic/'
         lr: 1.0e-3
-        n_epochs1: 500
+        n_epochs1: 2000
         n_epochs2: 500
         batch_size: 32
         hidden_memory_size: 32
