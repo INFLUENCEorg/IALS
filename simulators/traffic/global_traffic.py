@@ -150,18 +150,17 @@ class GlobalTraffic(TrafficLightGridBitmapEnv):
         observation.append(state[-1]) #  append traffic light info
         observation = np.concatenate(observation)
         infs = np.array(infs, dtype='object')
-        self.dset = observation
+        dset = observation
         if self.influence.aug_obs:
             self.influence.reset()
+            self.influence.predict()
             observation = np.append(observation, self.influence.get_hidden_state())
         reward = 0
         done = False
-        return observation, reward, done, self.dset, infs
+        return observation, reward, done, dset, infs
 
     # override
     def step(self, rl_actions):
-        if self.influence.aug_obs:
-            self.influence.predict(self.dset)
         state, reward, done, _ = super().step(rl_actions)
         node = self.tl_controlled[0]
         node_edges = dict(self.network.node_mapping)[node]
@@ -173,10 +172,11 @@ class GlobalTraffic(TrafficLightGridBitmapEnv):
         observation.append(state[-1]) #  append traffic light info
         observation = np.concatenate(observation)
         infs = np.array(infs, dtype='object')
-        self.dset = observation
+        dset = observation
         if self.influence.aug_obs:
+            self.influence.predict(dset)
             observation = np.append(observation, self.influence.get_hidden_state())
-        return observation, reward, done, self.dset, infs
+        return observation, reward, done, dset, infs
     
     # override
     @property
@@ -188,3 +188,6 @@ class GlobalTraffic(TrafficLightGridBitmapEnv):
 
     def close(self):
         self.terminate()
+
+    def load_influence_model(self):
+        self.influence._load_model()
