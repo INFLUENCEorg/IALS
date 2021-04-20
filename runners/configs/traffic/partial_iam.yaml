@@ -22,17 +22,18 @@ parameters:
         # Influence recurrent module
         inf_num_rec_units: 128
         inf_seq_len: 8
+        num_workers: 1
 
     influence:
         # Common hyperparameters
-        seq_len: 8
+        seq_len: 300
         episode_length: 300
         data_path: '../influence/data/traffic/'
         lr: 1.0e-3
-        n_epochs1: 2000
+        n_epochs1: 500
         n_epochs2: 500
-        batch_size: 9600
-        hidden_memory_size: 8
+        batch_size: 32
+        hidden_memory_size: 32
         input_size: 40
         output_size: 1
         n_sources: 4
@@ -40,6 +41,6 @@ parameters:
         aug_obs: False
         load_model: False
         curriculum: False
-        dataset_size1: 5.0e+5
+        dataset_size1: 5.0e+4
         dataset_size2: 1.0e+4
         train_freq: 5.0e+6
