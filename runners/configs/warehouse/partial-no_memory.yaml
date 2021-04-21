@@ -1,0 +1,40 @@
+parameters:
+    main:
+        # Common hyperparameters
+        name: 'partial_implicit_warehouse'
+        influence_model: 'nn'
+        env: 'warehouse'
+        obs_size: 73
+        time_horizon: 16
+        num_actions: 4
+        simulator: 'partial'
+        fully_connected: true
+        num_fc_layers: 2
+        num_fc_units: [256, 128]
+        # Convolutional module
+        convolutional: false
+        # Recurrent module
+        recurrent: false
+        num_rec_units: 128
+        seq_len: 8
+
+    influence:
+        # Common hyperparameters
+        seq_len: 100
+        episode_length: 100
+        data_path: '../influence/data/warehouse/'
+        lr: 1.0e-3
+        n_epochs1: 500
+        n_epochs2: 50
+        batch_size: 32
+        hidden_memory_size: 32
+        input_size: 73
+        output_size: 1
+        n_sources: 24
+        checkpoint_path: '../influence/models/warehouse/model'
+        aug_obs: False
+        load_model: False
+        curriculum: False
+        dataset_size1: 5.0e+4
+        dataset_size2: 1.0e+4
+        train_freq: 3.0e+6
