@@ -10,7 +10,7 @@ parameters:
         simulator: 'partial'
         fully_connected: true
         num_fc_layers: 1
-        num_fc_units: [128, 128]
+        num_fc_units: [384, 256]
         # Convolutional module
         convolutional: false
         # Recurrent module
@@ -30,10 +30,10 @@ parameters:
         episode_length: 100
         data_path: '../influence/data/warehouse/'
         lr: 1.0e-3
-        n_epochs1: 2000
+        n_epochs1: 500
         n_epochs2: 50
         batch_size: 32
-        hidden_memory_size: 16
+        hidden_memory_size: 32
         input_size: 73
         output_size: 1
         n_sources: 24
