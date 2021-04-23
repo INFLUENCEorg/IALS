@@ -10,7 +10,7 @@ parameters:
         simulator: 'partial'
         fully_connected: true
         num_fc_layers: 1
-        num_fc_units: [128, 128]
+        num_fc_units: [384, 256]
         # Convolutional module
         convolutional: false
         # Recurrent module
