@@ -4,8 +4,8 @@ parameters:
         name: 'partial_implicit_warehouse'
         influence_model: 'nn'
         env: 'warehouse'
-        obs_size: 89
-        time_horizon: 16
+        obs_size: 105
+        time_horizon: 8
         num_actions: 4
         simulator: 'partial'
         fully_connected: true
@@ -25,7 +25,7 @@ parameters:
         n_epochs1: 500
         n_epochs2: 50
         batch_size: 32
-        hidden_memory_size: 16
+        hidden_memory_size: 32
         input_size: 73
         output_size: 1
         n_sources: 24
