@@ -1,7 +1,7 @@
 parameters:
     main:
         # Common hyperparameters
-        name: 'partial_warehouse'
+        name: 'partial_iam_warehouse'
         influence_model: 'nn'
         env: 'warehouse'
         obs_size: 73
