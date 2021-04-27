@@ -98,9 +98,10 @@ class Robot():
         Take one step towards the closest item
         """
         if self._graph is None:
+            self.previous_item = None
             self._graph = self._create_graph(obs)
-            self._path_dict = dict(nx.all_pairs_dijkstra_path(self._graph))
-        path = self._path_to_closest_item(obs)
+            self._path_dict = dict(nx.all_pairs_dijkstra_path(self._graph))    
+        path, self.previous_item = self._path_to_closest_item(obs, self.previous_item)
         if path is None or len(path) < 2:
             action = random.randint(0, self._action_space - 1)
         else:
@@ -138,14 +139,19 @@ class Robot():
     def _neighbors(self, cell):
         return [cell + [0, 1], cell + [0, -1], cell + [1, 0], cell + [-1, 0]]
 
-    def _path_to_closest_item(self, obs):
+    def _path_to_closest_item(self, obs, previous_item_index):
         """
         Calculates the distance of every item in the robot's domain, finds the
         closest item and returns the path to that item.
         """
         min_distance = len(obs[:,0]) + len(obs[0,:])
         closest_item_path = None
+        closest_item_index = None
         robot_pos = (self._pos[0]-self._robot_domain[0], self._pos[1]-self._robot_domain[1])
+        # IF PREVIOUS ITEM STILL THERE DO NOT CHANGE PATH
+        if previous_item_index in [index for index, item in np.ndenumerate(obs) if item == 1]:
+            path = self._path_dict[robot_pos][previous_item_index]
+            return path, previous_item_index
         for index, item in np.ndenumerate(obs):
             if item == 1:
                 path = self._path_dict[robot_pos][index]
@@ -153,7 +159,8 @@ class Robot():
                 if distance < min_distance:
                     min_distance = distance
                     closest_item_path = path
-        return closest_item_path
+                    closest_item_index = index
+        return closest_item_path, closest_item_index
 
     def _get_first_action(self, path):
         """
