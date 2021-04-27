@@ -9,7 +9,7 @@ parameters:
         num_actions: 4
         simulator: 'partial'
         fully_connected: true
-        num_fc_layers: 1
+        num_fc_layers: 2
         num_fc_units: [384, 256]
         # Convolutional module
         convolutional: false
