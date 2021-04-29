@@ -6,7 +6,7 @@ parameters:
         obs_size: 73
         time_horizon: 8
         num_actions: 4
-        name: 'global_warehouse'
+        name: 'global_warehouse_nomem'
         influence_model: None
         fully_connected: true
         num_fc_layers: 2
