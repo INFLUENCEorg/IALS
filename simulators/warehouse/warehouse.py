@@ -50,6 +50,7 @@ class Warehouse(object):
         self._place_robots()
         # self.influence.predict(dset)
         self.item_id = 0
+        self.n_items_collected = 0
         self.items = []
         self._add_items()
         obs = self._get_observation()
@@ -75,7 +76,7 @@ class Warehouse(object):
         for robot in self.robots:
             state = self._get_state()
             obs = robot.observe(state, self.obs_type)
-            actions.append(robot.select_naive_action(obs)) #, self.items))
+            actions.append(robot.select_naive_action2(obs, self.items))
         actions[self.learning_robot_id] = action
         self._robots_act(actions)
         reward = self._compute_reward()
@@ -328,6 +329,7 @@ class Warehouse(object):
             #     reward += -0.1 #*item.get_waiting_time
             if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
                 reward += 1
+                self.n_items_collected += 1
         return reward
 
 
