@@ -23,8 +23,6 @@ parameters:
         # Influence recurrent module
         inf_num_rec_units: 128
         inf_seq_len: 8
-        num_workers: 1
-        load: true
 
     influence:
         # Common hyperparameters
