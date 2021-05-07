@@ -15,8 +15,6 @@ parameters:
         convolutional: false
         # Recurrent module
         recurrent: false
-        load: True
-        num_workers: 1
 
     influence:
         # Common hyperparameters
@@ -24,7 +22,7 @@ parameters:
         episode_length: 100
         data_path: '../influence/data/warehouse/'
         lr: 1.0e-3
-        n_epochs1: 50
+        n_epochs1: 500
         n_epochs2: 50
         batch_size: 32
         hidden_memory_size: 32
