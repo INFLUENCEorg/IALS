@@ -161,8 +161,8 @@ class PartialWarehouse(object):
         state = self._get_state()
         robot = self.robots[self.learning_robot_id]
         obs = robot.observe(state, 'vector')
-        dset = obs[49:]
-        # dset = obs
+        # dset = obs[49:]
+        dset = obs
         return dset
         
     ######################### Private Functions ###########################
