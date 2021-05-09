@@ -169,9 +169,9 @@ class Warehouse(object):
         return loc_bitmap
 
     def get_infs(self, prev_obs, obs):
-        prev_items = prev_obs[49:]
-        items = obs[49:]
-        bitmap = np.reshape(obs[:49], (7,7))
+        prev_items = prev_obs[25:]
+        items = obs[25:]
+        bitmap = np.reshape(obs[:25], (5,5))
         # robot_neighbors = self._get_robot_neighbors(self.learning_robot_id)
         infs =  np.array(prev_items) - np.array(items) - np.concatenate((bitmap[[0,-1], :].flatten(),bitmap[1:-1, [0,-1]].flatten()))
         infs = np.maximum(np.zeros_like(infs), infs)
