@@ -15,7 +15,6 @@ parameters:
         convolutional: false
         # Recurrent module
         recurrent: false
-        load: true
 
     influence:
         # Common hyperparameters
