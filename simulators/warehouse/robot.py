@@ -20,6 +20,7 @@ class Robot():
         self._id = robot_id
         self._pos = robot_position
         self._robot_domain = robot_domain
+        self._domain_size = self._robot_domain[2] - self._robot_domain[0]
         self.items_collected = 0
         self.done = False
         self._graph = None
@@ -58,7 +59,7 @@ class Robot():
             robot_loc[self._pos[0] - self._robot_domain[0], self._pos[1] - self._robot_domain[1]] = 1
             observation = observation[:,:,0] + -1*robot_loc
         else:
-            item_vec = np.concatenate((observation[[0,-1], :, 0].flatten(),
+            item_vec = np.concatenate((observation[[0,-1], 1:-1, 0].flatten(),
                                       observation[1:-1, [0,-1], 0].flatten()))
 
             robot_loc = np.zeros_like(observation[:, :, 1])
@@ -71,15 +72,21 @@ class Robot():
         """
         Take an action
         """
+        new_pos = self._pos
         if action == 0:
-            new_pos = [self._pos[0] - 1, self._pos[1]]
-        if action == 1:
-            new_pos = [self._pos[0] + 1, self._pos[1]]
-        if action == 2:
-            new_pos = [self._pos[0], self._pos[1] - 1]
-        if action == 3:
-            new_pos = [self._pos[0], self._pos[1] + 1]
+            if self._pos[1] not in [self._robot_domain[1], self._robot_domain[3]]:
+                new_pos = [self._pos[0] - 1, self._pos[1]]
+        elif action == 1:
+            if self._pos[1] not in [self._robot_domain[1], self._robot_domain[3]]:
+                new_pos = [self._pos[0] + 1, self._pos[1]]
+        elif action == 2:
+            if self._pos[0] not in [self._robot_domain[0], self._robot_domain[2]]:
+                new_pos = [self._pos[0], self._pos[1] - 1]
+        elif action == 3:
+            if self._pos[0] not in [self._robot_domain[0], self._robot_domain[2]]:
+                new_pos = [self._pos[0], self._pos[1] + 1]    
         self.set_position(new_pos)
+            
 
     def set_position(self, new_pos):
         """
@@ -131,13 +138,27 @@ class Robot():
         graph = nx.Graph()
         for index, _ in np.ndenumerate(obs):
             cell = np.array(index)
-            graph.add_node(tuple(cell))
-            for neighbor in self._neighbors(cell):
-                graph.add_edge(tuple(cell), tuple(neighbor))
+            if not self._corner(cell):
+                graph.add_node(tuple(cell))
+                for neighbor in self._neighbors(cell):
+                    graph.add_edge(tuple(cell), tuple(neighbor))
         return graph
     
     def _neighbors(self, cell):
-        return [cell + [0, 1], cell + [0, -1], cell + [1, 0], cell + [-1, 0]]
+        if 0 < cell[0] < self._domain_size and 0 < cell[1] < self._domain_size:
+            return [cell + [0, 1], cell + [0, -1], cell + [1, 0], cell + [-1, 0]]
+        else:
+            if cell[0] == 0:
+                return [cell + [1, 0]]
+            elif cell[0] == self._domain_size:
+                return [cell + [-1, 0]]
+            elif cell[1] == 0:
+                return [cell + [0, 1]]
+            elif cell[1] == self._domain_size:
+                return [cell + [0, -1]]
+        
+    def _corner(self, cell):
+        return (not 0 < cell[0] < self._domain_size) and (not 0 < cell[1] < self._domain_size)
 
     def _path_to_closest_item(self, obs, previous_item_index):
         """

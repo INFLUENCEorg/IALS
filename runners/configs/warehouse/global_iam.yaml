@@ -3,7 +3,7 @@ parameters:
         # Common hyperparameters
         simulator: 'global'
         env: 'warehouse'
-        obs_size: 41
+        obs_size: 37
         time_horizon: 8
         num_actions: 4
         name: 'global_warehouse_iam'

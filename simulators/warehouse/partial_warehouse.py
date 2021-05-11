@@ -193,20 +193,21 @@ class PartialWarehouse(object):
                 item_locs = [item.get_position for item in self.items]
             for row in range(self.n_rows):
                 if row % (self.distance_between_shelves) == 0:
-                    for column in range(self.n_columns):
-                        loc = [row, column]
-                        loc_free = True
-                        region_free = True
-                        if item_locs is not None:
-                            # region = int(column//self.distance_between_shelves)
-                            # columns_occupied = [item_loc[1] for item_loc in item_locs if item_loc[0] == row]
-                            # regions_occupied = [int(column//self.distance_between_shelves) for column in columns_occupied]
-                            # region_free = region not in regions_occupied
-                            loc_free = loc not in item_locs
-                        if np.random.uniform() < self.prob_item_appears and loc_free:
-                            self.items.append(Item(self.item_id, loc))
-                            self.item_id += 1
-                            item_locs = [item.get_position for item in self.items]
+                    for column in range(1, self.n_columns):
+                        if column % (self.distance_between_shelves) != 0:
+                            loc = [row, column]
+                            loc_free = True
+                            region_free = True
+                            if item_locs is not None:
+                                # region = int(column//self.distance_between_shelves)
+                                # columns_occupied = [item_loc[1] for item_loc in item_locs if item_loc[0] == row]
+                                # regions_occupied = [int(column//self.distance_between_shelves) for column in columns_occupied]
+                                # region_free = region not in regions_occupied
+                                loc_free = loc not in item_locs
+                            if np.random.uniform() < self.prob_item_appears and loc_free:
+                                self.items.append(Item(self.item_id, loc))
+                                self.item_id += 1
+                                item_locs = [item.get_position for item in self.items]
                 else:
                     for column in range(0, self.n_rows, self.distance_between_shelves):
                         loc = [row, column]
@@ -311,7 +312,7 @@ class PartialWarehouse(object):
     def item_pos2coor(self, pos):
         bitmap = np.zeros((self.parameters['n_rows'], self.parameters['n_columns']))
         bitmap[pos[0], pos[1]] = 1
-        vec = np.concatenate((bitmap[[0,-1], :].flatten(),
+        vec = np.concatenate((bitmap[[0,-1], 1:-1].flatten(),
                               bitmap[1:-1, [0,-1]].flatten()))
         coor = np.where(vec == 1)[0][0]
         return coor
