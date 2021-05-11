@@ -4,18 +4,18 @@ parameters:
         name: 'partial_warehouse'
         influence_model: 'nn'
         env: 'warehouse'
-        obs_size: 73
+        obs_size: 37
         time_horizon: 16
         num_actions: 4
         simulator: 'partial'
         fully_connected: true
         num_fc_layers: 1
-        num_fc_units: [256]
+        num_fc_units: [512]
         # Convolutional module
         convolutional: false
         # Recurrent module
         recurrent: true
-        num_rec_units: 128
+        num_rec_units: 256
         seq_len: 8
 
     influence:
@@ -28,13 +28,13 @@ parameters:
         n_epochs2: 50
         batch_size: 32
         hidden_memory_size: 32
-        input_size: 73
+        input_size: 37
         output_size: 1
-        n_sources: 24
+        n_sources: 12
         checkpoint_path: '../influence/models/warehouse/model'
         aug_obs: False
         load_model: False
         curriculum: False
-        dataset_size1: 1.0e+3
+        dataset_size1: 5.0e+4
         dataset_size2: 1.0e+4
         train_freq: 3.0e+6
