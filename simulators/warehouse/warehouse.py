@@ -76,7 +76,7 @@ class Warehouse(object):
         for robot in self.robots:
             state = self._get_state()
             obs = robot.observe(state, self.obs_type)
-            actions.append(robot.select_naive_action(obs))#, self.items))
+            actions.append(robot.select_naive_action2(obs, self.items))
         actions[self.learning_robot_id] = action
         self._robots_act(actions)
         reward = self._compute_reward()
