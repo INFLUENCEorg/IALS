@@ -339,15 +339,18 @@ class PartialWarehouse(object):
     def _sample_ext_robot_locs(self, probs):
         locations = []
         for neighbor_id, prob in enumerate(probs):
-            sample = np.random.choice(np.arange(len(prob)), p=prob)
-            bitmap = np.zeros(len(prob))
-            bitmap[sample] = 1
-            bitmap = np.reshape(bitmap, (self.robot_domain_size[0], self.robot_domain_size[1]))
-            intersection = np.array(self._get_intersection(neighbor_id, bitmap))
-            if all(intersection == np.zeros(len(intersection))):
-                location = None
+            loc = np.random.choice(np.arange(len(prob)), p=prob)
+            # bitmap = np.zeros(len(prob))
+            # bitmap[sample] = 1
+            # bitmap = np.reshape(bitmap, (self.robot_domain_size[0], self.robot_domain_size[1]))
+            # intersection = np.array(self._get_intersection(neighbor_id, bitmap))
+            # if all(intersection == np.zeros(len(intersection))):
+            #     location = None
+            # else:
+            if loc < len(prob)-1:
+                location = self._find_loc(neighbor_id, loc+1)
             else:
-                location = self._find_loc(neighbor_id, np.where(intersection == 1)[0][0])
+                location = None
             locations.append(location)
         return locations
     

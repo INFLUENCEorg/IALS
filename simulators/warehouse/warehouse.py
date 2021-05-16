@@ -176,10 +176,25 @@ class Warehouse(object):
         # infs = np.maximum(np.zeros_like(infs), infs)
         robot_neighbors = self._get_robot_neighbors(self.learning_robot_id)
         infs = np.array([]).astype(np.int)
-        for neighbor_id in robot_neighbors:
+        for idx, neighbor_id in enumerate(robot_neighbors):
             loc_bitmap = self.get_robot_loc_bitmap(neighbor_id)
-            infs = np.append(infs, loc_bitmap)
+            loc_bitmap = np.reshape(loc_bitmap, (self.robot_domain_size[0], self.robot_domain_size[1]))
+            intersection = np.array(self._get_intersection(idx, loc_bitmap))
+            source = np.zeros(self.robot_domain_size[0]-1).astype(np.int)
+            if all(intersection == np.zeros(len(intersection))):
+                source[-1] = 1
+            else:
+                source[np.where(intersection == 1)] = 1
+            infs = np.append(infs, source)
         return infs
+
+    def _find_loc(self, neighbor_id, loc):
+        locations = {0: [loc, 4], 1: [4, loc], 2: [loc, 0], 3: [0, loc]}
+        return locations[neighbor_id]
+
+    def _get_intersection(self, neighbor_id, bitmap):
+        intersections = {0: bitmap[1:-1, 0], 1: bitmap[0, 1:-1], 2: bitmap[1:-1, 4], 3: bitmap[4, 1:-1]}
+        return intersections[neighbor_id]
 
     def create_graph(self, robot):
         """

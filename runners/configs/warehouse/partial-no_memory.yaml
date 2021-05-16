@@ -22,12 +22,12 @@ parameters:
         episode_length: 100
         data_path: '../influence/data/warehouse/'
         lr: 1.0e-3
-        n_epochs1: 500  
+        n_epochs1: 500
         n_epochs2: 50
         batch_size: 32
         hidden_memory_size: 64
         input_size: 37
-        output_size: 25
+        output_size: 4
         n_sources: 4
         checkpoint_path: '../influence/models/warehouse/model'
         aug_obs: False
