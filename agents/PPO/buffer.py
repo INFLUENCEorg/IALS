@@ -114,7 +114,7 @@ class SerialSampling(Buffer):
         """
         n = len(self['returns'])
         # Only include complete sequences
-        seq_len = self.seq_len #8
+        seq_len = 8 #self.seq_len #8
         indices = np.arange(0, n - n % seq_len, seq_len)
         random.shuffle(indices)
         for key in self.keys():
