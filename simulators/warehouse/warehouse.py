@@ -57,7 +57,7 @@ class Warehouse(object):
         self.prev_obs = obs
         self.episode_length = 0
         dset = self.get_dset()
-        infs = self.get_infs(self.prev_obs, obs)
+        infs = self.get_infs()#self.prev_obs, obs)
         if self.influence.aug_obs:
             self.influence.reset()
             self.influence.predict(dset)
@@ -81,7 +81,7 @@ class Warehouse(object):
         self._robots_act(actions)
         reward = self._compute_reward()
         self._remove_items()
-        infs = self.get_infs(self.prev_obs, self._get_observation())
+        infs = self.get_infs()#self.prev_obs, self._get_observation())
         self._add_items()
         obs = self._get_observation()
         self.prev_obs = obs
@@ -165,20 +165,21 @@ class Warehouse(object):
     def get_robot_loc_bitmap(self, robot_id):
         state = self._get_state()
         obs = self.robots[robot_id].observe(state, 'vector')
-        loc_bitmap = obs[:49]
+        loc_bitmap = obs[:25]
         return loc_bitmap
 
-    def get_infs(self, prev_obs, obs):
-        prev_items = prev_obs[25:]
-        items = obs[25:]
-        bitmap = np.reshape(obs[:25], (5,5))
-        # robot_neighbors = self._get_robot_neighbors(self.learning_robot_id)
-        infs =  np.array(prev_items) - np.array(items) - np.concatenate((bitmap[[0,-1], 1:-1].flatten(),bitmap[1:-1, [0,-1]].flatten()))
-        infs = np.maximum(np.zeros_like(infs), infs)
-        # for neighbor_id in robot_neighbors:
-        #     loc_bitmap = self.get_robot_loc_bitmap(neighbor_id)
-        #     infs = np.append(infs, loc_bitmap)
-        return infs            
+    def get_infs(self):
+        # prev_items = prev_obs[25:]
+        # items = obs[25:]
+        # bitmap = np.reshape(obs[:25], (5,5))
+        # infs =  np.array(prev_items) - np.array(items) - np.concatenate((bitmap[[0,-1], 1:-1].flatten(),bitmap[1:-1, [0,-1]].flatten()))
+        # infs = np.maximum(np.zeros_like(infs), infs)
+        robot_neighbors = self._get_robot_neighbors(self.learning_robot_id)
+        infs = np.array([]).astype(np.int)
+        for neighbor_id in robot_neighbors:
+            loc_bitmap = self.get_robot_loc_bitmap(neighbor_id)
+            infs = np.append(infs, loc_bitmap)
+        return infs
 
     def create_graph(self, robot):
         """
@@ -284,12 +285,8 @@ class Warehouse(object):
         """
         Gets robot's neighbors
         """
-        neighbors = [robot_id + 1, robot_id + 1 + self.parameters['n_robots_row'],
-                     robot_id + self.parameters['n_robots_row'],
-                     robot_id - 1 + self.parameters['n_robots_row'],
-                     robot_id - 1, robot_id - 1 - self.parameters['n_robots_row'],
-                     robot_id - self.parameters['n_robots_row'],
-                     robot_id - self.parameters['n_robots_row'] + 1]
+        neighbors = [robot_id + 1, robot_id + self.parameters['n_robots_row'],
+                     robot_id - 1, robot_id - self.parameters['n_robots_row']]
         return neighbors
 
     def _robots_act(self, actions):

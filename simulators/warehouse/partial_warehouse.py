@@ -300,14 +300,23 @@ class PartialWarehouse(object):
                 item_pos = item.get_position
                 if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
                     self.items.remove(item)
-        items = np.copy(self.items)
-        for item in items:
-            item_pos = item.get_position
-            prob = probs[self.item_pos2coor(item_pos)]
-            sample = np.random.uniform(0,1)
-            # print(self.item_pos2coor(item_pos),prob)
-            if sample < prob:
-                self.items.remove(item)
+        ext_robot_locs = self._sample_ext_robot_locs(probs)
+        for ext_robot_loc in ext_robot_locs:
+            if ext_robot_loc is not None:
+                items = np.copy(self.items)
+                for item in items:
+                    item_pos = item.get_position
+                    if ext_robot_loc[0] == item_pos[0] and ext_robot_loc[1] == item_pos[1]:
+                        self.items.remove(item)
+            
+        # items = np.copy(self.items)
+        # for item in items:
+        #     item_pos = item.get_position
+        #     prob = probs[self.item_pos2coor(item_pos)]
+        #     sample = np.random.uniform(0,1)
+        #     # print(self.item_pos2coor(item_pos),prob)
+        #     if sample < prob:
+        #         self.items.remove(item)
 
     def item_pos2coor(self, pos):
         bitmap = np.zeros((self.parameters['n_rows'], self.parameters['n_columns']))
@@ -343,13 +352,11 @@ class PartialWarehouse(object):
         return locations
     
     def _find_loc(self, neighbor_id, loc):
-        locations = {0: [loc, 6], 1: [6, 6], 2: [6, loc], 3: [6, 0],
-                     4: [loc, 0], 5: [0, 0], 6: [0, loc], 7: [0, 6]}
+        locations = {0: [loc, 4], 1: [4, loc], 2: [loc, 0], 3: [0, loc]}
         return locations[neighbor_id]
 
     def _get_intersection(self, neighbor_id, bitmap):
-        intersections = {0: bitmap[:, 0], 1: [bitmap[0, 0]], 2: bitmap[0, :], 3: [bitmap[0, 6]],
-                        4: bitmap[:, 6], 5: [bitmap[6, 6]], 6: bitmap[6, :], 7: [bitmap[6, 0]]}
+        intersections = {0: bitmap[:, 0], 1: bitmap[0, :], 2: bitmap[:, 4], 3: bitmap[4, :]}
         return intersections[neighbor_id]
 
     def load_influence_model(self):
