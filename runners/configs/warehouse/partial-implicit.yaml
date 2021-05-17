@@ -16,7 +16,7 @@ parameters:
         # Recurrent module
         recurrent: false
 
-        influence:
+    influence:
         # Common hyperparameters
         seq_len: 100
         episode_length: 100
