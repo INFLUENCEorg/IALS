@@ -30,7 +30,7 @@ parameters:
         output_size: 6
         n_sources: 4
         checkpoint_path: '../influence/models/warehouse/model'
-        aug_obs: True
+        aug_obs: False
         load_model: False
         curriculum: False
         dataset_size1: 5.0e+4
