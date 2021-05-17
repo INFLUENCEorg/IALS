@@ -4,7 +4,7 @@ parameters:
         name: 'partial_implicit_warehouse'
         influence_model: 'nn'
         env: 'warehouse'
-        obs_size: 105
+        obs_size: 69
         time_horizon: 8
         num_actions: 4
         simulator: 'partial'
@@ -16,7 +16,7 @@ parameters:
         # Recurrent module
         recurrent: false
 
-    influence:
+        influence:
         # Common hyperparameters
         seq_len: 100
         episode_length: 100
@@ -26,9 +26,9 @@ parameters:
         n_epochs2: 50
         batch_size: 32
         hidden_memory_size: 32
-        input_size: 73
-        output_size: 1
-        n_sources: 24
+        input_size: 37
+        output_size: 4
+        n_sources: 4
         checkpoint_path: '../influence/models/warehouse/model'
         aug_obs: True
         load_model: False
