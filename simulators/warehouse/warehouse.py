@@ -40,6 +40,7 @@ class Warehouse(object):
         self.influence = influence
         self.seed(seed)
         self.i = 0
+
     ############################## Override ###############################
 
     def reset(self):
@@ -165,7 +166,7 @@ class Warehouse(object):
     def get_robot_loc_bitmap(self, robot_id):
         state = self._get_state()
         obs = self.robots[robot_id].observe(state, 'vector')
-        loc_bitmap = obs[:25]
+        loc_bitmap = obs[:49]
         return loc_bitmap
 
     def get_infs(self):
