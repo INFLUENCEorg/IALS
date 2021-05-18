@@ -4,7 +4,7 @@ parameters:
         name: 'partial_warehouse'
         influence_model: 'nn'
         env: 'warehouse'
-        obs_size: 37
+        obs_size: 69
         time_horizon: 16
         num_actions: 4
         simulator: 'partial'
@@ -27,10 +27,10 @@ parameters:
         n_epochs1: 500
         n_epochs2: 50
         batch_size: 32
-        hidden_memory_size: 32
-        input_size: 37
-        output_size: 1
-        n_sources: 12
+        hidden_memory_size: 64
+        input_size: 69
+        output_size: 6
+        n_sources: 4
         checkpoint_path: '../influence/models/warehouse/model'
         aug_obs: False
         load_model: False
