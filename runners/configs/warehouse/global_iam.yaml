@@ -21,5 +21,5 @@ parameters:
         manual_dpatch: false
         # Influence recurrent module
         inf_num_rec_units: 128
-        inf_seq_len: 16
-        time_horizon: 16
+        inf_seq_len: 8
+        time_horizon: 8

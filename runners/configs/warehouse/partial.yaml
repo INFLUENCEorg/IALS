@@ -5,7 +5,7 @@ parameters:
         influence_model: 'nn'
         env: 'warehouse'
         obs_size: 69
-        time_horizon: 16
+        time_horizon: 8
         num_actions: 4
         simulator: 'partial'
         fully_connected: true
