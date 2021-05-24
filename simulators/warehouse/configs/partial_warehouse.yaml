@@ -5,7 +5,7 @@ warehouse:
   n_robots_column: 1
   distance_between_shelves: 4
   robot_domain_size: [5, 5]
-  prob_item_appears: 0.03
+  prob_item_appears: 0.05
   learning_robot_id: 0 # the learning robot
   obs_type: 'vector'
   n_steps_episode: 100
