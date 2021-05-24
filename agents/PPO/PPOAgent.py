@@ -116,14 +116,14 @@ class PPOAgent(object):
                     # reset worker's internal state
                     self.model.reset_state_in(worker)
                     # # zero padding incomplete sequences
-                    remainder = len(self.buffer['masks']) % self.seq_len
+                    # remainder = len(self.buffer['masks']) % self.seq_len
                     # # NOTE: we need to zero-pad all workers to keep the
                     # # same buffer dimensions even though only one of them has
                     # # reached the end of the episode.
-                    if remainder != 0:
-                        missing = self.seq_len - remainder
-                        self.buffer.zero_padding(missing, worker)
-                        self.t += missing
+                    # if remainder != 0:
+                    #     missing = self.seq_len - remainder
+                    #     self.buffer.zero_padding(missing, worker)
+                    #     self.t += missing
 
     def _bootstrap(self, obs, prev_action):
         """
