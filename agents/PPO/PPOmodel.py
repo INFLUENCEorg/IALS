@@ -125,7 +125,7 @@ class PPOmodel(Model):
         decay_beta = tf.train.polynomial_decay(self.parameters["beta"],
                                                self.step,
                                                self.parameters["max_steps"],
-                                               1e-2, power=1.0)
+                                               1e-10, power=1.0)
         # Loss function
         self.loss = self.policy_loss + self.parameters['c1']*self.value_loss - \
             decay_beta*self.entropy_bonus
