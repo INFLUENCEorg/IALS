@@ -9,7 +9,7 @@ parameters:
         influence_model: None
         fully_connected: true
         num_fc_layers: 2
-        num_fc_units: [512, 256]
+        num_fc_units: [256, 128]
         # Convolutional module
         convolutional: false
         # Recurrent module
@@ -17,9 +17,11 @@ parameters:
         influence: true
         # Attention
         attention: false
-        automatic_dpatch: true
-        manual_dpatch: false
+        automatic_dpatch: false
+        manual_dpatch: true
+        inf_num_predictors: 12
+        dset: [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]
         # Influence recurrent module
-        inf_num_rec_units: 256
+        inf_num_rec_units: 64
         inf_seq_len: 8
         time_horizon: 8
