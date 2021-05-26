@@ -17,11 +17,11 @@ parameters:
         influence: true
         # Attention
         attention: false
-        automatic_dpatch: false
-        manual_dpatch: true
+        automatic_dpatch: true
+        manual_dpatch: false
         inf_num_predictors: 12
         dset: [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]
         # Influence recurrent module
-        inf_num_rec_units: 16
+        inf_num_rec_units: 32
         inf_seq_len: 8
         time_horizon: 8
