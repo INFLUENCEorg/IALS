@@ -9,7 +9,7 @@ parameters:
         simulator: 'partial'
         fully_connected: true
         num_fc_layers: 2
-        num_fc_units: [128, 64]
+        num_fc_units: [256, 128]
         # Convolutional module
         convolutional: false
         # Recurrent module
@@ -22,7 +22,7 @@ parameters:
         inf_num_predictors: 12
         dset: [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]
         # Influence recurrent module
-        inf_num_rec_units: 32
+        inf_num_rec_units: 16
         time_horizon: 8
         inf_seq_len: 8
 

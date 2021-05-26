@@ -22,6 +22,6 @@ parameters:
         inf_num_predictors: 12
         dset: [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]
         # Influence recurrent module
-        inf_num_rec_units: 64
+        inf_num_rec_units: 16
         inf_seq_len: 8
         time_horizon: 8
