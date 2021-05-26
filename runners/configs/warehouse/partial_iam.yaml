@@ -25,7 +25,6 @@ parameters:
         inf_num_rec_units: 32
         time_horizon: 8
         inf_seq_len: 8
-        num_workers: 1
 
     influence:
         # Common hyperparameters
