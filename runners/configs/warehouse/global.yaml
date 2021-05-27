@@ -15,5 +15,5 @@ parameters:
         convolutional: false
         # Recurrent module
         recurrent: true
-        num_rec_units: 256
+        num_rec_units: 512
         seq_len: 8
