@@ -1,7 +1,8 @@
-from simulators.warehouse.item import Item
-from simulators.warehouse.robot import Robot
-from simulators.warehouse.utils import *
+from warehouse.envs.item import Item
+from warehouse.envs.robot import Robot
+from warehouse.envs.utils import *
 import numpy as np
+import gym
 from gym import spaces
 import time
 import matplotlib.pyplot as plt
@@ -9,7 +10,7 @@ import matplotlib.patches as patches
 import networkx as nx
 import csv
 
-class Warehouse(object):
+class Warehouse(gym.Env):
     """
     warehouse environment
     """
@@ -18,10 +19,10 @@ class Warehouse(object):
                1: 'DOWN',
                2: 'LEFT',
                3: 'RIGHT'}
+    OBS_SIZE = 37 # 5x5 grid + 12 items
 
-    def __init__(self, influence, seed):
+    def __init__(self):
         parameters = read_parameters('warehouse.yaml')
-        # parameters = parse_arguments()
         self.n_columns = parameters['n_columns']
         self.n_rows = parameters['n_rows']
         self.n_robots_row = parameters['n_robots_row']
@@ -35,10 +36,8 @@ class Warehouse(object):
         self.obs_type = parameters['obs_type']
         self.items = []
         self.img = None
-        self.seed_value = seed
         self.parameters = parameters
-        self.influence = influence
-        self.seed(seed)
+        # self.influence = influence
         self.i = 0
 
     ############################## Override ###############################
@@ -59,13 +58,11 @@ class Warehouse(object):
         self.episode_length = 0
         dset = self.get_dset()
         infs = self.get_infs()#self.prev_obs, obs)
-        if self.influence.aug_obs:
-            self.influence.reset()
-            self.influence.predict(dset)
-            obs = np.append(obs, self.influence.get_hidden_state())
-        reward = 0
-        done = False
-        return obs, reward, done, dset, infs
+        # if self.influence.aug_obs:
+        #     self.influence.reset()
+        #     self.influence.predict(dset)
+        #     obs = np.append(obs, self.influence.get_hidden_state())
+        return obs
 
     def step(self, action):
         """
@@ -90,14 +87,14 @@ class Warehouse(object):
         done = (self.max_episode_length <= self.episode_length)
         if self.parameters['render']:
             self.render(self.parameters['render_delay'])
-        if self.influence.aug_obs:
-            self.influence.predict(self.get_dset())
-            obs = np.append(obs, self.influence.get_hidden_state())
-        return obs, reward, done, dset, infs
+        # if self.influence.aug_obs:
+        #     self.influence.predict(self.get_dset())
+        #     obs = np.append(obs, self.influence.get_hidden_state())
+        return obs, reward, done, {}
 
     @property
     def observation_space(self):
-        return None
+        return spaces.Box(low=0, high=1, shape=(self.OBS_SIZE,))
 
     @property
     def action_space(self):
@@ -105,11 +102,7 @@ class Warehouse(object):
         Returns A gym dict containing the number of action choices for all the
         agents in the environment
         """
-        n_actions = spaces.Discrete(len(self.ACTIONS))
-        action_dict = {robot.get_id:n_actions for robot in self.robots}
-        action_space = spaces.Dict(action_dict)
-        action_space.n = 4
-        return action_space
+        return spaces.Discrete(len(self.ACTIONS))
 
     def render(self, delay=0.5):
         """
@@ -147,9 +140,6 @@ class Warehouse(object):
         plt.draw()
         # plt.savefig('../video/' + str(self.i))
         # self.i += 1
-
-    def close(self):
-        pass
 
     def seed(self, seed=None):
         if seed is not None:

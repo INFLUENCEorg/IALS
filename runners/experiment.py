@@ -9,12 +9,12 @@ from simulators.simulation import Simulation
 from influence.influence_network import InfluenceNetwork
 from influence.influence_uniform import InfluenceUniform
 from influence.influence_dummy import InfluenceDummy
-from influence.data_collector import DataCollector
 from simulators.warehouse.warehouse import Warehouse
 import argparse
 import yaml
 import time
 import sacred
+from collect_data import collect_data
 from sacred.observers import MongoObserver
 import pymongo
 from sshtunnel import SSHTunnelForwarder
@@ -41,9 +41,14 @@ class Experiment(object):
                 self.influence = InfluenceUniform(parameters['influence'], data_path)
         else:
             self.influence = InfluenceDummy(parameters['influence'])
-
-        self.data_collector = DataCollector(self.agent, self.parameters['env'], self.parameters['num_workers'], 
-                                            self.influence, data_path, seed)
+        self._run = _run
+        collect_data(self.agent, self.parameters['env'], self.parameters['num_workers'], 
+                     self.influence, data_path, seed)
+        loss = self.influence.train(parameters['influence']['num_epochs'])
+        # influence model parameters need to be loaded every time they are updated because 
+        # each process keeps a separate copy of the influence model
+        self.env.load_influence_model()
+        self._run.log_scalar('influence loss', loss, 0)
                                             
         # if self.parameters['num_workers'] > 1:
         self.sim = DistributedSimulation(self.parameters['env'], self.parameters['simulator'], 
@@ -51,9 +56,6 @@ class Experiment(object):
         # else:
             # self.sim = Simulation(self.parameters['env'], self.parameters['simulator'],
                                 #   self.influence, seed)
-
-        tf.reset_default_graph()
-        self._run = _run
 
     def generate_path(self, path):
         """
@@ -93,22 +95,6 @@ class Experiment(object):
         start = time.time()
         step_output = self.sim.reset()
         while global_step <= self.maximum_time_steps:
-            if global_step % self.parameters_influence['train_freq']  == 0 and \
-               self.parameters['simulator'] == 'partial' and \
-               self.parameters['influence_model'] == 'nn':
-                if self.agent.episodes == 0:
-                    dataset_size = self.parameters_influence['dataset_size1']
-                    num_epochs = self.parameters_influence['n_epochs1']
-                else:
-                    dataset_size = self.parameters_influence['dataset_size2']
-                    num_epochs = self.parameters_influence['n_epochs2']
-                mean_episodic_return = self.data_collector.run(dataset_size, log=True, load=False)
-                loss = self.influence.train(num_epochs)
-                # influence model parameters need to be loaded every time they are updated because 
-                # each process keeps a separate copy of the influence model
-                self.sim.load_influence_model()
-                self._run.log_scalar("mean episodic return", mean_episodic_return, global_step)
-                self._run.log_scalar('influence loss', loss, global_step)
                 # if global_step == 0:
                     # step_output = self.sim.reset()
             elif global_step % self.parameters['eval_freq'] == 0:
