@@ -1,20 +1,18 @@
 import os
-import tensorflow as tf
 import sys
-sys.path.append("..") 
-from agents.PPO.PPOAgent import PPOAgent
-from agents.random_agent import RandomAgent
-from simulators.distributed_simulation import DistributedSimulation
-from simulators.simulation import Simulation
+sys.path.append("..")
 from influence.influence_network import InfluenceNetwork
 from influence.influence_uniform import InfluenceUniform
-from influence.influence_dummy import InfluenceDummy
-from simulators.warehouse.warehouse import Warehouse
-import argparse
-import yaml
+from agent.a2c_ppo_acktr.model import Policy
+from agent.a2c_ppo_acktr import algo, utils
+from agent.a2c_ppo_acktr.storage import RolloutStorage
+from simulators.envs import *
 import time
 import sacred
+from collections import deque
+from gym import spaces
 from collect_data import collect_data
+from evaluate import evaluate
 from sacred.observers import MongoObserver
 import pymongo
 from sshtunnel import SSHTunnelForwarder
@@ -28,34 +26,34 @@ class Experiment(object):
     def __init__(self, parameters, _run, seed):
         """
         """
+        self._run = _run
+        self._seed = seed
         self.parameters = parameters['main']
-        self.parameters_influence = parameters['influence']
-        self.path = self.generate_path(self.parameters['name'])
-        self.agent = PPOAgent(self.parameters['num_actions'], self.parameters)
-        self.train_frequency = self.parameters['train_frequency']
-        data_path = parameters['influence']['data_path'] + str(_run._id) + '/'
-        if self.parameters['simulator'] == 'partial':
+        self.actor_critic = Policy((37,), 
+                              spaces.Discrete(self.parameters['num_actions']), 
+                              base_kwargs={'recurrent': self.parameters['recurrent']})
+        data_path = parameters['influence']['data_path'] + str(_run) + '/'
+        self.global_env_name = self.parameters['env']+ ':' + self.parameters['env'] + '-v0'
+        self.path = self.generate_path(self.parameters['env'])
+        if self.parameters['simulator'] == 'local':
+            self.local_env_name = self.parameters['env']+ ':local-' + self.parameters['env'] + '-v0'
+
             if self.parameters['influence_model'] == 'nn':
-                self.influence = InfluenceNetwork(parameters['influence'], data_path, _run._id)
+                self.influence = InfluenceNetwork(parameters['influence'], data_path, _run)
+                collect_data(self.actor_critic, self.global_env_name, seed, self.parameters['num_workers'], 
+                             None, 'cpu', 1000, data_path)
+                loss = self.influence.train()
+                self._run.log_scalar('influence loss', loss, 0)
             else:
                 self.influence = InfluenceUniform(parameters['influence'], data_path)
+
+            self.sim = make_vec_envs(self.local_env_name, seed, self.parameters['num_workers'], 
+                self.parameters['gamma'], './logs', 'cpu', True, influence=self.influence)
+
         else:
-            self.influence = InfluenceDummy(parameters['influence'])
-        self._run = _run
-        collect_data(self.agent, self.parameters['env'], self.parameters['num_workers'], 
-                     self.influence, data_path, seed)
-        loss = self.influence.train(parameters['influence']['num_epochs'])
-        # influence model parameters need to be loaded every time they are updated because 
-        # each process keeps a separate copy of the influence model
-        self.env.load_influence_model()
-        self._run.log_scalar('influence loss', loss, 0)
-                                            
-        # if self.parameters['num_workers'] > 1:
-        self.sim = DistributedSimulation(self.parameters['env'], self.parameters['simulator'], 
-                                         self.parameters['num_workers'], self.influence, seed)
-        # else:
-            # self.sim = Simulation(self.parameters['env'], self.parameters['simulator'],
-                                #   self.influence, seed)
+            env_name = self.parameters['env']+ ':' + self.parameters['env'] + '-v0'
+            self.sim = make_vec_envs(env_name, seed, self.parameters['num_workers'], 
+                self.parameters['gamma'], './logs', 'cpu', True)
 
     def generate_path(self, path):
         """
@@ -70,58 +68,103 @@ class Experiment(object):
             os.makedirs(model_path)
         return path
 
-    def print_results(self, episode_return, episode_step, global_step):
-        """
-        Prints results to the screen.
-        """
-        print(("Train step {} of {}".format(global_step,
-                                            self.maximum_time_steps)))
-        print(("-"*30))
-        print(("Episode {} ended after {} steps.".format(self.agent.episodes,
-                                                         episode_step)))
-        print(("- Total reward: {}".format(episode_return)))
-        print(("-"*30))
-
     def run(self):
-        """
-        Runs the experiment.
-        """
-        self.maximum_time_steps = int(self.parameters["max_steps"])
-        global_step = max(self.parameters["iteration"], 0)
-        # reset environment
-        # self.sim = DistributedSimulation(self.parameters, self.influence)
-        episode_return = 0
-        episode_step = 0
+        torch.manual_seed(self._seed)
+        torch.cuda.manual_seed_all(self._seed)
+        torch.set_num_threads(1)
+        device = 'cpu'
+        self.actor_critic.to(device)
+
+        
+        agent = algo.PPO(self.actor_critic, self.parameters['epsilon'], 
+            self.parameters['num_epoch'], 4, self.parameters['c1'],
+            self.parameters['beta'], self.parameters['learning_rate'],
+            1e-5, max_grad_norm=0.5)
+
+        rollouts = RolloutStorage(self.parameters['time_horizon'], self.parameters['num_workers'],
+                self.sim.observation_space.shape, self.sim.action_space,
+                self.actor_critic.recurrent_hidden_state_size)
+
+        obs = self.sim.reset()
+        rollouts.obs[0].copy_(obs)
+        rollouts.to(device)
+
+        episode_rewards = deque(maxlen=10)
+
         start = time.time()
-        step_output = self.sim.reset()
-        while global_step <= self.maximum_time_steps:
-                # if global_step == 0:
-                    # step_output = self.sim.reset()
-            elif global_step % self.parameters['eval_freq'] == 0:
-                log = self.parameters['simulator'] == 'partial'
-                mean_episodic_return = self.data_collector.run(self.parameters['eval_steps'], log=log, load=True)
-                if self.parameters['simulator'] == 'partial':
-                    loss = self.influence.test()
-                    self._run.log_scalar('influence loss', loss, global_step)
-                self._run.log_scalar('mean episodic return', mean_episodic_return, global_step)
-            # Select the action to perform
-            action = self.agent.take_action(step_output)
-            # Increment step
-            episode_step += 1
-            global_step += 1
-            # Get new state and reward given actions a
-            step_output = self.sim.step(action)
-            episode_return += step_output['reward'][0]
-            if step_output['done'][0]:
+        num_updates = int(self.parameters['max_steps']) // self.parameters['time_horizon']
+        for j in range(num_updates):
+
+            utils.update_linear_schedule(agent.optimizer, j, num_updates, 
+            self.parameters['learning_rate'])
+
+            for step in range(self.parameters['time_horizon']):
+                # Sample actions
+                with torch.no_grad():
+                    value, action, action_log_prob, recurrent_hidden_states = self.actor_critic.act(
+                        rollouts.obs[step], rollouts.recurrent_hidden_states[step],
+                        rollouts.masks[step])
+
+                # Obser reward and next obs
+                obs, reward, done, infos = self.sim.step(action)
+
+                for info in infos:
+                    if 'episode' in info.keys():
+                        episode_rewards.append(info['episode']['r'])
+
+                # If done then clean the history of observations.
+                masks = torch.FloatTensor(
+                    [[0.0] if done_ else [1.0] for done_ in done])
+                bad_masks = torch.FloatTensor(
+                    [[0.0] if 'bad_transition' in info.keys() else [1.0]
+                    for info in infos])
+                rollouts.insert(obs, recurrent_hidden_states, action,
+                                action_log_prob, value, reward, masks, bad_masks)
+
+            with torch.no_grad():
+                next_value = self.actor_critic.get_value(
+                    rollouts.obs[-1], rollouts.recurrent_hidden_states[-1],
+                    rollouts.masks[-1]).detach()
+
+            rollouts.compute_returns(next_value, True, self.parameters['gamma'],
+                                    self.parameters['lambda'], False)
+
+            value_loss, action_loss, dist_entropy = agent.update(rollouts)
+
+            rollouts.after_update()
+
+            # save for every interval-th episode or for the last epoch
+            if (j % self.parameters['save_frequency'] == 0
+                    or j == num_updates - 1):
+                try:
+                    os.makedirs(self.path)
+                except OSError:
+                    pass
+
+                torch.save([
+                    self.actor_critic,
+                    getattr(utils.get_vec_normalize(self.sim), 'obs_rms', None)
+                ], os.path.join(self.path + ".pt"))
+
+            if j % 10 == 0 and len(episode_rewards) > 1:
+                total_num_steps = j*self.parameters['time_horizon']
                 end = time.time()
-                print('Time: ', end - start)
-                start = end
-                self.print_results(episode_return, episode_step, global_step)
-                episode_return = 0
-                episode_step = 0
-        self.sim.close()
-        self.data_collector.sim.close()
-        # server.stop()
+                print(
+                    "Updates {}, num timesteps {}, FPS {} \n Last {} training episodes: mean/median reward {:.1f}/{:.1f}, min/max reward {:.1f}/{:.1f}\n"
+                    .format(j, total_num_steps,
+                            int(total_num_steps / (end - start)),
+                            len(episode_rewards), np.mean(episode_rewards),
+                            np.median(episode_rewards), np.min(episode_rewards),
+                            np.max(episode_rewards), dist_entropy, value_loss,
+                            action_loss))
+
+            if j % self.parameters['eval_freq'] == 0:
+                mean_episodic_return = evaluate(self.actor_critic, 
+                                        self.global_env_name, self._seed,
+                                        self.parameters['num_workers'], 'cpu',
+                                        self.parameters['eval_steps'])
+                self._run.log_scalar('mean episodic return', mean_episodic_return, self.parameters['time_horizon']*j)
+        # self.sim.close()
 
 def add_mongodb_observer():
     """
@@ -130,7 +173,6 @@ def add_mongodb_observer():
     MONGO_HOST = 'TUD-tm2'
     MONGO_DB = 'scalable-simulations'
     PKEY = '~/.ssh/id_rsa'
-    global server
     try:
         print("Trying to connect to mongoDB '{}'".format(MONGO_DB))
         server = SSHTunnelForwarder(

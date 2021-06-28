@@ -4,7 +4,7 @@ parameters:
         simulator: 'global'
         env: 'warehouse'
         obs_size: 37
-        time_horizon: 8
+        time_horizon: 10
         num_actions: 4
         name: 'global_warehouse_recurrent'
         influence_model: None
@@ -17,3 +17,4 @@ parameters:
         recurrent: true
         num_rec_units: 512
         seq_len: 8
+        eval_freq: 1.0e+4

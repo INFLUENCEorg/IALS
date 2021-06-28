@@ -44,7 +44,7 @@ class LocalWarehouse(Warehouse):
         obs = self._get_observation()
         self.episode_length = 0
         self.influence.reset()
-        self.probs = self.influence.predict(self.get_dset())
+        self.probs = self.influence.predict(self.get_dset)
         if self.influence.aug_obs:
             obs = np.append(obs, self.influence.get_hidden_state())
         return obs
@@ -53,16 +53,16 @@ class LocalWarehouse(Warehouse):
         """
         Performs a single step in the environment.
         """
-        self._robots_act(action)
+        self._robots_act([action])
         # ext_robot_locs = self._sample_ext_robot_locs(self.probs)
-        reward = self._compute_reward(self.robots[self.learning_robot_id])
+        reward = self._compute_reward()
         self._remove_items(self.probs)
         self._add_items()
         obs = self._get_observation()
         self.episode_length += 1
         self.total_steps += 1
         done = (self.max_episode_length <= self.episode_length)
-        self.probs = self.influence.predict(self.get_dset())
+        self.probs = self.influence.predict(self.get_dset)
         if self.parameters['render']:
             self.render(self.parameters['render_delay'])
         # Influence-augmented observations
@@ -129,3 +129,10 @@ class LocalWarehouse(Warehouse):
 
     def load_influence_model(self):
         self.influence._load_model()
+
+    # def _robots_act(self, action):
+    #     """
+    #     Learning robot takes an action in the environment.
+    #     """
+    #     self.robots[self.learning_robot_id].act(action)
+

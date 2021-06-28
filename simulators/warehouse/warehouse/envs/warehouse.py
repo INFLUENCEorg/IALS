@@ -50,18 +50,11 @@ class Warehouse(gym.Env):
         self._place_robots()
         # self.influence.predict(dset)
         self.item_id = 0
-        self.n_items_collected = 0
         self.items = []
         self._add_items()
         obs = self._get_observation()
         self.prev_obs = obs
         self.episode_length = 0
-        dset = self.get_dset()
-        infs = self.get_infs()#self.prev_obs, obs)
-        # if self.influence.aug_obs:
-        #     self.influence.reset()
-        #     self.influence.predict(dset)
-        #     obs = np.append(obs, self.influence.get_hidden_state())
         return obs
 
     def step(self, action):
@@ -70,16 +63,16 @@ class Warehouse(gym.Env):
         """ 
         # external robots take an action
         actions = []
-        dset = self.get_dset()
+        dset = self.get_dset
         for robot in self.robots:
             state = self._get_state()
             obs = robot.observe(state, self.obs_type)
             actions.append(robot.select_naive_action(obs))#, self.items))
         actions[self.learning_robot_id] = action
         self._robots_act(actions)
+        infs = self.get_infs
         reward = self._compute_reward()
         self._remove_items()
-        infs = self.get_infs()#self.prev_obs, self._get_observation())
         self._add_items()
         obs = self._get_observation()
         self.prev_obs = obs
@@ -87,10 +80,7 @@ class Warehouse(gym.Env):
         done = (self.max_episode_length <= self.episode_length)
         if self.parameters['render']:
             self.render(self.parameters['render_delay'])
-        # if self.influence.aug_obs:
-        #     self.influence.predict(self.get_dset())
-        #     obs = np.append(obs, self.influence.get_hidden_state())
-        return obs, reward, done, {}
+        return obs, reward, done, {'dset': dset, 'infs': infs}
 
     @property
     def observation_space(self):
@@ -145,6 +135,7 @@ class Warehouse(gym.Env):
         if seed is not None:
             np.random.seed(seed)
 
+    @property
     def get_dset(self):
         state = self._get_state()
         robot = self.robots[self.learning_robot_id]
@@ -158,7 +149,8 @@ class Warehouse(gym.Env):
         obs = self.robots[robot_id].observe(state, 'vector')
         loc_bitmap = obs[:25]
         return loc_bitmap
-
+    
+    @property
     def get_infs(self):
         # prev_items = prev_obs[25:]
         # items = obs[25:]
@@ -333,7 +325,6 @@ class Warehouse(gym.Env):
             #     reward += -0.1 #*item.get_waiting_time
             if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
                 reward += 1
-                self.n_items_collected += 1
         return reward
 
 

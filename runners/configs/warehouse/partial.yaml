@@ -7,7 +7,7 @@ parameters:
         obs_size: 37
         time_horizon: 8
         num_actions: 4
-        simulator: 'partial'
+        simulator: 'local'
         fully_connected: true
         num_fc_layers: 1
         num_fc_units: [512]
@@ -17,6 +17,8 @@ parameters:
         recurrent: true
         num_rec_units: 256
         seq_len: 8
+        num_workers: 8
+        gamma: 0.99
 
     influence:
         # Common hyperparameters
