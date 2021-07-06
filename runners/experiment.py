@@ -104,6 +104,7 @@ class Experiment(object):
         self._run = _run
         self._seed = seed
         self.parameters = parameters['main']
+
         policy = GRUPolicy(self.parameters['obs_size'], 
             self.parameters['num_actions'], 
             self.parameters['num_workers']
@@ -114,12 +115,17 @@ class Experiment(object):
             batch_size=self.parameters['batch_size'],
             seq_len=self.parameters['seq_len'],
             num_epoch=self.parameters['num_epoch'],
-            learning_rate=self.parameters['learning_rate']
-        )
+            learning_rate=self.parameters['learning_rate'],
+            total_steps=self.parameters['total_steps'],
+            clip_range=self.parameters['epsilon'],
+            entropy_coef=self.parameters['beta']
+            )
+
         global_env_name = self.parameters['env']+ ':' + self.parameters['env'] + '-v0'
         self.global_env = SubprocVecEnv(
             [make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])]
             )
+
         if self.parameters['simulator'] == 'local':
             data_path = parameters['influence']['data_path'] + str(_run._id) + '/'
 
@@ -135,7 +141,7 @@ class Experiment(object):
             local_env_name = self.parameters['env']+ ':local-' + self.parameters['env'] + '-v0'
             self.env = SubprocVecEnv(
                 [make_env(local_env_name, i, seed, influence) for i in range(self.parameters['num_workers'])]
-            )
+                )
         else:
             self.env = self.global_env
 
