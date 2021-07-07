@@ -4,8 +4,8 @@ sys.path.append("..")
 from influence.influence_network import InfluenceNetwork
 from influence.influence_uniform import InfluenceUniform
 # from stable_baselines3.common import set_global_seeds
-from stable_baselines3.common.vec_env import SubprocVecEnv
-from recurrent_policies.PPO import Agent, ModifiedGRUPolicy
+from stable_baselines3.common.vec_env import SubprocVecEnv, VecNormalize
+from recurrent_policies.PPO import Agent, FNNPolicy
 import gym
 import sacred
 from sacred.observers import MongoObserver
@@ -105,7 +105,7 @@ class Experiment(object):
         self._seed = seed
         self.parameters = parameters['main']
 
-        policy = ModifiedGRUPolicy(self.parameters['obs_size'], 
+        policy = FNNPolicy(self.parameters['obs_size'], 
             self.parameters['num_actions'], 
             self.parameters['num_workers']
             )
@@ -125,6 +125,7 @@ class Experiment(object):
         self.global_env = SubprocVecEnv(
             [make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])]
             )
+        self.global_env = VecNormalize(self.global_env, norm_obs=True, norm_reward=True)
 
         if self.parameters['simulator'] == 'local':
             data_path = parameters['influence']['data_path'] + str(_run._id) + '/'
