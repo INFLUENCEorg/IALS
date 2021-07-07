@@ -125,7 +125,7 @@ class Experiment(object):
         self.global_env = SubprocVecEnv(
             [make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])]
             )
-        self.global_env = VecNormalize(self.global_env, norm_obs=True, norm_reward=True)
+        # self.global_env = VecNormalize(self.global_env, norm_obs=True, norm_reward=True)
 
         if self.parameters['simulator'] == 'local':
             data_path = parameters['influence']['data_path'] + str(_run._id) + '/'
