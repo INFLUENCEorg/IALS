@@ -105,7 +105,7 @@ class Experiment(object):
         self._seed = seed
         self.parameters = parameters['main']
 
-        policy = GRUPolicy(self.parameters['obs_size'], 
+        policy = FNNPolicy(self.parameters['obs_size'], 
             self.parameters['num_actions'], 
             self.parameters['num_workers']
             )
