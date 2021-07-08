@@ -5,7 +5,7 @@ from influence.influence_network import InfluenceNetwork
 from influence.influence_uniform import InfluenceUniform
 # from stable_baselines3.common import set_global_seeds
 from stable_baselines3.common.vec_env import SubprocVecEnv, VecNormalize
-from recurrent_policies.PPO import Agent, FNNPolicy, GRUPolicy
+from recurrent_policies.PPO import Agent, FNNPolicy, GRUPolicy, ModifiedGRUPolicy
 import gym
 import sacred
 from sacred.observers import MongoObserver
@@ -105,7 +105,7 @@ class Experiment(object):
         self._seed = seed
         self.parameters = parameters['main']
 
-        policy = FNNPolicy(self.parameters['obs_size'], 
+        policy = ModifiedGRUPolicy(self.parameters['obs_size'], 
             self.parameters['num_actions'], 
             self.parameters['num_workers']
             )
