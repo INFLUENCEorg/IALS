@@ -105,7 +105,7 @@ class Experiment(object):
         self._seed = seed
         self.parameters = parameters['main']
 
-        policy = ModifiedGRUPolicy(self.parameters['obs_size'], 
+        policy = GRUPolicy(self.parameters['obs_size'], 
             self.parameters['num_actions'], 
             self.parameters['num_workers']
             )
