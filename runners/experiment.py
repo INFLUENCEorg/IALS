@@ -154,6 +154,7 @@ class Experiment(object):
         episode_step = 0
         episode = 1
         start = time.time()
+        done = [False]*self.parameters['num_workers']
         while step < self.parameters['total_steps']:
 
             rollout_step = 0
@@ -161,10 +162,15 @@ class Experiment(object):
                 if step % self.parameters['eval_freq'] == 0:
                    mean_return = self.evaluate()
                    self._run.log_scalar('mean episodic return', mean_return, step)
-                action, value, log_prob, hidden_memory = self.agent.choose_action(obs)
+            
+                self.agent.reset_hidden_memory(done)
+                hidden_memory = self.agent.policy.hidden_memory
+                action, value, log_prob = self.agent.choose_action(obs)
+
                 new_obs, reward, done, info = self.env.step(action)
+
                 self.agent.add_to_memory(obs, action, reward, done, value, log_prob, hidden_memory)
-                # self.agent.reset_hidden_memory(done)
+                
                 obs = new_obs
                 rollout_step += 1
                 step += 1
