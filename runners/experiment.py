@@ -105,7 +105,7 @@ class Experiment(object):
         self._seed = seed
         self.parameters = parameters['main']
 
-        policy = GRUPolicy(self.parameters['obs_size'], 
+        policy = ModifiedGRUPolicy(self.parameters['obs_size'], 
             self.parameters['num_actions'], 
             self.parameters['num_workers']
             )
@@ -132,7 +132,7 @@ class Experiment(object):
 
             if self.parameters['influence_model'] == 'nn':
                 influence = InfluenceNetwork(parameters['influence'], data_path, _run._id)
-                self.collect_data(parameters['influence']['dataset_size1'], data_path)
+                self.collect_data(parameters['influence']['dataset_size'], data_path)
                 loss = influence.learn()
                 self._run.log_scalar('influence loss', loss, 0)
             
@@ -190,7 +190,7 @@ class Experiment(object):
                 self.agent.update()
             
 
-    def collect_data(self, agent, dataset_size, data_path):
+    def collect_data(self, dataset_size, data_path):
         """Collect data from global simulator"""
         print('Collecting data from global simulator...')
         episode_rewards =[]
@@ -204,7 +204,7 @@ class Experiment(object):
             # NOTE: Episodes in all envs must terminate at the same time 
             while not done[0]:
                 n_steps += 1
-                action, _, _, _ = agent.choose_action(obs)
+                action, _, _, _ = self.agent.choose_action(obs)
                 obs, reward, done, info = self.global_env.step(action)
                 dset.append(np.array([i['dset'] for i in info]))
                 infs.append(np.array([i['infs'] for i in info]))
