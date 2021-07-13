@@ -163,9 +163,9 @@ class Experiment(object):
                    mean_return = self.evaluate()
                    self._run.log_scalar('mean episodic return', mean_return, step)
             
-                self.agent.reset_hidden_memory(done)
-                hidden_memory = self.agent.policy.hidden_memory
+                # self.agent.reset_hidden_memory(done)
                 action, value, log_prob = self.agent.choose_action(obs)
+                hidden_memory = self.agent.policy.hidden_memory
 
                 new_obs, reward, done, info = self.env.step(action)
 
@@ -212,7 +212,7 @@ class Experiment(object):
                 n_steps += 1
                 action, _, _= self.agent.choose_action(obs)
                 obs, reward, done, info = self.global_env.step(action)
-                self.agent.reset_hidden_memory(done)
+                # self.agent.reset_hidden_memory(done)
                 dset.append(np.array([i['dset'] for i in info]))
                 infs.append(np.array([i['infs'] for i in info]))
                 reward_sum += reward
@@ -235,7 +235,7 @@ class Experiment(object):
                 n_steps += 1
                 action, _, _ = self.agent.choose_action(obs)
                 obs, reward, done, _ = self.global_env.step(action)
-                self.agent.reset_hidden_memory(done)
+                # self.agent.reset_hidden_memory(done)
                 reward_sum += reward
             episode_rewards.append(reward_sum)
         print('Done!')
