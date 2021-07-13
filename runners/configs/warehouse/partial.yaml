@@ -5,9 +5,9 @@ parameters:
         influence_model: 'nn'
         env: 'warehouse'
         obs_size: 37
-        time_horizon: 8
+        rollout_steps: 8 
         num_actions: 4
-        simulator: 'partial'
+        simulator: 'local'
         fully_connected: true
         num_fc_layers: 1
         num_fc_units: [512]
@@ -35,6 +35,5 @@ parameters:
         aug_obs: False
         load_model: False
         curriculum: False
-        dataset_size1: 5.0e+4
-        dataset_size2: 1.0e+4
+        dataset_size: 5.0e+4
         train_freq: 3.0e+6
