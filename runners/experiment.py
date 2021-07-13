@@ -164,9 +164,9 @@ class Experiment(object):
                    self._run.log_scalar('mean episodic return', mean_return, step)
             
                 # self.agent.reset_hidden_memory(done)
-                action, value, log_prob = self.agent.choose_action(obs)
                 hidden_memory = self.agent.policy.hidden_memory
-
+                action, value, log_prob = self.agent.choose_action(obs)
+                
                 new_obs, reward, done, info = self.env.step(action)
 
                 self.agent.add_to_memory(obs, action, reward, done, value, log_prob, hidden_memory)
