@@ -15,6 +15,7 @@ import numpy as np
 import csv
 import os
 import time
+from copy import deepcopy
 
 def generate_path(path):
     """
@@ -201,6 +202,8 @@ class Experiment(object):
         print('Collecting data from global simulator...')
         episode_rewards =[]
         n_steps = 0
+        # copy agent to not altere hidden memory
+        agent = deepcopy(self.agent)
         while n_steps < dataset_size//self.parameters['num_workers']:
             reward_sum = 0
             done = [False]*self.parameters['num_workers']
@@ -208,11 +211,11 @@ class Experiment(object):
             dset = []
             infs = []
             # NOTE: Episodes in all envs must terminate at the same time 
+            self.agent.reset_hidden_memory([True]*self.parameters['num_workers'])
             while not done[0]:
                 n_steps += 1
-                action, _, _= self.agent.choose_action(obs)
+                action, _, _= agent.choose_action(obs)
                 obs, reward, done, info = self.global_env.step(action)
-                self.agent.reset_hidden_memory(done)
                 dset.append(np.array([i['dset'] for i in info]))
                 infs.append(np.array([i['infs'] for i in info]))
                 reward_sum += reward
@@ -225,17 +228,19 @@ class Experiment(object):
         """Return mean sum of episodic rewards) for given model"""
         episode_rewards = []
         n_steps = 0
+        # copy agent to not altere hidden memory
+        agent = deepcopy(self.agent)
         print('Evaluating policy on global simulator...')
         while n_steps < self.parameters['eval_steps']//self.parameters['num_workers']:
             reward_sum = 0
             done = [False]*self.parameters['num_workers']
             obs = self.global_env.reset()
             # NOTE: Episodes in all envs must terminate at the same time
+            self.agent.reset_hidden_memory([True]*self.parameters['num_workers'])
             while not done[0]:
                 n_steps += 1
-                action, _, _ = self.agent.choose_action(obs)
+                action, _, _ = agent.choose_action(obs)
                 obs, reward, done, _ = self.global_env.step(action)
-                self.agent.reset_hidden_memory(done)
                 reward_sum += reward
             episode_rewards.append(reward_sum)
         print('Done!')
