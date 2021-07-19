@@ -169,9 +169,7 @@ class Experiment(object):
                 action, value, log_prob = self.agent.choose_action(obs)
                 
                 new_obs, reward, done, info = self.env.step(action)
-
                 self.agent.add_to_memory(obs, action, reward, done, value, log_prob, hidden_memory)
-                
                 obs = new_obs
                 rollout_step += 1
                 step += 1
@@ -194,8 +192,10 @@ class Experiment(object):
                 )
 
             if self.agent.buffer.is_full:
+                start2 = time.time()
                 self.agent.update()
-            
+                end2 = time.time()
+                print('Update time:', end2 - start2)
 
     def collect_data(self, dataset_size, data_path):
         """Collect data from global simulator"""
