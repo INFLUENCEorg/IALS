@@ -258,7 +258,8 @@ class Experiment(object):
                                                          episode_step)))
         print(("- Total reward: {}".format(episode_return)))
         print(("-"*30))
-        
+
+os.environ["CUDA_VISIBLE_DEVICES"]=""   
 ex = sacred.Experiment('scalable-simulations')
 ex.add_config('configs/default.yaml')
 add_mongodb_observer()
