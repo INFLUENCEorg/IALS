@@ -122,11 +122,11 @@ class Experiment(object):
             entropy_coef=self.parameters['beta']
             )
 
-        global_env_name = self.parameters['env']+ ':' + self.parameters['env'] + '-v0'
+        global_env_name = self.parameters['env']+ ':mini-' + self.parameters['env'] + '-v0'
         self.global_env = SubprocVecEnv(
             [make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])]
             )
-        # self.global_env = VecNormalize(self.global_env, norm_obs=True, norm_reward=True)
+        self.global_env = VecNormalize(self.global_env)
 
         if self.parameters['simulator'] == 'local':
             data_path = parameters['influence']['data_path'] + str(_run._id) + '/'
@@ -145,8 +145,11 @@ class Experiment(object):
                 [make_env(local_env_name, i, seed, influence) for i in range(self.parameters['num_workers'])]
                 )
         else:
+            # self.env = VecNormalize(SubprocVecEnv(
+                # [make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])]
+                # ), norm_obs=True, norm_reward=True)
             self.env = self.global_env
-
+                
     def run(self):
 
         obs = self.env.reset()
@@ -174,7 +177,7 @@ class Experiment(object):
                 rollout_step += 1
                 step += 1
                 episode_step += 1
-                episode_reward += np.mean(reward)
+                episode_reward += np.mean(self.env.get_original_reward())
                 if done[0]:
                     end = time.time()
                     print('Time: ', end - start)
@@ -240,7 +243,8 @@ class Experiment(object):
             while not done[0]:
                 n_steps += 1
                 action, _, _ = agent.choose_action(obs)
-                obs, reward, done, _ = self.global_env.step(action)
+                obs, _, done, _ = self.global_env.step(action)
+                reward = self.global_env.get_original_reward()
                 reward_sum += reward
             episode_rewards.append(reward_sum)
         print('Done!')

@@ -21,7 +21,7 @@ parameters:
         learning_rate: 2.5e-4
         batch_size: 32
         memory_size: 128
-        eval_freq: 1.0e+5
+        eval_freq: 1.0e+4
         eval_steps: 1.0e+4
         num_workers: 8
 
