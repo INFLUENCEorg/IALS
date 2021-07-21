@@ -106,7 +106,7 @@ class Experiment(object):
         self._seed = seed
         self.parameters = parameters['main']
 
-        policy = GRUPolicy(self.parameters['obs_size'], 
+        policy = FNNPolicy(self.parameters['obs_size'], 
             self.parameters['num_actions'], 
             self.parameters['num_workers']
             )
@@ -126,7 +126,7 @@ class Experiment(object):
         self.global_env = SubprocVecEnv(
             [make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])]
             )
-        # self.global_env = VecNormalize(self.global_env)
+        self.global_env = VecNormalize(self.global_env)
 
         if self.parameters['simulator'] == 'local':
             data_path = parameters['influence']['data_path'] + str(_run._id) + '/'
@@ -166,9 +166,11 @@ class Experiment(object):
                 if step % self.parameters['eval_freq'] == 0:
                    mean_return = self.evaluate()
                    self._run.log_scalar('mean episodic return', mean_return, step)
-            
-                self.agent.reset_hidden_memory(done)
-                hidden_memory = self.agent.policy.hidden_memory
+                if self.agent.policy.recurrent:
+                    self.agent.reset_hidden_memory(done)
+                    hidden_memory = self.agent.policy.hidden_memory
+                else:
+                    hidden_memory = None
                 action, value, log_prob = self.agent.choose_action(obs)
                 
                 new_obs, reward, done, info = self.env.step(action)
@@ -177,7 +179,7 @@ class Experiment(object):
                 rollout_step += 1
                 step += 1
                 episode_step += 1
-                episode_reward += np.mean(reward)#self.env.get_original_reward())
+                episode_reward += np.mean(self.env.get_original_reward())
                 if done[0]:
                     end = time.time()
                     print('Time: ', end - start)
@@ -243,8 +245,8 @@ class Experiment(object):
             while not done[0]:
                 n_steps += 1
                 action, _, _ = agent.choose_action(obs)
-                obs, reward, done, _ = self.global_env.step(action)
-                # reward = self.global_env.get_original_reward()
+                obs, _, done, _ = self.global_env.step(action)
+                reward = self.global_env.get_original_reward()
                 reward_sum += reward
             episode_rewards.append(reward_sum)
         print('Done!')
