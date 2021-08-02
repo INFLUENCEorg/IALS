@@ -17,6 +17,7 @@ import os
 import time
 from copy import deepcopy
 from gym import spaces
+from stable_baselines3.common.env_util import make_vec_env
 
 def generate_path(path):
     """
@@ -49,25 +50,6 @@ def log(dset, infs, data_path):
         writer = csv.writer(file)
         for element in infs:
             writer.writerow(element)
-
-def make_env(env_id, rank, seed=0, influence=None):
-    """
-    Utility function for multiprocessed env.
-    :param env_id: (str) the environment ID
-    :param num_env: (int) the number of environments you wish to have in subprocesses
-    :param seed: (int) the inital seed for RNG
-    :param rank: (int) index of the subprocess
-    """
-    def _init():
-        if 'local' in env_id:
-            env = gym.make(env_id, influence=influence)
-        else:
-            env = gym.make(env_id)
-        # env = Monitor(env, './logs')
-        env.seed(seed + rank)
-        return env
-    # set_global_seeds(seed)
-    return _init
 
 def add_mongodb_observer():
     """
@@ -123,13 +105,6 @@ class Experiment(object):
             entropy_coef=self.parameters['beta']
             )
 
-        # global_env_name = self.parameters['env']+ ':mini-' + self.parameters['env'] + '-v0'
-        global_env_name = self.parameters['env'] + ':' + self.parameters['env'] + '-v0'
-        # global_env_name = 'tmaze:tmaze-v0'
-        self.global_env = SubprocVecEnv(
-            [make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])]
-            )
-        self.global_env = VecNormalize(self.global_env)
 
         if self.parameters['simulator'] == 'local':
             data_path = parameters['influence']['data_path'] + str(_run._id) + '/'
@@ -145,15 +120,40 @@ class Experiment(object):
 
             local_env_name = self.parameters['env']+ ':local-' + self.parameters['env'] + '-v0'
             self.env = SubprocVecEnv(
-                [make_env(local_env_name, i, seed, influence) for i in range(self.parameters['num_workers'])]
+                [self.make_env(local_env_name, i, seed, influence) for i in range(self.parameters['num_workers'])]
                 )
             self.env = VecNormalize(self.env)
+
         else:
-            # self.env = VecNormalize(SubprocVecEnv(
-                # [make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])]
-                # ), norm_obs=True, norm_reward=True)
-            self.env = self.global_env
-                
+            # global_env_name = self.parameters['env']+ ':mini-' + self.parameters['env'] + '-v0'
+            global_env_name = self.parameters['env'] + ':' + self.parameters['env'] + '-v0'
+            # global_env_name = 'tmaze:tmaze-v0'
+            # self.env = SubprocVecEnv(
+            #     [self.make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])],
+            #     'spawn'
+            #     )
+            self.env = make_vec_env(global_env_name, n_envs=self.parameters['num_workers'], seed=0, vec_env_cls=SubprocVecEnv)
+            self.env = VecNormalize(self.env)
+
+    def make_env(self, env_id, rank, seed=0, influence=None):
+        """
+        Utility function for multiprocessed env.
+        :param env_id: (str) the environment ID
+        :param num_env: (int) the number of environments you wish to have in subprocesses
+        :param seed: (int) the inital seed for RNG
+        :param rank: (int) index of the subprocess
+        """
+        def _init():
+            if 'local' in env_id:
+                env = gym.make(env_id, influence=influence)
+            else:
+                env = gym.make(env_id)
+            # env = Monitor(env, './logs')
+            env.seed(seed + rank)
+            return env
+        # set_global_seeds(seed)
+        return _init   
+           
     def run(self):
 
         obs = self.env.reset()
@@ -168,7 +168,7 @@ class Experiment(object):
             rollout_step = 0
             while rollout_step < self.parameters['rollout_steps']:
                 if step % self.parameters['eval_freq'] == 0:
-                   mean_return = self.evaluate()
+                   mean_return = self.evaluate(step)
                    self._run.log_scalar('mean episodic return', mean_return, step)
                 if self.agent.policy.recurrent:
                     self.agent.reset_hidden_memory(done)
@@ -176,7 +176,6 @@ class Experiment(object):
                 else:
                     hidden_memory = None
                 action, value, log_prob = self.agent.choose_action(obs)
-                
                 new_obs, reward, done, info = self.env.step(action)
                 self.agent.add_to_memory(obs, action, reward, done, value, log_prob, hidden_memory)
                 obs = new_obs
@@ -206,16 +205,25 @@ class Experiment(object):
                 end2 = time.time()
                 print('Update time:', end2 - start2)
 
+        self.env.close()
+
     def collect_data(self, dataset_size, data_path):
         """Collect data from global simulator"""
         print('Collecting data from global simulator...')
         n_steps = 0
         # copy agent to not altere hidden memory
         agent = deepcopy(self.agent)
+        global_env_name = self.parameters['env'] + ':' + self.parameters['env'] + '-v0'
+        env = SubprocVecEnv(
+                [self.make_env(global_env_name, i, self._seed) for i in range(self.parameters['num_workers'])],
+                'spawn'
+                )
+        env = VecNormalize(env)
+                
         while n_steps < dataset_size//self.parameters['num_workers']:
             reward_sum = 0.0
             done = [False]*self.parameters['num_workers']
-            obs = self.global_env.reset()
+            obs = env.reset()
             dset = []
             infs = []
             # NOTE: Episodes in all envs must terminate at the same time 
@@ -223,33 +231,40 @@ class Experiment(object):
             while not done[0]:
                 n_steps += 1
                 action, _, _= agent.choose_action(obs)
-                obs, _, done, info = self.global_env.step(action)
+                obs, _, done, info = env.step(action)
                 dset.append(np.array([i['dset'] for i in info]))
                 infs.append(np.array([i['infs'] for i in info]))
             log(dset, infs, data_path)
+        env.close()
         print('Done!')
 
-    def evaluate(self):
+    def evaluate(self, step):
         """Return mean sum of episodic rewards) for given model"""
         episode_rewards = []
         n_steps = 0
         # copy agent to not altere hidden memory
         agent = deepcopy(self.agent)
+        global_env_name = self.parameters['env'] + ':' + self.parameters['env'] + '-v0'
+        env = SubprocVecEnv(
+                [self.make_env(global_env_name, i, self._seed + step) for i in range(self.parameters['num_workers'])],
+                )
+        env = VecNormalize(env)
         print('Evaluating policy on global simulator...')
         while n_steps < self.parameters['eval_steps']//self.parameters['num_workers']:
             reward_sum = 0.0
             done = [False]*self.parameters['num_workers']
-            obs = self.global_env.reset()
+            obs = env.reset()
             # NOTE: Episodes in all envs must terminate at the same time
             agent.reset_hidden_memory([True]*self.parameters['num_workers'])
             while not done[0]:
                 n_steps += 1
                 action, _, _ = agent.choose_action(obs)
-                obs, _, done, _ = self.global_env.step(action)
-                reward = self.global_env.get_original_reward()
+                obs, _, done, _ = env.step(action)
+                reward = env.get_original_reward()
                 # self.global_env.render()
                 reward_sum += reward
             episode_rewards.append(reward_sum)
+        env.close()
         print('Done!')
         return np.mean(episode_rewards)
         
@@ -266,12 +281,13 @@ class Experiment(object):
         print(("- Total reward: {}".format(episode_return)))
         print(("-"*30))
 
-os.environ["CUDA_VISIBLE_DEVICES"]=""   
-ex = sacred.Experiment('scalable-simulations')
-ex.add_config('configs/default.yaml')
-add_mongodb_observer()
 
-@ex.automain
-def main(parameters, seed, _run):
-    exp = Experiment(parameters, _run, seed)
-    exp.run()
+if __name__ == '__main__':
+    ex = sacred.Experiment('scalable-simulations')
+    ex.add_config('configs/default.yaml')
+    add_mongodb_observer()
+
+    @ex.automain
+    def main(parameters, seed, _run):
+        exp = Experiment(parameters, _run, seed)
+        exp.run()
