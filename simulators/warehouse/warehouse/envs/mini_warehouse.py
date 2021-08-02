@@ -1,5 +1,5 @@
 from warehouse.envs.item import Item
-from warehouse.envs.robot import Robot
+from warehouse.envs.mini_robot import Robot
 from warehouse.envs.utils import *
 import numpy as np
 from gym import spaces
@@ -16,7 +16,8 @@ class MiniWarehouse(gym.Env):
                1: 'DOWN',
                2: 'LEFT',
                3: 'RIGHT'}
-    OBS_SIZE = 69
+
+    OBS_SIZE = 73
 
     def __init__(self):
         self.n_columns = 7
@@ -25,7 +26,7 @@ class MiniWarehouse(gym.Env):
         self.n_robots_column = 1
         self.distance_between_shelves = 6
         self.robot_domain_size = [7, 7]
-        self.prob_item_appears = 0.05
+        self.prob_item_appears = 0.03
         # The learning robot
         self.learning_robot_id = 0
         self.max_episode_length = 100
