@@ -24,7 +24,7 @@ parameters:
         episode_length: 100
         data_path: '../influence/data/warehouse/'
         lr: 1.0e-3
-        num_epochs: 500
+        num_epochs: 1
         batch_size: 32
         hidden_memory_size: 64
         input_size: 37
@@ -34,5 +34,5 @@ parameters:
         aug_obs: False
         load_model: False
         curriculum: False
-        dataset_size: 5.0e+4
+        dataset_size: 1.0e+4
         train_freq: 3.0e+6

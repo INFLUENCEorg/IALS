@@ -147,6 +147,7 @@ class Experiment(object):
             self.env = SubprocVecEnv(
                 [make_env(local_env_name, i, seed, influence) for i in range(self.parameters['num_workers'])]
                 )
+            self.env = VecNormalize(self.env)
         else:
             # self.env = VecNormalize(SubprocVecEnv(
                 # [make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])]
@@ -208,7 +209,6 @@ class Experiment(object):
     def collect_data(self, dataset_size, data_path):
         """Collect data from global simulator"""
         print('Collecting data from global simulator...')
-        episode_rewards =[]
         n_steps = 0
         # copy agent to not altere hidden memory
         agent = deepcopy(self.agent)
@@ -223,14 +223,11 @@ class Experiment(object):
             while not done[0]:
                 n_steps += 1
                 action, _, _= agent.choose_action(obs)
-                obs, reward, done, info = self.global_env.step(action)
+                obs, _, done, info = self.global_env.step(action)
                 dset.append(np.array([i['dset'] for i in info]))
                 infs.append(np.array([i['infs'] for i in info]))
-                reward_sum += reward
-            episode_rewards.append(reward_sum)
             log(dset, infs, data_path)
         print('Done!')
-        return np.mean(episode_rewards)
 
     def evaluate(self):
         """Return mean sum of episodic rewards) for given model"""
