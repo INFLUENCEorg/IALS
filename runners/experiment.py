@@ -16,8 +16,6 @@ import csv
 import os
 import time
 from copy import deepcopy
-from gym_minigrid.wrappers import *
-from gym import wrappers
 from gym import spaces
 
 def generate_path(path):
@@ -52,19 +50,6 @@ def log(dset, infs, data_path):
         for element in infs:
             writer.writerow(element)
 
-class FeatureVectorWrapper(gym.core.ObservationWrapper):
-    """
-    Use the image as the only observation output, no language/mission.
-    """
-
-    def __init__(self, env):
-        super().__init__(env)
-        obs_shape = env.observation_space.shape
-        self.observation_space = spaces.Box(low=0, high=1, shape=(obs_shape[0]*obs_shape[1],))
-
-    def observation(self, obs):
-        return np.reshape(obs,-1)
-
 def make_env(env_id, rank, seed=0, influence=None):
     """
     Utility function for multiprocessed env.
@@ -78,9 +63,6 @@ def make_env(env_id, rank, seed=0, influence=None):
             env = gym.make(env_id, influence=influence)
         else:
             env = gym.make(env_id)
-            # env = ImgObsWrapper(gym.make(env_id))
-            # env = wrappers.GrayScaleObservation(env, keep_dim=True)
-            # env = FeatureVectorWrapper(env)
         # env = Monitor(env, './logs')
         env.seed(seed + rank)
         return env
@@ -141,8 +123,8 @@ class Experiment(object):
             entropy_coef=self.parameters['beta']
             )
 
-        global_env_name = self.parameters['env']+ ':mini-' + self.parameters['env'] + '-v0'
-        # global_env_name = 'MiniGrid-MemoryS11-v0'
+        # global_env_name = self.parameters['env']+ ':mini-' + self.parameters['env'] + '-v0'
+        global_env_name = self.parameters['env'] + ':' + self.parameters['env'] + '-v0'
         # global_env_name = 'tmaze:tmaze-v0'
         self.global_env = SubprocVecEnv(
             [make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])]
