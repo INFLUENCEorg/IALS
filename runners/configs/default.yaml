@@ -11,7 +11,7 @@ parameters:
         save_frequency: 1.0e+5
         num_workers: 8
         beta: 1.0e-2
-        epsilon: 0.2
+        epsilon: 0.1
         rollout_steps: 64
         obs_type: 'vector'
         c1: 1

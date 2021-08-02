@@ -5,7 +5,7 @@ from influence.influence_network import InfluenceNetwork
 from influence.influence_uniform import InfluenceUniform
 # from stable_baselines3.common import set_global_seeds
 from stable_baselines3.common.vec_env import SubprocVecEnv, VecNormalize
-from recurrent_policies.PPO import Agent, FNNPolicy, GRUPolicy, ModifiedGRUPolicy
+from recurrent_policies.PPO import Agent, FNNPolicy, GRUPolicy, ModifiedGRUPolicy, IAMPolicy
 import gym
 import sacred
 from sacred.observers import MongoObserver
@@ -16,6 +16,9 @@ import csv
 import os
 import time
 from copy import deepcopy
+from gym_minigrid.wrappers import *
+from gym import wrappers
+from gym import spaces
 
 def generate_path(path):
     """
@@ -49,6 +52,19 @@ def log(dset, infs, data_path):
         for element in infs:
             writer.writerow(element)
 
+class FeatureVectorWrapper(gym.core.ObservationWrapper):
+    """
+    Use the image as the only observation output, no language/mission.
+    """
+
+    def __init__(self, env):
+        super().__init__(env)
+        obs_shape = env.observation_space.shape
+        self.observation_space = spaces.Box(low=0, high=1, shape=(obs_shape[0]*obs_shape[1],))
+
+    def observation(self, obs):
+        return np.reshape(obs,-1)
+
 def make_env(env_id, rank, seed=0, influence=None):
     """
     Utility function for multiprocessed env.
@@ -62,6 +78,9 @@ def make_env(env_id, rank, seed=0, influence=None):
             env = gym.make(env_id, influence=influence)
         else:
             env = gym.make(env_id)
+            # env = ImgObsWrapper(gym.make(env_id))
+            # env = wrappers.GrayScaleObservation(env, keep_dim=True)
+            # env = FeatureVectorWrapper(env)
         # env = Monitor(env, './logs')
         env.seed(seed + rank)
         return env
@@ -106,7 +125,7 @@ class Experiment(object):
         self._seed = seed
         self.parameters = parameters['main']
 
-        policy = FNNPolicy(self.parameters['obs_size'], 
+        policy = IAMPolicy(self.parameters['obs_size'], 
             self.parameters['num_actions'], 
             self.parameters['num_workers']
             )
@@ -123,6 +142,8 @@ class Experiment(object):
             )
 
         global_env_name = self.parameters['env']+ ':mini-' + self.parameters['env'] + '-v0'
+        # global_env_name = 'MiniGrid-MemoryS11-v0'
+        # global_env_name = 'tmaze:tmaze-v0'
         self.global_env = SubprocVecEnv(
             [make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])]
             )
@@ -154,13 +175,13 @@ class Experiment(object):
 
         obs = self.env.reset()
         step = 0
-        episode_reward = 0
+        episode_reward = 0.0
         episode_step = 0
         episode = 1
         start = time.time()
         done = [False]*self.parameters['num_workers']
         while step < self.parameters['total_steps']:
-
+            
             rollout_step = 0
             while rollout_step < self.parameters['rollout_steps']:
                 if step % self.parameters['eval_freq'] == 0:
@@ -185,7 +206,7 @@ class Experiment(object):
                     print('Time: ', end - start)
                     start = end
                     self.print_results(episode_reward, episode_step, step, episode)
-                    episode_reward = 0
+                    episode_reward = 0.0
                     episode_step = 0
                     episode += 1
             
@@ -210,13 +231,13 @@ class Experiment(object):
         # copy agent to not altere hidden memory
         agent = deepcopy(self.agent)
         while n_steps < dataset_size//self.parameters['num_workers']:
-            reward_sum = 0
+            reward_sum = 0.0
             done = [False]*self.parameters['num_workers']
             obs = self.global_env.reset()
             dset = []
             infs = []
             # NOTE: Episodes in all envs must terminate at the same time 
-            self.agent.reset_hidden_memory([True]*self.parameters['num_workers'])
+            agent.reset_hidden_memory([True]*self.parameters['num_workers'])
             while not done[0]:
                 n_steps += 1
                 action, _, _= agent.choose_action(obs)
@@ -237,16 +258,17 @@ class Experiment(object):
         agent = deepcopy(self.agent)
         print('Evaluating policy on global simulator...')
         while n_steps < self.parameters['eval_steps']//self.parameters['num_workers']:
-            reward_sum = 0
+            reward_sum = 0.0
             done = [False]*self.parameters['num_workers']
             obs = self.global_env.reset()
             # NOTE: Episodes in all envs must terminate at the same time
-            self.agent.reset_hidden_memory([True]*self.parameters['num_workers'])
+            agent.reset_hidden_memory([True]*self.parameters['num_workers'])
             while not done[0]:
                 n_steps += 1
                 action, _, _ = agent.choose_action(obs)
                 obs, _, done, _ = self.global_env.step(action)
                 reward = self.global_env.get_original_reward()
+                # self.global_env.render()
                 reward_sum += reward
             episode_rewards.append(reward_sum)
         print('Done!')
