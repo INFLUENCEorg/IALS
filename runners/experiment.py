@@ -89,7 +89,7 @@ class Experiment(object):
         self._seed = seed
         self.parameters = parameters['main']
 
-        policy = FNNPolicy(self.parameters['obs_size'], 
+        policy = GRUPolicy(self.parameters['obs_size'], 
             self.parameters['num_actions'], 
             self.parameters['num_workers']
             )
@@ -105,6 +105,18 @@ class Experiment(object):
             entropy_coef=self.parameters['beta']
             )
 
+        # global_env_name = self.parameters['env']+ ':mini-' + self.parameters['env'] + '-v0'
+        global_env_name = self.parameters['env'] + ':' + self.parameters['env'] + '-v0'
+        # global_env_name = 'tmaze:tmaze-v0'
+        # self.env = SubprocVecEnv(
+        #     [self.make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])],
+        #     'spawn'
+        #     )
+        self.global_env = SubprocVecEnv(
+            [self.make_env(global_env_name, i, self._seed) for i in range(self.parameters['num_workers'])],
+            start_method='fork'
+            )
+        self.global_env = VecNormalize(self.global_env)
 
         if self.parameters['simulator'] == 'local':
             data_path = parameters['influence']['data_path'] + str(_run._id) + '/'
@@ -126,18 +138,7 @@ class Experiment(object):
             self.env = VecNormalize(self.env)
 
         else:
-            # global_env_name = self.parameters['env']+ ':mini-' + self.parameters['env'] + '-v0'
-            global_env_name = self.parameters['env'] + ':' + self.parameters['env'] + '-v0'
-            # global_env_name = 'tmaze:tmaze-v0'
-            # self.env = SubprocVecEnv(
-            #     [self.make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])],
-            #     'spawn'
-            #     )
-            self.env = SubprocVecEnv(
-                [self.make_env(global_env_name, i, self._seed) for i in range(self.parameters['num_workers'])],
-                start_method='fork'
-                )
-            self.env = VecNormalize(self.env)
+            self.env = self.global_env 
 
     def make_env(self, env_id, rank, seed=0, influence=None):
         """
@@ -208,7 +209,6 @@ class Experiment(object):
                 self.agent.update()
                 end2 = time.time()
                 print('Update time:', end2 - start2)
-
         self.env.close()
 
     def collect_data(self, dataset_size, data_path):
@@ -217,17 +217,10 @@ class Experiment(object):
         n_steps = 0
         # copy agent to not altere hidden memory
         agent = deepcopy(self.agent)
-        global_env_name = self.parameters['env'] + ':' + self.parameters['env'] + '-v0'
-        env = SubprocVecEnv(
-                [self.make_env(global_env_name, i, self._seed) for i in range(self.parameters['num_workers'])],
-                start_method='fork'
-                )
-        env = VecNormalize(env)
-                
         while n_steps < dataset_size//self.parameters['num_workers']:
             reward_sum = 0.0
             done = [False]*self.parameters['num_workers']
-            obs = env.reset()
+            obs = self.global_env.reset()
             dset = []
             infs = []
             # NOTE: Episodes in all envs must terminate at the same time 
@@ -235,11 +228,10 @@ class Experiment(object):
             while not done[0]:
                 n_steps += 1
                 action, _, _= agent.choose_action(obs)
-                obs, _, done, info = env.step(action)
+                obs, _, done, info = self.global_env.step(action)
                 dset.append(np.array([i['dset'] for i in info]))
                 infs.append(np.array([i['infs'] for i in info]))
             log(dset, infs, data_path)
-        env.close()
         print('Done!')
 
     def evaluate(self, step):
@@ -248,29 +240,21 @@ class Experiment(object):
         n_steps = 0
         # copy agent to not altere hidden memory
         agent = deepcopy(self.agent)
-        global_env_name = self.parameters['env'] + ':' + self.parameters['env'] + '-v0'
-        # global_env_name = self.parameters['env']+ ':mini-' + self.parameters['env'] + '-v0'
-        env = SubprocVecEnv(
-                [self.make_env(global_env_name, i, self._seed + step) for i in range(self.parameters['num_workers'])],
-                start_method='fork'
-                )
-        env = VecNormalize(env)
         print('Evaluating policy on global simulator...')
         while n_steps < self.parameters['eval_steps']//self.parameters['num_workers']:
             reward_sum = 0.0
             done = [False]*self.parameters['num_workers']
-            obs = env.reset()
+            obs = self.global_env.reset()
             # NOTE: Episodes in all envs must terminate at the same time
             agent.reset_hidden_memory([True]*self.parameters['num_workers'])
             while not done[0]:
                 n_steps += 1
                 action, _, _ = agent.choose_action(obs)
-                obs, _, done, _ = env.step(action)
-                reward = env.get_original_reward()
+                obs, _, done, _ = self.global_env.step(action)
+                reward = self.global_env.get_original_reward()
                 # self.global_env.render()
                 reward_sum += reward
             episode_rewards.append(reward_sum)
-        env.close()
         print('Done!')
         return np.mean(episode_rewards)
         
