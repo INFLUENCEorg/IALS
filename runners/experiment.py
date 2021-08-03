@@ -89,7 +89,7 @@ class Experiment(object):
         self._seed = seed
         self.parameters = parameters['main']
 
-        policy = FNNPolicy(self.parameters['obs_size'], 
+        policy = GRUPolicy(self.parameters['obs_size'], 
             self.parameters['num_actions'], 
             self.parameters['num_workers']
             )
@@ -120,7 +120,8 @@ class Experiment(object):
 
             local_env_name = self.parameters['env']+ ':local-' + self.parameters['env'] + '-v0'
             self.env = SubprocVecEnv(
-                [self.make_env(local_env_name, i, seed, influence) for i in range(self.parameters['num_workers'])]
+                [self.make_env(local_env_name, i, seed, influence) for i in range(self.parameters['num_workers'])],
+                start_method='fork'
                 )
             self.env = VecNormalize(self.env)
 
@@ -132,7 +133,10 @@ class Experiment(object):
             #     [self.make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])],
             #     'spawn'
             #     )
-            self.env = make_vec_env(global_env_name, n_envs=self.parameters['num_workers'], seed=0, vec_env_cls=SubprocVecEnv)
+            self.env = SubprocVecEnv(
+                [self.make_env(global_env_name, i, self._seed) for i in range(self.parameters['num_workers'])],
+                start_method='fork'
+                )
             self.env = VecNormalize(self.env)
 
     def make_env(self, env_id, rank, seed=0, influence=None):
@@ -216,7 +220,7 @@ class Experiment(object):
         global_env_name = self.parameters['env'] + ':' + self.parameters['env'] + '-v0'
         env = SubprocVecEnv(
                 [self.make_env(global_env_name, i, self._seed) for i in range(self.parameters['num_workers'])],
-                'spawn'
+                start_method='fork'
                 )
         env = VecNormalize(env)
                 
@@ -245,8 +249,10 @@ class Experiment(object):
         # copy agent to not altere hidden memory
         agent = deepcopy(self.agent)
         global_env_name = self.parameters['env'] + ':' + self.parameters['env'] + '-v0'
+        # global_env_name = self.parameters['env']+ ':mini-' + self.parameters['env'] + '-v0'
         env = SubprocVecEnv(
                 [self.make_env(global_env_name, i, self._seed + step) for i in range(self.parameters['num_workers'])],
+                start_method='fork'
                 )
         env = VecNormalize(env)
         print('Evaluating policy on global simulator...')
