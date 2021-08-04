@@ -1,6 +1,3 @@
-from influence.data_collector import DataCollector
-import os
-
 class InfluenceUniform(object):
     """
     """
