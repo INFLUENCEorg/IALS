@@ -250,7 +250,7 @@ class Experiment(object):
 
     def evaluate(self, step):
         """Return mean sum of episodic rewards) for given model"""
-        episode_rewards = []
+        episode_rewards = np.array([])
         n_steps = 0
         # copy agent to not altere hidden memory
         agent = deepcopy(self.agent)
@@ -267,7 +267,7 @@ class Experiment(object):
                 obs, reward, done, _ = self.global_env.step(action)
                 # reward = self.global_env.get_original_reward()
                 # self.global_env.render()
-                reward_sum += reward
+                reward_sum += np.array(reward)
             episode_rewards.append(reward_sum)
         print('Done!')
         return np.mean(episode_rewards)
