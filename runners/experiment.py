@@ -105,8 +105,8 @@ class Experiment(object):
             entropy_coef=self.parameters['beta']
             )
 
-        global_env_name = self.parameters['env']+ ':mini-' + self.parameters['env'] + '-v0'
-        # global_env_name = self.parameters['env'] + ':' + self.parameters['env'] + '-v0'
+        # global_env_name = self.parameters['env']+ ':mini-' + self.parameters['env'] + '-v0'
+        global_env_name = self.parameters['env'] + ':' + self.parameters['env'] + '-v0'
         # global_env_name = 'tmaze:tmaze-v0'
         # self.env = SubprocVecEnv(
         #     [self.make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])],
