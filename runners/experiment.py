@@ -250,13 +250,13 @@ class Experiment(object):
 
     def evaluate(self, step):
         """Return mean sum of episodic rewards) for given model"""
-        episode_rewards = np.array([])
+        episode_rewards = []
         n_steps = 0
         # copy agent to not altere hidden memory
         agent = deepcopy(self.agent)
         print('Evaluating policy on global simulator...')
         while n_steps < self.parameters['eval_steps']//self.parameters['num_workers']:
-            reward_sum = [0.0]*self.parameters['num_workers']
+            reward_sum = np.array([0.0]*self.parameters['num_workers'])
             done = [False]*self.parameters['num_workers']
             obs = self.global_env.reset()
             # NOTE: Episodes in all envs must terminate at the same time
