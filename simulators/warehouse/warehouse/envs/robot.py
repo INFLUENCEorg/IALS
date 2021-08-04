@@ -73,20 +73,22 @@ class Robot():
         """
         Take an action
         """
-        new_pos = self._pos
-        if action == 0:
-            if self._pos[1] not in [self._robot_domain[1], self._robot_domain[3]]:
+        if not self.is_slow or np.random.choice([True, False]):
+    
+            new_pos = self._pos
+            if action == 0:
+                # if self._pos[1] not in [self._robot_domain[1], self._robot_domain[3]]:
                 new_pos = [self._pos[0] - 1, self._pos[1]]
-        elif action == 1:
-            if self._pos[1] not in [self._robot_domain[1], self._robot_domain[3]]:
+            elif action == 1:
+                # if self._pos[1] not in [self._robot_domain[1], self._robot_domain[3]]:
                 new_pos = [self._pos[0] + 1, self._pos[1]]
-        elif action == 2:
-            if self._pos[0] not in [self._robot_domain[0], self._robot_domain[2]]:
+            elif action == 2:
+                # if self._pos[0] not in [self._robot_domain[0], self._robot_domain[2]]:
                 new_pos = [self._pos[0], self._pos[1] - 1]
-        elif action == 3:
-            if self._pos[0] not in [self._robot_domain[0], self._robot_domain[2]]:
-                new_pos = [self._pos[0], self._pos[1] + 1]    
-        self.set_position(new_pos)
+            elif action == 3:
+                # if self._pos[0] not in [self._robot_domain[0], self._robot_domain[2]]:
+                new_pos = [self._pos[0], self._pos[1] + 1]
+            self.set_position(new_pos)
             
 
     def set_position(self, new_pos):
@@ -94,8 +96,10 @@ class Robot():
         @param new_pos: an array (x,y) with the new robot position
         """
         if self._robot_domain[0] <= new_pos[0] <= self._robot_domain[2] and \
-           self._robot_domain[1] <= new_pos[1] <= self._robot_domain[3]:
-            self._pos = new_pos
+                self._robot_domain[1] <= new_pos[1] <= self._robot_domain[3]:
+            relative_pos = (new_pos[0]-self._robot_domain[0], new_pos[1]-self._robot_domain[1])
+            if not self._corner(relative_pos):
+                self._pos = new_pos
 
     def select_random_action(self):
         action = random.randint(0, self._action_space - 1)
@@ -106,20 +110,16 @@ class Robot():
         Take one step towards the closest item
         """
         # if robot is slow random action with p=0.5
-        if self.is_slow and np.random.choice([True, False]):
+        if self._graph is None:
+            self.previous_item = None
+            self._graph = self._create_graph(obs)
+            self._path_dict = dict(nx.all_pairs_dijkstra_path(self._graph))    
+        path, self.previous_item = self._path_to_closest_item(obs, self.previous_item)
+        if path is None or len(path) < 2:
             action = random.randint(0, self._action_space - 1)
-        
         else:
-            if self._graph is None:
-                self.previous_item = None
-                self._graph = self._create_graph(obs)
-                self._path_dict = dict(nx.all_pairs_dijkstra_path(self._graph))    
-            path, self.previous_item = self._path_to_closest_item(obs, self.previous_item)
-            if path is None or len(path) < 2:
-                action = random.randint(0, self._action_space - 1)
-            else:
-                action = self._get_first_action(path)
-                
+            action = self._get_first_action(path)
+            
         return action
     
     def select_naive_action2(self, obs, items):
@@ -148,21 +148,22 @@ class Robot():
             if not self._corner(cell):
                 graph.add_node(tuple(cell))
                 for neighbor in self._neighbors(cell):
-                    graph.add_edge(tuple(cell), tuple(neighbor))
+                    if not self._corner(neighbor):
+                        graph.add_edge(tuple(cell), tuple(neighbor))
         return graph
     
     def _neighbors(self, cell):
-        if 0 < cell[0] < self._domain_size and 0 < cell[1] < self._domain_size:
-            return [cell + [0, 1], cell + [0, -1], cell + [1, 0], cell + [-1, 0]]
-        else:
-            if cell[0] == 0:
-                return [cell + [1, 0]]
-            elif cell[0] == self._domain_size:
-                return [cell + [-1, 0]]
-            elif cell[1] == 0:
-                return [cell + [0, 1]]
-            elif cell[1] == self._domain_size:
-                return [cell + [0, -1]]
+        # if 0 < cell[0] < self._domain_size and 0 < cell[1] < self._domain_size:
+        return [cell + [0, 1], cell + [0, -1], cell + [1, 0], cell + [-1, 0]]
+        # else:
+        #     if cell[0] == 0:
+        #         return [cell + [1, 0]]
+        #     elif cell[0] == self._domain_size:
+        #         return [cell + [-1, 0]]
+        #     elif cell[1] == 0:
+        #         return [cell + [0, 1]]
+        #     elif cell[1] == self._domain_size:
+        #         return [cell + [0, -1]]
         
     def _corner(self, cell):
         return (not 0 < cell[0] < self._domain_size) and (not 0 < cell[1] < self._domain_size)

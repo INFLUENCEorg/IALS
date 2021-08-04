@@ -101,7 +101,12 @@ class Warehouse(gym.Env):
         bitmap = self._get_state()
         position = self.robots[self.learning_robot_id].get_position
         bitmap[position[0], position[1], 1] += 1
+        for robot_id, robot in enumerate(self.robots):
+            if robot.is_slow:
+                position = robot.get_position
+                bitmap[position[0], position[1], 1] += 2
         im = bitmap[:, :, 0] - 2*bitmap[:, :, 1]
+
         if self.img is None:
             fig,ax = plt.subplots(1)
             self.img = ax.imshow(im)
@@ -208,7 +213,10 @@ class Warehouse(gym.Env):
                                 domain_rows[i+1], domain_columns[j+1]]
                 robot_position = [robot_domain[0] + self.robot_domain_size[0]//2,
                                   robot_domain[1] + self.robot_domain_size[1]//2]
-                is_slow = np.random.choice([True, False])
+                if self.robot_id == self.learning_robot_id:
+                    is_slow = False
+                else:
+                    is_slow = np.random.choice([True, False])
                 self.robots.append(Robot(self.robot_id, robot_position,
                                          robot_domain, is_slow))
                 self.robot_id += 1
