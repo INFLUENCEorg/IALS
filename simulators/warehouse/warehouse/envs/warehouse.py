@@ -208,8 +208,9 @@ class Warehouse(gym.Env):
                                 domain_rows[i+1], domain_columns[j+1]]
                 robot_position = [robot_domain[0] + self.robot_domain_size[0]//2,
                                   robot_domain[1] + self.robot_domain_size[1]//2]
+                is_slow = np.random.choice([True, False])
                 self.robots.append(Robot(self.robot_id, robot_position,
-                                         robot_domain))
+                                         robot_domain, is_slow))
                 self.robot_id += 1
 
     def _add_items(self):

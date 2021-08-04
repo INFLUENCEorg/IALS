@@ -12,12 +12,13 @@ class Robot():
                'LEFT': 2,
                'RIGHT': 3}
 
-    def __init__(self, robot_id, robot_position, robot_domain):
+    def __init__(self, robot_id, robot_position, robot_domain, is_slow):
         """
         @param pos tuple (x,y) with initial robot position.
         Initializes the robot
         """
         self._id = robot_id
+        self.is_slow = is_slow
         self._pos = robot_position
         self._robot_domain = robot_domain
         self._domain_size = self._robot_domain[2] - self._robot_domain[0]
@@ -104,15 +105,21 @@ class Robot():
         """
         Take one step towards the closest item
         """
-        if self._graph is None:
-            self.previous_item = None
-            self._graph = self._create_graph(obs)
-            self._path_dict = dict(nx.all_pairs_dijkstra_path(self._graph))    
-        path, self.previous_item = self._path_to_closest_item(obs, self.previous_item)
-        if path is None or len(path) < 2:
+        # if robot is slow random action with p=0.5
+        if self.is_slow and np.random.choice([True, False]):
             action = random.randint(0, self._action_space - 1)
+        
         else:
-            action = self._get_first_action(path)
+            if self._graph is None:
+                self.previous_item = None
+                self._graph = self._create_graph(obs)
+                self._path_dict = dict(nx.all_pairs_dijkstra_path(self._graph))    
+            path, self.previous_item = self._path_to_closest_item(obs, self.previous_item)
+            if path is None or len(path) < 2:
+                action = random.randint(0, self._action_space - 1)
+            else:
+                action = self._get_first_action(path)
+                
         return action
     
     def select_naive_action2(self, obs, items):
