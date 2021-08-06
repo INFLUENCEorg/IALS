@@ -152,7 +152,7 @@ class Warehouse(gym.Env):
     def get_robot_loc_bitmap(self, robot_id):
         state = self._get_state()
         obs = self.robots[robot_id].observe(state, 'vector')
-        loc_bitmap = obs[:25]
+        loc_bitmap = obs[:self.robot_domain_size[0]*self.robot_domain_size[1]]
         return loc_bitmap
     
     @property
