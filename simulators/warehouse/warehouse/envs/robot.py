@@ -19,6 +19,7 @@ class Robot():
         """
         self._id = robot_id
         self.is_slow = is_slow
+        self.slow_probs = [1.0, 0.0]
         self._pos = robot_position
         self._robot_domain = robot_domain
         self._domain_size = self._robot_domain[2] - self._robot_domain[0]
@@ -73,7 +74,7 @@ class Robot():
         """
         Take an action
         """
-        if not self.is_slow or np.random.choice([True, False]):
+        if not self.is_slow or np.random.choice([True, False], p=self.slow_probs):
     
             new_pos = self._pos
             if action == 0:
