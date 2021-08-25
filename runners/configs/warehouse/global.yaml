@@ -4,7 +4,7 @@ parameters:
         simulator: 'global'
         env: 'warehouse'
         obs_size: 69
-        rollout_steps: 8
+        rollout_steps: 16
         num_actions: 4
         name: 'global_warehouse_recurrent'
         influence_model: None
@@ -16,5 +16,5 @@ parameters:
         # Recurrent module
         recurrent: true
         num_rec_units: 512
-        seq_len: 8
+        seq_len: 16
         num_workers: 8
