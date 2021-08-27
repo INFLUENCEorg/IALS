@@ -19,7 +19,7 @@ class Warehouse(gym.Env):
                1: 'DOWN',
                2: 'LEFT',
                3: 'RIGHT'}
-    OBS_SIZE = 37 # 5x5 grid + 12 items
+    OBS_SIZE = 69 # 5x5 grid + 12 items
 
     def __init__(self):
         parameters = read_parameters('warehouse.yaml')

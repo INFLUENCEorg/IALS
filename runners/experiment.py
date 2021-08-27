@@ -3,8 +3,8 @@ import sys
 sys.path.append("..")
 from influence.influence_network import InfluenceNetwork
 from influence.influence_uniform import InfluenceUniform
-from simulators.vec_env import VecEnv
-# from stable_baselines3.common.vec_env import SubprocVecEnv, VecNormalize
+# from simulators.vec_env import VecEnv
+from stable_baselines3.common.vec_env import SubprocVecEnv, VecNormalize
 from recurrent_policies.PPO import Agent, FNNPolicy, GRUPolicy, ModifiedGRUPolicy, IAMPolicy
 import gym
 import sacred
@@ -106,23 +106,25 @@ class Experiment(object):
             )
 
         # global_env_name = self.parameters['env']+ ':mini-' + self.parameters['env'] + '-v0'
-        # global_env_name = self.parameters['env'] + ':' + self.parameters['env'] + '-v0'
+        global_env_name = self.parameters['env'] + ':' + self.parameters['env'] + '-v0'
         # global_env_name = 'tmaze:tmaze-v0'
-        # self.env = SubprocVecEnv(
-        #     [self.make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])],
-        #     'spawn'
-        #     )
+        print(global_env_name)
+        self.global_env = SubprocVecEnv(
+            [self.make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])],
+            'spawn'
+            )
         # self.global_env = SubprocVecEnv(
-        #     [self.make_env(global_env_name, i, self._seed) for i in range(self.parameters['num_workers'])],
+            # [self.make_env(global_env_name, i, self._seed) for i in range(self.parameters['num_workers'])],
         #     start_method='fork'
         #     )
-        # self.global_env = VecNormalize(self.global_env)
-        self.global_env = VecEnv(
-            self.parameters['env'], 
-            'global',
-            self.parameters['num_workers'],
-            seed
-            )
+        self.global_env = VecNormalize(self.global_env)
+        
+        # self.global_env = VecEnv(
+        #     self.parameters['env'], 
+        #     'global',
+        #     self.parameters['num_workers'],
+        #     seed
+        #     )
 
         if self.parameters['simulator'] == 'local':
             data_path = parameters['influence']['data_path'] + str(_run._id) + '/'
@@ -136,19 +138,19 @@ class Experiment(object):
             else:
                 influence = InfluenceUniform(parameters['influence'], data_path)
 
-            # local_env_name = self.parameters['env']+ ':local-' + self.parameters['env'] + '-v0'
-            # self.env = SubprocVecEnv(
-            #     [self.make_env(local_env_name, i, seed, influence) for i in range(self.parameters['num_workers'])],
-            #     start_method='fork'
-            #     )
-            # self.env = VecNormalize(self.env)
-            self.env = VecEnv(
-                self.parameters['env'], 
-                'local',
-                self.parameters['num_workers'],
-                seed,
-                influence
-            )
+            local_env_name = self.parameters['env']+ ':local-' + self.parameters['env'] + '-v0'
+            self.env = SubprocVecEnv(
+                [self.make_env(local_env_name, i, seed, influence) for i in range(self.parameters['num_workers'])],
+                start_method='fork'
+                )
+            self.env = VecNormalize(self.env)
+            # self.env = VecEnv(
+                # self.parameters['env'], 
+                # 'local',
+                # self.parameters['num_workers'],
+                # seed,
+                # influence
+            # )
 
         else:
             self.env = self.global_env 
@@ -200,8 +202,8 @@ class Experiment(object):
                 rollout_step += 1
                 step += 1
                 episode_step += 1
-                # episode_reward += np.mean(self.env.get_original_reward())
-                episode_reward += np.mean(reward)
+                episode_reward += np.mean(self.env.get_original_reward())
+                # episode_reward += np.mean(reward)
                 if done[0]:
                     end = time.time()
                     print('Time: ', end - start)
@@ -264,8 +266,8 @@ class Experiment(object):
             while not done[0]:
                 n_steps += 1
                 action, _, _ = agent.choose_action(obs)
-                obs, reward, done, _ = self.global_env.step(action)
-                # reward = self.global_env.get_original_reward()
+                obs, _, done, _ = self.global_env.step(action)
+                reward = self.global_env.get_original_reward()
                 # self.global_env.render()
                 reward_sum += np.array(reward)
             episode_rewards.append(reward_sum)
