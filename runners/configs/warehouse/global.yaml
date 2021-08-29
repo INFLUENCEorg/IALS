@@ -16,6 +16,6 @@ parameters:
         # Recurrent module
         recurrent: true
         num_rec_units: 512
-        seq_len: 8
+        seq_len: 1
         num_workers: 8
         epsilon: 0.2
