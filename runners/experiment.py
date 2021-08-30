@@ -89,7 +89,7 @@ class Experiment(object):
         self._seed = seed
         self.parameters = parameters['main']
 
-        policy = IAMPolicy(self.parameters['obs_size'], 
+        policy = FNNPolicy(self.parameters['obs_size'], 
             self.parameters['num_actions'], 
             self.parameters['num_workers']
             )
@@ -190,6 +190,7 @@ class Experiment(object):
                 if step % self.parameters['eval_freq'] == 0:
                    mean_return = self.evaluate(step)
                    self._run.log_scalar('mean episodic return', mean_return, step)
+                   self.agent.save_policy()
                 if self.agent.policy.recurrent:
                     self.agent.reset_hidden_memory(done)
                     hidden_memory = self.agent.policy.hidden_memory
