@@ -89,7 +89,7 @@ class Experiment(object):
         self._seed = seed
         self.parameters = parameters['main']
 
-        policy = FNNPolicy(self.parameters['obs_size'], 
+        policy = IAMPolicy(self.parameters['obs_size'], 
             self.parameters['num_actions'], 
             self.parameters['num_workers']
             )
@@ -108,6 +108,7 @@ class Experiment(object):
         # global_env_name = self.parameters['env']+ ':mini-' + self.parameters['env'] + '-v0'
         global_env_name = self.parameters['env'] + ':' + self.parameters['env'] + '-v0'
         # global_env_name = 'tmaze:tmaze-v0'
+        print(global_env_name)
         self.global_env = SubprocVecEnv(
             [self.make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])],
             'spawn'
@@ -268,9 +269,6 @@ class Experiment(object):
                 action, _, _ = agent.choose_action(obs)
                 obs, _, done, _ = self.global_env.step(action)
                 reward = self.global_env.get_original_reward()
-                if self.parameters['render']:
-                    self.global_env.render(mode='human')
-                    time.sleep(.5)
                 # self.global_env.render()
                 reward_sum += np.array(reward)
             episode_rewards.append(reward_sum)
