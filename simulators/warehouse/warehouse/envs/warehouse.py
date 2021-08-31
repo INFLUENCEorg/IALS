@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import networkx as nx
 import csv
+from PIL import Image
 
 class Warehouse(gym.Env):
     """
@@ -29,7 +30,7 @@ class Warehouse(gym.Env):
         self.n_robots_column = parameters['n_robots_column']
         self.distance_between_shelves = parameters['distance_between_shelves']
         self.robot_domain_size = parameters['robot_domain_size']
-        self.prob_item_appears = parameters['prob_item_appears']
+        self.item_probs = parameters['item_probs']
         # The learning robot
         self.learning_robot_id = parameters['learning_robot_id']
         self.max_episode_length = parameters['n_steps_episode']
@@ -51,6 +52,7 @@ class Warehouse(gym.Env):
         # self.influence.predict(dset)
         self.item_id = 0
         self.items = []
+        self.prob_item_appears = np.random.choice(self.item_probs)
         self._add_items()
         obs = self._get_observation()
         self.prev_obs = obs
@@ -78,8 +80,8 @@ class Warehouse(gym.Env):
         self.prev_obs = obs
         self.episode_length += 1
         done = (self.max_episode_length <= self.episode_length)
-        if self.parameters['render']:
-            self.render(self.parameters['render_delay'])
+        # if self.parameters['render']:
+            # self.render(self.parameters['render_delay'])
         return obs, reward, done, {'dset': dset, 'infs': infs}
 
     @property
@@ -94,7 +96,7 @@ class Warehouse(gym.Env):
         """
         return spaces.Discrete(len(self.ACTIONS))
 
-    def render(self, delay=0.5):
+    def render(self, mode='human'):
         """
         Renders the environment
         """
@@ -131,8 +133,10 @@ class Warehouse(gym.Env):
                 self.img.axes.get_yaxis().set_visible(False)
         else:
             self.img.set_data(im)
-        plt.pause(delay)
-        plt.draw()
+        # plt.pause(delay)
+        plt.savefig('images/image.jpg')
+        img = plt.imread('images/image.jpg')
+        return img
         # plt.savefig('../video/' + str(self.i))
         # self.i += 1
 

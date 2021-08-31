@@ -269,7 +269,9 @@ class Experiment(object):
                 action, _, _ = agent.choose_action(obs)
                 obs, _, done, _ = self.global_env.step(action)
                 reward = self.global_env.get_original_reward()
-                # self.global_env.render()
+                if self.parameters['render']:
+                    self.global_env.render()
+                    time.sleep(.5)
                 reward_sum += np.array(reward)
             episode_rewards.append(reward_sum)
         print('Done!')
