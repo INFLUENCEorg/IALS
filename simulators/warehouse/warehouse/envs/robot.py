@@ -19,7 +19,7 @@ class Robot():
         """
         self._id = robot_id
         self.is_slow = is_slow
-        self.slow_probs = [0.5, 0.5]
+        self.slow_probs = [1.0, 0.0]
         self._pos = robot_position
         self._robot_domain = robot_domain
         self._domain_size = self._robot_domain[2] - self._robot_domain[0]
