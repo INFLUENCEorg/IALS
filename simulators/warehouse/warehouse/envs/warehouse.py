@@ -30,7 +30,7 @@ class Warehouse(gym.Env):
         self.n_robots_column = parameters['n_robots_column']
         self.distance_between_shelves = parameters['distance_between_shelves']
         self.robot_domain_size = parameters['robot_domain_size']
-        self.item_probs = parameters['item_probs']
+        self.prob_item_appears = parameters['prob_item_appears']
         # The learning robot
         self.learning_robot_id = parameters['learning_robot_id']
         self.max_episode_length = parameters['n_steps_episode']
@@ -52,7 +52,7 @@ class Warehouse(gym.Env):
         # self.influence.predict(dset)
         self.item_id = 0
         self.items = []
-        self.prob_item_appears = np.random.choice(self.item_probs)
+        # self.prob_item_appears = np.random.choice(self.item_probs)
         self._add_items()
         obs = self._get_observation()
         self.prev_obs = obs
@@ -69,7 +69,7 @@ class Warehouse(gym.Env):
         for robot in self.robots:
             state = self._get_state()
             obs = robot.observe(state, self.obs_type)
-            actions.append(robot.select_naive_action(obs))#, self.items))
+            actions.append(robot.select_naive_action2(obs, self.items))
         actions[self.learning_robot_id] = action
         self._robots_act(actions)
         infs = self.get_infs
