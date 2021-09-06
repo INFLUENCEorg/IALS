@@ -105,8 +105,8 @@ class Experiment(object):
             entropy_coef=self.parameters['beta']
             )
 
-        # global_env_name = self.parameters['env']+ ':mini-' + self.parameters['env'] + '-v0'
-        global_env_name = self.parameters['env'] + ':' + self.parameters['env'] + '-v0'
+        global_env_name = self.parameters['env']+ ':mini-' + self.parameters['env'] + '-v0'
+        # global_env_name = self.parameters['env'] + ':' + self.parameters['env'] + '-v0'
         # global_env_name = 'tmaze:tmaze-v0'
         print(global_env_name)
         self.global_env = SubprocVecEnv(
