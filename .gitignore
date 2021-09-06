@@ -8,7 +8,7 @@ data
 data/warehouse
 runners/models
 influence/models
-runners/saved_runs/*
+runners/saved_policies/*
 flow
 scalable-simulations.simg
 scalable-simulations.sif
