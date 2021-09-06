@@ -94,7 +94,7 @@ class Experiment(object):
         #     self.parameters['num_workers'],
         #     dset=self.parameters['dset']
         #     )
-        policy = FNNPolicy(self.parameters['obs_size'], 
+        policy = IAMPolicy(self.parameters['obs_size'], 
             self.parameters['num_actions'], 
             self.parameters['num_workers']
             )
@@ -145,7 +145,7 @@ class Experiment(object):
                 influence = InfluenceUniform(parameters['influence'])
 
             local_env_name = self.parameters['env']+ ':local-' + self.parameters['env'] + '-v0'
-            self.env = SubprocVecEnv(
+            self.env = SubprocVecEnv(   
                 [self.make_env(local_env_name, i, seed, influence) for i in range(self.parameters['num_workers'])],
                 start_method='fork'
                 )
