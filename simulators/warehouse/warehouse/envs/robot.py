@@ -78,17 +78,17 @@ class Robot():
     
             new_pos = self._pos
             if action == 0:
-                # if self._pos[1] not in [self._robot_domain[1], self._robot_domain[3]]:
-                new_pos = [self._pos[0] - 1, self._pos[1]]
+                if self._pos[1] not in [self._robot_domain[1], self._robot_domain[3]]:
+                    new_pos = [self._pos[0] - 1, self._pos[1]]
             elif action == 1:
-                # if self._pos[1] not in [self._robot_domain[1], self._robot_domain[3]]:
-                new_pos = [self._pos[0] + 1, self._pos[1]]
+                if self._pos[1] not in [self._robot_domain[1], self._robot_domain[3]]:
+                    new_pos = [self._pos[0] + 1, self._pos[1]]
             elif action == 2:
-                # if self._pos[0] not in [self._robot_domain[0], self._robot_domain[2]]:
-                new_pos = [self._pos[0], self._pos[1] - 1]
+                if self._pos[0] not in [self._robot_domain[0], self._robot_domain[2]]:
+                    new_pos = [self._pos[0], self._pos[1] - 1]
             elif action == 3:
-                # if self._pos[0] not in [self._robot_domain[0], self._robot_domain[2]]:
-                new_pos = [self._pos[0], self._pos[1] + 1]
+                if self._pos[0] not in [self._robot_domain[0], self._robot_domain[2]]:
+                    new_pos = [self._pos[0], self._pos[1] + 1]
             self.set_position(new_pos)
             
 
@@ -149,23 +149,24 @@ class Robot():
             if not self._corner(cell):
                 graph.add_node(tuple(cell))
                 for neighbor in self._neighbors(cell):
-                    if not self._corner(neighbor):
-                        graph.add_edge(tuple(cell), tuple(neighbor))
+                    # if not self._corner(neighbor):
+                    graph.add_edge(tuple(cell), tuple(neighbor))
         return graph
     
     def _neighbors(self, cell):
-        # if 0 < cell[0] < self._domain_size and 0 < cell[1] < self._domain_size:
-        return [cell + [0, 1], cell + [0, -1], cell + [1, 0], cell + [-1, 0]]
-        # else:
-        #     if cell[0] == 0:
-        #         return [cell + [1, 0]]
-        #     elif cell[0] == self._domain_size:
-        #         return [cell + [-1, 0]]
-        #     elif cell[1] == 0:
-        #         return [cell + [0, 1]]
-        #     elif cell[1] == self._domain_size:
-        #         return [cell + [0, -1]]
-        
+        if 0 < cell[0] < self._domain_size and 0 < cell[1] < self._domain_size:
+            return [cell + [0, 1], cell + [0, -1], cell + [1, 0], cell + [-1, 0]]
+        else:
+            if cell[0] == 0:
+                return [cell + [1, 0]]
+            elif cell[0] == self._domain_size:
+                return [cell + [-1, 0]]
+            elif cell[1] == 0:
+                return [cell + [0, 1]]
+            elif cell[1] == self._domain_size:
+                return [cell + [0, -1]]
+        # return [cell + [0, 1], cell + [0, -1], cell + [1, 0], cell + [-1, 0]]
+
     def _corner(self, cell):
         return (not 0 < cell[0] < self._domain_size) and (not 0 < cell[1] < self._domain_size)
 
