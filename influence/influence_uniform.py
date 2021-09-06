@@ -9,7 +9,6 @@ class InfluenceUniform(object):
         self.aug_obs = parameters['aug_obs']
         self.strength = 1
         self.probs = parameters['probs']
-        print(self.probs)
 
     def train(self):
         pass

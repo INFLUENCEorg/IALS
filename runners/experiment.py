@@ -142,7 +142,7 @@ class Experiment(object):
                 self._run.log_scalar('influence loss', loss, 0)
             
             else:
-                influence = InfluenceUniform(parameters['influence'], data_path)
+                influence = InfluenceUniform(parameters['influence'])
 
             local_env_name = self.parameters['env']+ ':local-' + self.parameters['env'] + '-v0'
             self.env = SubprocVecEnv(

@@ -2,10 +2,12 @@ parameters:
     main:
         # Common hyperparameters
         env: 'traffic'
-        simulator: 'partial'
+        simulator: 'local'
         name: 'uniform_traffic'
         influence_model: 'uniform'
         eval_steps: 5.0e+4
+        num_workers: 8
+
     influence:
         probs: [0.5, 0.5, 0.5, 0.5]
         seq_len: 1

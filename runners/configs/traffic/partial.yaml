@@ -2,9 +2,9 @@ parameters:
     main:
         # Common hyperparameters
         env: 'traffic'
-        simulator: 'partial'
-        name: 'partial_traffic'
-        influence_model: 'nn'
+        simulator: 'local'
+        name: 'local_traffic'
+        influence_model: 'uniform'
         obs_size: 40
         num_workers: 8
         fully_connected: true
@@ -15,6 +15,7 @@ parameters:
         # Recurrent module
         recurrent: false
         influence: false
+        num_workers: 1
 
     influence:
         # Common hyperparameters
