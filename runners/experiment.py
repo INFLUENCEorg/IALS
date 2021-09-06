@@ -94,6 +94,11 @@ class Experiment(object):
             self.parameters['num_workers'],
             dset=self.parameters['dset']
             )
+        # policy = FNNPolicy(self.parameters['obs_size'], 
+        #     self.parameters['num_actions'], 
+        #     self.parameters['num_workers']
+        #     )
+
         self.agent = Agent(
             policy=policy,
             memory_size=self.parameters['memory_size'],
@@ -103,11 +108,12 @@ class Experiment(object):
             learning_rate=self.parameters['learning_rate'],
             total_steps=self.parameters['total_steps'],
             clip_range=self.parameters['epsilon'],
-            entropy_coef=self.parameters['beta']
+            entropy_coef=self.parameters['beta'],
+            load=False
             )
 
-        global_env_name = self.parameters['env']+ ':mini-' + self.parameters['env'] + '-v0'
-        # global_env_name = self.parameters['env'] + ':global-' + self.parameters['env'] + '-v0'
+        # global_env_name = self.parameters['env']+ ':mini-' + self.parameters['env'] + '-v0'
+        global_env_name = self.parameters['env'] + ':global-' + self.parameters['env'] + '-v0'
         # global_env_name = 'tmaze:tmaze-v0'
         self.global_env = SubprocVecEnv(
             [self.make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])],
