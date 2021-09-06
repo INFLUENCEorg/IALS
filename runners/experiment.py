@@ -89,15 +89,15 @@ class Experiment(object):
         self._seed = seed
         self.parameters = parameters['main']
 
-        # policy = IAMPolicy(self.parameters['obs_size'], 
-        #     self.parameters['num_actions'], 
-        #     self.parameters['num_workers'],
-        #     dset=self.parameters['dset']
-        #     )
         policy = IAMPolicy(self.parameters['obs_size'], 
             self.parameters['num_actions'], 
-            self.parameters['num_workers']
+            self.parameters['num_workers'],
+            dset=self.parameters['dset']
             )
+        # policy = FNNPolicy(self.parameters['obs_size'], 
+        #     self.parameters['num_actions'], 
+        #     self.parameters['num_workers']
+        #     )
 
         self.agent = Agent(
             policy=policy,
