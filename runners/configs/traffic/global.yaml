@@ -6,4 +6,4 @@ parameters:
         name: 'global_traffic'
         influence_model: None
         eval_steps: 5.0e+4
-        num_workers: 1
+        num_workers: 8

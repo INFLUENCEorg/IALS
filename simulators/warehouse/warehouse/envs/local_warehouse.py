@@ -1,9 +1,9 @@
-from warehouse.envs.warehouse import Warehouse
+from warehouse.envs.global_warehouse import GlobalWarehouse
 from warehouse.envs.utils import *
 import numpy as np
 sys.path.append("..")
 
-class LocalWarehouse(Warehouse):
+class LocalWarehouse(GlobalWarehouse):
     """
     warehouse environment
     """

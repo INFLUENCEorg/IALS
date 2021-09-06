@@ -19,7 +19,7 @@ class MiniWarehouse(gym.Env):
 
     OBS_SIZE = 73
 
-    def __init__(self):
+    def __init__(self, seed):
         self.n_columns = 7
         self.n_rows = 7
         self.n_robots_row = 1
@@ -39,6 +39,7 @@ class MiniWarehouse(gym.Env):
         self.max_waiting_time = 8
         self.total_steps = 0
         self.reset()
+        self.seed(seed)
 
     ############################## Override ###############################
 

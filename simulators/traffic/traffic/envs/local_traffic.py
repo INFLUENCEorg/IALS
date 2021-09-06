@@ -45,7 +45,7 @@ additional_env_params = {'target_velocity': 50,
                          'scale': 10}
 horizon = 300
 
-class PartialTraffic(TrafficLightGridBitmapEnv):
+class LocalTraffic(TrafficLightGridBitmapEnv):
     """
     """
     def __init__(self, influence, seed):

@@ -91,7 +91,8 @@ class Experiment(object):
 
         policy = IAMPolicy(self.parameters['obs_size'], 
             self.parameters['num_actions'], 
-            self.parameters['num_workers']
+            self.parameters['num_workers'],
+            dset=self.parameters['dset']
             )
         self.agent = Agent(
             policy=policy,
@@ -106,9 +107,8 @@ class Experiment(object):
             )
 
         global_env_name = self.parameters['env']+ ':mini-' + self.parameters['env'] + '-v0'
-        # global_env_name = self.parameters['env'] + ':' + self.parameters['env'] + '-v0'
+        # global_env_name = self.parameters['env'] + ':global-' + self.parameters['env'] + '-v0'
         # global_env_name = 'tmaze:tmaze-v0'
-        print(global_env_name)
         self.global_env = SubprocVecEnv(
             [self.make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])],
             'spawn'
@@ -165,11 +165,11 @@ class Experiment(object):
         """
         def _init():
             if 'local' in env_id:
-                env = gym.make(env_id, influence=influence)
+                env = gym.make(env_id, influence=influence, seed=seed+rank)
             else:
-                env = gym.make(env_id)
+                env = gym.make(env_id, seed=seed+rank)
             # env = Monitor(env, './logs')
-            env.seed(seed + rank)
+            # env.seed(seed + rank)
             return env
         # set_global_seeds(seed)
         return _init   

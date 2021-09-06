@@ -11,7 +11,7 @@ import networkx as nx
 import csv
 from PIL import Image
 
-class Warehouse(gym.Env):
+class GlobalWarehouse(gym.Env):
     """
     warehouse environment
     """
@@ -22,7 +22,7 @@ class Warehouse(gym.Env):
                3: 'RIGHT'}
     OBS_SIZE = 69 # 7x7 grid + 20 items // 5x5 grid + 12 items
 
-    def __init__(self):
+    def __init__(self, seed):
         parameters = read_parameters('warehouse.yaml')
         self.n_columns = parameters['n_columns']
         self.n_rows = parameters['n_rows']
@@ -38,6 +38,7 @@ class Warehouse(gym.Env):
         self.items = []
         self.img = None
         self.parameters = parameters
+        self.seed(seed)
         # self.influence = influence
         self.i = 0
 
@@ -141,6 +142,7 @@ class Warehouse(gym.Env):
         # self.i += 1
 
     def seed(self, seed=None):
+        print('SEED:',seed)
         if seed is not None:
             np.random.seed(seed)
 

@@ -1,7 +1,7 @@
 from gym.envs.registration import register
 register(
-    id='warehouse-v0',
-    entry_point='warehouse.envs:Warehouse',
+    id='global-warehouse-v0',
+    entry_point='warehouse.envs:GlobalWarehouse',
 )
 register(
     id='local-warehouse-v0',
