@@ -118,7 +118,7 @@ class Experiment(object):
         self.global_env = SubprocVecEnv(
             [self.make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])],
             'spawn'
-    
+            ) 
         self.global_env = VecNormalize(self.global_env)
         
         if self.parameters['simulator'] == 'local':
