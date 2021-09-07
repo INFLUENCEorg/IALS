@@ -89,15 +89,15 @@ class Experiment(object):
         self._seed = seed
         self.parameters = parameters['main']
 
-        # policy = IAMPolicy(self.parameters['obs_size'], 
-        #     self.parameters['num_actions'], 
-        #     self.parameters['num_workers'],
-        #     dset=self.parameters['dset']
-        #     )
-        policy = FNNPolicy(self.parameters['obs_size'], 
+        policy = IAMPolicy(self.parameters['obs_size'], 
             self.parameters['num_actions'], 
-            self.parameters['num_workers']
+            self.parameters['num_workers'],
+            dset=self.parameters['dset']
             )
+        # policy = FNNPolicy(self.parameters['obs_size'], 
+        #     self.parameters['num_actions'], 
+        #     self.parameters['num_workers']
+        #     )
 
         self.agent = Agent(
             policy=policy,
@@ -118,20 +118,9 @@ class Experiment(object):
         self.global_env = SubprocVecEnv(
             [self.make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])],
             'spawn'
-            )
-        # self.global_env = SubprocVecEnv(
-            # [self.make_env(global_env_name, i, self._seed) for i in range(self.parameters['num_workers'])],
-        #     start_method='fork'
-        #     )
+    
         self.global_env = VecNormalize(self.global_env)
         
-        # self.global_env = VecEnv(
-        #     self.parameters['env'], 
-        #     'global',
-        #     self.parameters['num_workers'],
-        #     seed
-        #     )
-
         if self.parameters['simulator'] == 'local':
             data_path = parameters['influence']['data_path'] + str(_run._id) + '/'
 
@@ -150,13 +139,7 @@ class Experiment(object):
                 start_method='fork'
                 )
             self.env = VecNormalize(self.env)
-            # self.env = VecEnv(
-                # self.parameters['env'], 
-                # 'local',
-                # self.parameters['num_workers'],
-                # seed,
-                # influence
-            # )
+            self.global_env = self.env
 
         else:
             self.env = self.global_env 
