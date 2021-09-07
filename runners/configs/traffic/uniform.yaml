@@ -6,7 +6,7 @@ parameters:
         name: 'uniform_traffic'
         influence_model: 'uniform'
         eval_steps: 5.0e+4
-        num_workers: 8
+        num_workers: 1
 
     influence:
         probs: [0.5, 0.5, 0.5, 0.5]
