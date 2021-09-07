@@ -94,7 +94,7 @@ class Experiment(object):
         #     self.parameters['num_workers'],
         #     dset=self.parameters['dset']
         #     )
-        policy = FNNPolicy(self.parameters['obs_size'], 
+        policy = GRUPolicy(self.parameters['obs_size'], 
             self.parameters['num_actions'], 
             self.parameters['num_workers']
             )
