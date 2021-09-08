@@ -17,8 +17,8 @@ parameters:
         recurrent: true
         num_rec_units: 512
         seq_len: 8
-        num_workers: 1
+        num_workers: 8
         epsilon: 0.1
         beta: 5.0e-2
-        render: True
+        render: False
         dset: [49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68]
