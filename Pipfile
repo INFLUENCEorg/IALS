@@ -1,19 +1,24 @@
 [[source]]
-url = "https://pypi.python.org/simple"
+url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
 [packages]
-torch = "*"
+flow = {path = "./flow"}
 numpy = "*"
 matplotlib = "*"
 pyaml = "*"
-gym = "*"
 sacred = "*"
 pymongo = "*"
 sshtunnel = "*"
-stable-baselines3 = "*"
 networkx = "*"
+lxml = "*"
+pyglet = "*"
+opencv-python = "*"
+imutils = "*"
+scipy = "*"
+torch = "==1.8.1"
+stable-baselines3 = "*"
 
 [dev-packages]
 
