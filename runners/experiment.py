@@ -88,17 +88,25 @@ class Experiment(object):
         self._run = _run
         self._seed = seed
         self.parameters = parameters['main']
+        
+        if self.parameters['policy'] == 'FNNPolicy':
+            policy = FNNPolicy(self.parameters['obs_size'], 
+                self.parameters['num_actions'], 
+                self.parameters['num_workers']
+                )
+        elif self.parameters['policy'] == 'IAMPolicy':
+            policy = IAMPolicy(self.parameters['obs_size'], 
+                self.parameters['num_actions'], 
+                self.parameters['num_workers'],
+                dset=self.parameters['dset']
+                )
 
-        # policy = IAMPolicy(self.parameters['obs_size'], 
-        #     self.parameters['num_actions'], 
-        #     self.parameters['num_workers'],
-        #     dset=self.parameters['dset']
-        #     )
-        policy = FNNPolicy(self.parameters['obs_size'], 
-            self.parameters['num_actions'], 
-            self.parameters['num_workers']
-            )
-
+        elif self.parameters['policy'] == 'GRUPolicy'
+            policy = FNNPolicy(self.parameters['obs_size'], 
+                self.parameters['num_actions'], 
+                self.parameters['num_workers']
+                )
+                
         self.agent = Agent(
             policy=policy,
             memory_size=self.parameters['memory_size'],
