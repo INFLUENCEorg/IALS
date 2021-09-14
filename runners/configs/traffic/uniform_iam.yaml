@@ -8,6 +8,7 @@ parameters:
         num_workers: 8
         policy: 'IAMPolicy'
         seq_len: 8
+        dset: null
 
     influence:
         probs: [0.5, 0.5, 0.5, 0.5]
