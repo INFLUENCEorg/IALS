@@ -1,0 +1,15 @@
+parameters:
+    main:
+        # Common hyperparameters
+        env: 'traffic'
+        simulator: 'local'
+        name: 'uniform_traffic'
+        influence_model: 'uniform'
+        num_workers: 8
+        policy: 'FNNPolicy'
+        seq_len: 1
+
+    influence:
+        probs: [0.5, 0.5, 0.5, 0.5]
+        seq_len: 1
+        episode_length: 300
