@@ -13,8 +13,8 @@ class LocalWarehouse(GlobalWarehouse):
                2: 'LEFT',
                3: 'RIGHT'}
 
-    def __init__(self, influence):
-        self.parameters = read_parameters('partial_warehouse.yaml')
+    def __init__(self, influence, seed):
+        self.parameters = read_parameters('local_warehouse.yaml')
         # parameters = parse_arguments()
         self.n_columns = self.parameters['n_columns']
         self.n_rows = self.parameters['n_rows']
@@ -63,8 +63,8 @@ class LocalWarehouse(GlobalWarehouse):
         self.total_steps += 1
         done = (self.max_episode_length <= self.episode_length)
         self.probs = self.influence.predict(self.get_dset)
-        if self.parameters['render']:
-            self.render(self.parameters['render_delay'])
+        # if self.parameters['render']:
+        #     self.render(self.parameters['render_delay'])
         # Influence-augmented observations
         if self.influence.aug_obs:
             obs = np.append(obs, self.influence.get_hidden_state())
@@ -120,11 +120,11 @@ class LocalWarehouse(GlobalWarehouse):
         return locations
     
     def _find_loc(self, neighbor_id, loc):
-        locations = {0: [loc, 4], 1: [4, loc], 2: [loc, 0], 3: [0, loc]}
+        locations = {0: [loc, self.robot_domain_size[1]-1], 1: [self.robot_domain_size[0]-1, loc], 2: [loc, 0], 3: [0, loc]}
         return locations[neighbor_id]
 
     def _get_intersection(self, neighbor_id, bitmap):
-        intersections = {0: bitmap[:, 0], 1: bitmap[0, :], 2: bitmap[:, 4], 3: bitmap[4, :]}
+        intersections = {0: bitmap[:, 0], 1: bitmap[0, :], 2: bitmap[:, self.robot_domain_size[1]-1], 3: bitmap[self.robot_domain_size[0]-1, :]}
         return intersections[neighbor_id]
 
     def load_influence_model(self):

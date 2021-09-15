@@ -187,7 +187,7 @@ class GlobalWarehouse(gym.Env):
         return locations[neighbor_id]
 
     def _get_intersection(self, neighbor_id, bitmap):
-        intersections = {0: bitmap[1:-1, 0], 1: bitmap[0, 1:-1], 2: bitmap[1:-1, 4], 3: bitmap[4, 1:-1]}
+        intersections = {0: bitmap[1:-1, 0], 1: bitmap[0, 1:-1], 2: bitmap[1:-1, self.robot_domain_size[1]-1], 3: bitmap[self.robot_domain_size[0]-1, 1:-1]}
         return intersections[neighbor_id]
 
     def create_graph(self, robot):
