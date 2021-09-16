@@ -99,7 +99,7 @@ class Experiment(object):
                 self.parameters['num_actions'], 
                 self.parameters['num_workers'],
                 dset=self.parameters['dset']
-                )
+                )                       
         elif self.parameters['policy'] == 'GRUPolicy':
             policy = FNNPolicy(self.parameters['obs_size'], 
                 self.parameters['num_actions'], 
@@ -146,8 +146,6 @@ class Experiment(object):
                 start_method='fork'
                 )
             self.env = VecNormalize(self.env)
-            self.global_env = self.env
-
         else:
             self.env = self.global_env 
 
