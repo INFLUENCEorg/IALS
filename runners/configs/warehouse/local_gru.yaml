@@ -17,10 +17,10 @@ parameters:
         recurrent: true
         num_rec_units: 512
         seq_len: 8
-        num_workers: 1
+        num_workers: 8
         epsilon: 0.1
         beta: 0.1
-        render: True
+        render: False
         policy: 'GRUPolicy'
 
     influence:
