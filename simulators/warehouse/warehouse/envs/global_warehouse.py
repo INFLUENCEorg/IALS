@@ -56,7 +56,7 @@ class GlobalWarehouse(gym.Env):
         # self.prob_item_appears = np.random.choice(self.item_probs)
         self._add_items()
         obs = self._get_observation()
-        self.prev_obs = obs
+        # self.prev_obs = obs
         self.episode_length = 0
         return obs
 
@@ -78,7 +78,7 @@ class GlobalWarehouse(gym.Env):
         self._remove_items()
         self._add_items()
         obs = self._get_observation()
-        self.prev_obs = obs
+        # self.prev_obs = obs
         self.episode_length += 1
         done = (self.max_episode_length <= self.episode_length)
         # if self.parameters['render']:
@@ -181,10 +181,6 @@ class GlobalWarehouse(gym.Env):
                 source[np.where(intersection == 1)] = 1
             infs = np.append(infs, source)
         return infs
-
-    def _find_loc(self, neighbor_id, loc):
-        locations = {0: [loc, 4], 1: [4, loc], 2: [loc, 0], 3: [0, loc]}
-        return locations[neighbor_id]
 
     def _get_intersection(self, neighbor_id, bitmap):
         intersections = {0: bitmap[1:-1, 0], 1: bitmap[0, 1:-1], 2: bitmap[1:-1, self.robot_domain_size[1]-1], 3: bitmap[self.robot_domain_size[0]-1, 1:-1]}
