@@ -19,6 +19,6 @@ parameters:
         seq_len: 1
         num_workers: 8
         epsilon: 0.1
-        beta: 0.01
+        beta: 0.1
         render: False
         policy: 'FNNPolicy'
