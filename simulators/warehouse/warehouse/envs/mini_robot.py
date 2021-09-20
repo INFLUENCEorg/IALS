@@ -69,6 +69,7 @@ class Robot():
         """
         Take an action
         """
+        new_pos = self._pos
         if action == 0:
             new_pos = [self._pos[0] - 1, self._pos[1]]
         if action == 1:
