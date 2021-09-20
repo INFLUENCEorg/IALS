@@ -266,8 +266,6 @@ class Experiment(object):
                 if self.parameters['render']:
                     self.global_env.render()
                     time.sleep(.5)
-                print(self.global_env.get_original_obs())
-                breakpoint()
                 reward_sum += np.array(reward)
             episode_rewards.append(reward_sum)
         print('Done!')
