@@ -15,8 +15,8 @@ class MiniWarehouse(gym.Env):
     ACTIONS = {0: 'UP',
                1: 'DOWN',
                2: 'LEFT',
-               3: 'RIGHT',
-               4: 'NOOP'}
+               3: 'RIGHT'}
+            #    4: 'NOOP'}
 
     OBS_SIZE = 73
 
@@ -223,8 +223,8 @@ class MiniWarehouse(gym.Env):
         for item in self.items:
             item_pos = item.get_position
             if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
-                if item.get_waiting_time == 8:
-                    reward += 1
+                # if item.get_waiting_time == 8:
+                reward += 1
         return reward
 
 
