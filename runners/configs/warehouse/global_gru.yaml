@@ -3,7 +3,7 @@ parameters:
         # Common hyperparameters
         simulator: 'global'
         env: 'warehouse'
-        obs_size: 69
+        obs_size: 73
         rollout_steps: 8
         num_actions: 4
         name: 'global_warehouse_recurrent'
@@ -21,5 +21,4 @@ parameters:
         epsilon: 0.1
         beta: 0.1
         render: False
-        dset: [1, 2, 3, 4, 5, 7, 13, 14, 20, 21, 27, 28, 34, 35, 41, 43, 44, 45, 46, 47, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68]
         policy: 'GRUPolicy'
