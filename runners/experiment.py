@@ -101,7 +101,7 @@ class Experiment(object):
                 dset=self.parameters['dset']
                 )                       
         elif self.parameters['policy'] == 'GRUPolicy':
-            policy = FNNPolicy(self.parameters['obs_size'], 
+            policy = GRUPolicy(self.parameters['obs_size'], 
                 self.parameters['num_actions'], 
                 self.parameters['num_workers']
                 )
@@ -266,6 +266,8 @@ class Experiment(object):
                 if self.parameters['render']:
                     self.global_env.render()
                     time.sleep(.5)
+                print(self.global_env.get_original_obs())
+                breakpoint()
                 reward_sum += np.array(reward)
             episode_rewards.append(reward_sum)
         print('Done!')
