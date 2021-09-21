@@ -263,13 +263,16 @@ class MiniWarehouse(gym.Env):
         reward = 0
         robot_pos = robot.get_position
         robot_domain = robot.get_domain
-        for item in self.items:
+        # item_waiting_times = [item.get_waiting_time for item in self.items]
+        # sorted_indices = np.argsort(item_waiting_times)
+        for index, item in enumerate(self.items):
             item_pos = item.get_position
             # reward -= item.get_waiting_time*0.1
             if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
                 # if item.get_waiting_time == 8:
                 # (self.initial-self.final)*(1 - step/self.total_steps) + self.final
-                reward += 1 - (item.get_waiting_time - 1)/99
+                # reward += 1 - (item.get_waiting_time - 1)/99
+                reward += (len(self.items) - index)/len(self.items)
                 # reward += 10
                 # reward += 1/item.get_waiting_time
         return reward
