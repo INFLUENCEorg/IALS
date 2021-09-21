@@ -224,7 +224,9 @@ class MiniWarehouse(gym.Env):
             item_pos = item.get_position
             if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
                 # if item.get_waiting_time == 8:
-                reward += 1
+                # (self.initial-self.final)*(1 - step/self.total_steps) + self.final
+                reward += (1 - 0.8)*(1 - (item.get_waiting_time - 1)/(self.max_waiting_time -1)) + 0.8
+                # reward += 1/item.get_waiting_time
         return reward
 
 
