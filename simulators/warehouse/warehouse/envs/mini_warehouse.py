@@ -27,7 +27,7 @@ class MiniWarehouse(gym.Env):
         self.n_robots_column = 1
         self.distance_between_shelves = 6
         self.robot_domain_size = [7, 7]
-        self.prob_item_appears = 0.03
+        self.prob_item_appears = 0.02
         # The learning robot
         self.learning_robot_id = 0
         self.max_episode_length = 100
@@ -55,6 +55,7 @@ class MiniWarehouse(gym.Env):
         self._add_items()
         obs = self._get_observation()
         self.episode_length = 0
+        self.max_waiting_time = np.random.choice([4, 8], 4) 
         return obs
 
     def step(self, action):
@@ -72,8 +73,8 @@ class MiniWarehouse(gym.Env):
         self.total_steps += 1
         self.episode_length += 1
         done = (self.max_episode_length <= self.episode_length)
-        if self.render_bool:
-            self.render(self.render_delay)
+        # if self.render_bool:
+        #     self.render(self.render_delay)
         return obs, reward, done, {}
 
     @property
@@ -88,40 +89,82 @@ class MiniWarehouse(gym.Env):
         """
         return spaces.Discrete(len(self.ACTIONS))
 
-    def render(self, delay=0.0):
+    # def render(self, delay=0.0):
+    #     """
+    #     Renders the environment
+    #     """
+    #     bitmap = self._get_state()
+    #     position = self.robots[self.learning_robot_id].get_position
+    #     bitmap[position[0], position[1], 1] += 1
+    #     im = bitmap[:, :, 0] - 2*bitmap[:, :, 1]
+    #     if self.img is None:
+    #         fig,ax = plt.subplots(1)
+    #         self.img = ax.imshow(im, vmin=-2, vmax=1)
+    #         for robot_id, robot in enumerate(self.robots):
+    #             domain = robot.get_domain
+    #             y = domain[0]
+    #             x = domain[1]
+    #             color = 'k'
+    #             linestyle='-'
+    #             linewidth=2
+    #             rect1 = patches.Rectangle((x+0.5, y+0.5), self.robot_domain_size[0]-2,
+    #                                      self.robot_domain_size[1]-2, linewidth=linewidth,
+    #                                      edgecolor=color, linestyle=linestyle,
+    #                                      facecolor='none')
+    #             rect2 = patches.Rectangle((x-0.48, y-0.48), self.robot_domain_size[0]-0.02,
+    #                                      self.robot_domain_size[1]-0.02, linewidth=3,
+    #                                      edgecolor=color, linestyle=linestyle,
+    #                                      facecolor='none')
+    #             self.img.axes.get_xaxis().set_visible(False)
+    #             self.img.axes.get_yaxis().set_visible(False)
+    #             ax.add_patch(rect1)
+    #             ax.add_patch(rect2)
+    #     else:
+    #         self.img.set_data(im)
+    #     plt.pause(delay)
+    #     plt.draw()
+
+    def render(self, mode='human'):
         """
         Renders the environment
         """
         bitmap = self._get_state()
         position = self.robots[self.learning_robot_id].get_position
         bitmap[position[0], position[1], 1] += 1
+        for robot_id, robot in enumerate(self.robots):
+            # if robot.is_slow:
+            position = robot.get_position
+            bitmap[position[0], position[1], 1] += 2
         im = bitmap[:, :, 0] - 2*bitmap[:, :, 1]
+
         if self.img is None:
             fig,ax = plt.subplots(1)
-            self.img = ax.imshow(im, vmin=-2, vmax=1)
+            self.img = ax.imshow(im)
             for robot_id, robot in enumerate(self.robots):
                 domain = robot.get_domain
                 y = domain[0]
                 x = domain[1]
-                color = 'k'
-                linestyle='-'
-                linewidth=2
-                rect1 = patches.Rectangle((x+0.5, y+0.5), self.robot_domain_size[0]-2,
-                                         self.robot_domain_size[1]-2, linewidth=linewidth,
+                if robot_id == self.learning_robot_id:
+                    color = 'r'
+                    linestyle='-'
+                    linewidth=2
+                else:
+                    color = 'k'
+                    linestyle=':'
+                    linewidth=1
+                rect = patches.Rectangle((x-0.5, y-0.5), self.robot_domain_size[0],
+                                         self.robot_domain_size[1], linewidth=linewidth,
                                          edgecolor=color, linestyle=linestyle,
                                          facecolor='none')
-                rect2 = patches.Rectangle((x-0.48, y-0.48), self.robot_domain_size[0]-0.02,
-                                         self.robot_domain_size[1]-0.02, linewidth=3,
-                                         edgecolor=color, linestyle=linestyle,
-                                         facecolor='none')
+                ax.add_patch(rect)
                 self.img.axes.get_xaxis().set_visible(False)
                 self.img.axes.get_yaxis().set_visible(False)
-                ax.add_patch(rect1)
-                ax.add_patch(rect2)
         else:
             self.img.set_data(im)
-        plt.pause(delay)
-        plt.draw()
+        # plt.pause(delay)
+        plt.savefig('images/image.jpg')
+        img = plt.imread('images/image.jpg')
+        return img
 
     def close(self):
         pass
@@ -225,7 +268,8 @@ class MiniWarehouse(gym.Env):
             if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
                 # if item.get_waiting_time == 8:
                 # (self.initial-self.final)*(1 - step/self.total_steps) + self.final
-                reward += (1 - 0.8)*(1 - (item.get_waiting_time - 1)/(self.max_waiting_time -1)) + 0.8
+                # reward += (1 - 0.8)*(1 - (item.get_waiting_time - 1)/(self.max_waiting_time -1)) + 0.8
+                reward += 1
                 # reward += 1/item.get_waiting_time
         return reward
 
@@ -241,7 +285,16 @@ class MiniWarehouse(gym.Env):
                 item_pos = item.get_position
                 if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
                     self.items.remove(item)
-                elif item.get_waiting_time >= self.max_waiting_time:
+                
+                # elif item.get_waiting_time >= self.max_waiting_time:
+                #     self.items.remove(item)
+                elif item_pos[0] == 0 and item.get_waiting_time >= self.max_waiting_time[0]:
+                    self.items.remove(item)
+                elif item_pos[0] == 4 and item.get_waiting_time >= self.max_waiting_time[1]:
+                    self.items.remove(item)
+                elif item_pos[1] == 0 and item.get_waiting_time >= self.max_waiting_time[2]:
+                    self.items.remove(item)
+                elif item_pos[1] == 4 and item.get_waiting_time >= self.max_waiting_time[3]:
                     self.items.remove(item)
 
     def _increase_item_waiting_time(self):
