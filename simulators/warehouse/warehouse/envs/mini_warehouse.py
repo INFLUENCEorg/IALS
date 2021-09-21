@@ -27,7 +27,7 @@ class MiniWarehouse(gym.Env):
         self.n_robots_column = 1
         self.distance_between_shelves = 6
         self.robot_domain_size = [7, 7]
-        self.prob_item_appears = 0.02
+        self.prob_item_appears = 0.01
         # The learning robot
         self.learning_robot_id = 0
         self.max_episode_length = 100
@@ -55,7 +55,7 @@ class MiniWarehouse(gym.Env):
         self._add_items()
         obs = self._get_observation()
         self.episode_length = 0
-        self.max_waiting_time = np.random.choice([4, 8], 4) 
+        # self.max_waiting_time = np.random.choice([4, 8], 4) 
         return obs
 
     def step(self, action):
@@ -265,11 +265,12 @@ class MiniWarehouse(gym.Env):
         robot_domain = robot.get_domain
         for item in self.items:
             item_pos = item.get_position
+            # reward -= item.get_waiting_time*0.1
             if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
                 # if item.get_waiting_time == 8:
                 # (self.initial-self.final)*(1 - step/self.total_steps) + self.final
-                # reward += (1 - 0.8)*(1 - (item.get_waiting_time - 1)/(self.max_waiting_time -1)) + 0.8
-                reward += 1
+                reward += 1 - (item.get_waiting_time - 1)/99
+                # reward += 10
                 # reward += 1/item.get_waiting_time
         return reward
 
@@ -287,15 +288,15 @@ class MiniWarehouse(gym.Env):
                     self.items.remove(item)
                 
                 # elif item.get_waiting_time >= self.max_waiting_time:
+                    # self.items.remove(item)
+                # elif item_pos[0] == 0 and item.get_waiting_time >= self.max_waiting_time[0]:
                 #     self.items.remove(item)
-                elif item_pos[0] == 0 and item.get_waiting_time >= self.max_waiting_time[0]:
-                    self.items.remove(item)
-                elif item_pos[0] == 4 and item.get_waiting_time >= self.max_waiting_time[1]:
-                    self.items.remove(item)
-                elif item_pos[1] == 0 and item.get_waiting_time >= self.max_waiting_time[2]:
-                    self.items.remove(item)
-                elif item_pos[1] == 4 and item.get_waiting_time >= self.max_waiting_time[3]:
-                    self.items.remove(item)
+                # elif item_pos[0] == 4 and item.get_waiting_time >= self.max_waiting_time[1]:
+                #     self.items.remove(item)
+                # elif item_pos[1] == 0 and item.get_waiting_time >= self.max_waiting_time[2]:
+                #     self.items.remove(item)
+                # elif item_pos[1] == 4 and item.get_waiting_time >= self.max_waiting_time[3]:
+                #     self.items.remove(item)
 
     def _increase_item_waiting_time(self):
         """
