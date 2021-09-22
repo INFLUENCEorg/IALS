@@ -37,7 +37,7 @@ class MiniWarehouse(gym.Env):
         self.items = []
         self.img = None
         # self.reset()
-        self.max_waiting_time = 16
+        self.max_waiting_time = 8
         self.total_steps = 0
         self.reset()
         self.seed(seed)
