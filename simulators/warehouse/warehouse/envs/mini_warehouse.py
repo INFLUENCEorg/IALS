@@ -194,36 +194,44 @@ class MiniWarehouse(gym.Env):
 
     def _add_items(self):
         """
-        Add new items to the designated locations in the environment which
-        need to be collected by the robots
+        Add new items to the designated locations in the environment.
         """
-        item_columns = np.arange(0, self.n_columns)
-        item_rows = np.arange(0, self.n_rows, self.distance_between_shelves)
         item_locs = None
         if len(self.items) > 0:
             item_locs = [item.get_position for item in self.items]
-        for row in item_rows:
-            for column in item_columns:
-                loc = [row, column]
-                loc_free = True
-                if item_locs is not None:
-                    loc_free = loc not in item_locs
-                if np.random.uniform() < self.prob_item_appears and loc_free:
-                    self.items.append(Item(self.item_id, loc))
-                    self.item_id += 1
-        item_rows = np.arange(0, self.n_rows)
-        item_columns = np.arange(0, self.n_columns, self.distance_between_shelves)
-        if len(self.items) > 0:
-            item_locs = [item.get_position for item in self.items]
-        for row in item_rows:
-            for column in item_columns:
-                loc = [row, column]
-                loc_free = True
-                if item_locs is not None:
-                    loc_free = loc not in item_locs
-                if np.random.uniform() < self.prob_item_appears and loc_free:
-                    self.items.append(Item(self.item_id, loc))
-                    self.item_id += 1
+        for row in range(self.n_rows):
+            if row % (self.distance_between_shelves) == 0:
+                for column in range(1, self.n_columns):
+                    if column % (self.distance_between_shelves) != 0:
+                        loc = [row, column]
+                        loc_free = True
+                        region_free = True
+                        if item_locs is not None:
+                            # region = int(column//self.distance_between_shelves)
+                            # columns_occupied = [item_loc[1] for item_loc in item_locs if item_loc[0] == row]
+                            # regions_occupied = [int(column//self.distance_between_shelves) for column in columns_occupied]
+                            # region_free = region not in regions_occupied
+                            loc_free = loc not in item_locs
+                        if np.random.uniform() < self.prob_item_appears and loc_free:
+                            self.items.append(Item(self.item_id, loc))
+                            self.item_id += 1
+                            item_locs = [item.get_position for item in self.items]
+            else:
+                for column in range(0, self.n_rows, self.distance_between_shelves):
+                    loc = [row, column]
+                    loc_free = True
+                    region_free = True
+                    if item_locs is not None:
+                        # region = int(row//self.distance_between_shelves)
+                        # rows_occupied = [item_loc[0] for item_loc in item_locs if item_loc[1] == column]
+                        # regions_occupied = [int(row//self.distance_between_shelves) for row in rows_occupied]
+                        # region_free = region not in regions_occupied
+                        loc_free = loc not in item_locs
+                    if np.random.uniform() < self.prob_item_appears and loc_free:
+                        self.items.append(Item(self.item_id, loc))
+                        self.item_id += 1
+                        item_locs = [item.get_position for item in self.items]
+
 
 
     def _get_state(self):
@@ -272,7 +280,9 @@ class MiniWarehouse(gym.Env):
                 # if item.get_waiting_time == 8:
                 # (self.initial-self.final)*(1 - step/self.total_steps) + self.final
                 # reward += 1 - (item.get_waiting_time - 1)/99
-                reward += (len(self.items) - index)/len(self.items)
+                if index == 0:
+                    reward += 1
+                # reward += (len(self.items) - index)/len(self.items)
                 # reward += 10
                 # reward += 1/item.get_waiting_time
         return reward
