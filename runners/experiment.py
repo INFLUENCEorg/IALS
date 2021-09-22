@@ -126,7 +126,7 @@ class Experiment(object):
             [self.make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])],
             'spawn'
             ) 
-        self.global_env = VecNormalize(self.global_env)
+        self.global_env = VecNormalize(self.global_env, norm_rewad=False)
         
         if self.parameters['simulator'] == 'local':
             data_path = parameters['influence']['data_path'] + str(_run._id) + '/'
