@@ -287,7 +287,7 @@ class MiniWarehouse(gym.Env):
                 # if index == sorted_indices[0]:
                 # if item_waiting_times[index] == item_waiting_times[0]:
                     # reward += 1
-                reward = (len(self.items) - index)/len(self.items)
+                reward = item_waiting_times[index]/max(item_waiting_times)
                 # reward += 10
                 # reward += 1/item.get_waiting_time
         return reward
