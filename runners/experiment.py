@@ -116,7 +116,7 @@ class Experiment(object):
             total_steps=self.parameters['total_steps'],
             clip_range=self.parameters['epsilon'],
             entropy_coef=self.parameters['beta'],
-            load=False
+            load=self.parameters['load_policy']
             )
 
         global_env_name = self.parameters['env']+ ':mini-' + self.parameters['env'] + '-v0'
@@ -126,7 +126,7 @@ class Experiment(object):
             [self.make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])],
             'spawn'
             ) 
-        self.global_env = VecNormalize(self.global_env, norm_reward=False)
+        self.global_env = VecNormalize(self.global_env, norm_reward=True)
         
         if self.parameters['simulator'] == 'local':
             data_path = parameters['influence']['data_path'] + str(_run._id) + '/'

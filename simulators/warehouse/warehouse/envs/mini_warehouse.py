@@ -286,9 +286,13 @@ class MiniWarehouse(gym.Env):
                 # if index == 0:
                 # if index == sorted_indices[0]:
                 if item_waiting_times[index] == item_waiting_times[0]:
-                    reward += 1
+                    reward = 1
+                    self.items.remove(item)
+                    break
                 else:
-                    reward += 0.1
+                    reward = 0.1
+                    self.items.remove(item)
+                    break
                 # reward = item_waiting_times[index]/max(item_waiting_times)
                 # reward += 10
                 # reward += 1/item.get_waiting_time
@@ -303,10 +307,10 @@ class MiniWarehouse(gym.Env):
         for robot in self.robots:
             robot_pos = robot.get_position
             for item in self.items:
-                item_pos = item.get_position
-                if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
-                    self.items.remove(item)
-                elif item.get_waiting_time >= self.max_waiting_time:
+                # item_pos = item.get_position
+                # if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
+                #     self.items.remove(item)
+                if item.get_waiting_time >= self.max_waiting_time:
                     self.items.remove(item)
                 # elif item_pos[0] == 0 and item.get_waiting_time >= self.max_waiting_time[0]:
                 #     self.items.remove(item)
