@@ -4,7 +4,7 @@ sys.path.append("..")
 from influence.influence_network import InfluenceNetwork
 from influence.influence_uniform import InfluenceUniform
 # from simulators.vec_env import VecEnv
-from stable_baselines3.common.vec_env import SubprocVecEnv, VecNormalize
+from stable_baselines3.common.vec_env import SubprocVecEnv, VecNormalize, VecFrameStack
 from recurrent_policies.PPO import Agent, FNNPolicy, GRUPolicy, ModifiedGRUPolicy, IAMPolicy
 import gym
 import sacred
@@ -127,6 +127,9 @@ class Experiment(object):
             'spawn'
             ) 
         self.global_env = VecNormalize(self.global_env, norm_reward=True)
+
+        if self.parameters['framestack']:
+            self.global_env = VecFrameStack(self.global_env, n_stack=8)
         
         if self.parameters['simulator'] == 'local':
             data_path = parameters['influence']['data_path'] + str(_run._id) + '/'
