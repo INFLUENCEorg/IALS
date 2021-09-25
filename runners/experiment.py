@@ -126,8 +126,8 @@ class Experiment(object):
             load=self.parameters['load_policy']
             )
 
-        global_env_name = self.parameters['env']+ ':mini-' + self.parameters['env'] + '-v0'
-        # global_env_name = self.parameters['env'] + ':global-' + self.parameters['env'] + '-v0'
+        # global_env_name = self.parameters['env']+ ':mini-' + self.parameters['env'] + '-v0'
+        global_env_name = self.parameters['env'] + ':global-' + self.parameters['env'] + '-v0'
         # global_env_name = 'tmaze:tmaze-v0'
         self.global_env = SubprocVecEnv(
             [self.make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])],
