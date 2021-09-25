@@ -5,7 +5,7 @@ from influence.influence_network import InfluenceNetwork
 from influence.influence_uniform import InfluenceUniform
 # from simulators.vec_env import VecEnv
 from stable_baselines3.common.vec_env import SubprocVecEnv, VecNormalize, VecFrameStack
-from recurrent_policies.PPO import Agent, FNNPolicy, GRUPolicy, ModifiedGRUPolicy, IAMPolicy
+from recurrent_policies.PPO import Agent, FNNPolicy, GRUPolicy, ModifiedGRUPolicy, IAMPolicy, FNNFSPolicy
 import gym
 import sacred
 from sacred.observers import MongoObserver
@@ -99,6 +99,13 @@ class Experiment(object):
                 self.parameters['num_actions'], 
                 self.parameters['num_workers'],
                 dset=self.parameters['dset']
+                ) 
+        elif self.parameters['policy'] == 'FNNFSPolicy':
+            policy = FNNFSPolicy(self.parameters['obs_size'], 
+                self.parameters['num_actions'], 
+                self.parameters['num_workers'],
+                dset=self.parameters['dset'],
+                n_stack=self.parameters['n_stack']
                 )                       
         elif self.parameters['policy'] == 'GRUPolicy':
             policy = GRUPolicy(self.parameters['obs_size'], 
@@ -129,7 +136,7 @@ class Experiment(object):
         self.global_env = VecNormalize(self.global_env, norm_reward=True)
 
         if self.parameters['framestack']:
-            self.global_env = VecFrameStack(self.global_env, n_stack=8)
+            self.global_env = VecFrameStack(self.global_env, n_stack=self.parameters['n_stack'])
         
         if self.parameters['simulator'] == 'local':
             data_path = parameters['influence']['data_path'] + str(_run._id) + '/'
