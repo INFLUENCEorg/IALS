@@ -67,6 +67,7 @@ class GlobalWarehouse(gym.Env):
         # external robots take an action
         actions = []
         dset = self.get_dset
+        self._increase_item_waiting_time()
         for robot in self.robots:
             state = self._get_state()
             obs = robot.observe(state, self.obs_type)
@@ -142,7 +143,6 @@ class GlobalWarehouse(gym.Env):
         # self.i += 1
 
     def seed(self, seed=None):
-        print('SEED:',seed)
         if seed is not None:
             np.random.seed(seed)
 
@@ -327,17 +327,28 @@ class GlobalWarehouse(gym.Env):
         # GIVES REWARD OF +1 ONLY IF THE LEARNING AGENT PICKS UP AN ITEM.
         reward = 0
         robot = self.robots[self.learning_robot_id]
+        items = self._get_robot_items(robot)
+        item_waiting_times = [item.get_waiting_time for item in items]
         robot_pos = robot.get_position
         # robot_domain = robot.get_domain
-        for item in self.items:
+        for index, item in enumerate(items):
             item_pos = item.get_position
             # if robot_domain[0] <= item_pos[0] <= robot_domain[2] and \
             #    robot_domain[1] <= item_pos[1] <= robot_domain[3]:
             #     reward += -0.1 #*item.get_waiting_time
             if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
-                reward += 1
+                reward = item_waiting_times[index]/max(item_waiting_times)
+                self.items.remove(item)
         return reward
 
+    def _get_robot_items(self, robot):
+        domain = robot.get_domain
+        items = []
+        for item in self.items:
+            pos = item.get_position
+            if domain[0] <= pos[0] <= domain[2] and domain[1] <= pos[1] <= domain[3]:
+                items.append(item)
+        return items
 
     def _remove_items(self):
         """

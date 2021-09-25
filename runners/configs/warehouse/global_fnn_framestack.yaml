@@ -3,7 +3,7 @@ parameters:
         # Common hyperparameters
         simulator: 'global'
         env: 'warehouse'
-        obs_size: 37
+        obs_size: 69
         rollout_steps: 8
         num_actions: 4
         name: 'global_warehouse_recurrent'
@@ -25,4 +25,5 @@ parameters:
         load_policy: False
         framestack: True
         n_stack: 8
-        dset: [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]
+        # dset: [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]
+        deset: [49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68]
