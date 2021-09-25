@@ -156,6 +156,10 @@ class Experiment(object):
                 start_method='fork'
                 )
             self.env = VecNormalize(self.env)
+
+            if self.parameters['framestack']:
+                self.env = VecFrameStack(self.env, n_stack=self.parameters['n_stack'])
+        
         else:
             self.env = self.global_env 
 

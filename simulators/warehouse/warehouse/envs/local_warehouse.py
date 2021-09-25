@@ -53,6 +53,7 @@ class LocalWarehouse(GlobalWarehouse):
         """
         Performs a single step in the environment.
         """
+        self._increase_item_waiting_time()
         self._robots_act([action])
         # ext_robot_locs = self._sample_ext_robot_locs(self.probs)
         reward = self._compute_reward()
