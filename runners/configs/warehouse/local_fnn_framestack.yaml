@@ -36,8 +36,8 @@ parameters:
         num_epochs: 500
         batch_size: 32
         hidden_memory_size: 64
-        input_size: 69
-        output_size: 6
+        input_size: 37
+        output_size: 4
         n_sources: 4
         checkpoint_path: '../influence/models/warehouse/model'
         aug_obs: False
