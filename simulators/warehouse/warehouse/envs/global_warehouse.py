@@ -20,7 +20,7 @@ class GlobalWarehouse(gym.Env):
                1: 'DOWN',
                2: 'LEFT',
                3: 'RIGHT'}
-    OBS_SIZE = 69 # 7x7 grid + 20 items // 5x5 grid + 12 items
+    OBS_SIZE = 37 # 7x7 grid + 20 items // 5x5 grid + 12 items
 
     def __init__(self, seed):
         parameters = read_parameters('warehouse.yaml')
