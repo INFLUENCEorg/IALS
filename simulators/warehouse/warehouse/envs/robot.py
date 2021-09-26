@@ -206,14 +206,14 @@ class Robot():
         Returns the path to the oldest item in the robot's domain.
         """
         oldest_item_path = None
-        min_waiting_time = math.inf
+        max_waiting_time = -1
         for index, item in enumerate(items):
             waiting_time = item.get_waiting_time
-            if waiting_time < min_waiting_time:
-                min_waiting_time = waiting_time
-                min_index = index
+            if waiting_time > max_waiting_time:
+                max_waiting_time = waiting_time
+                max_index = index
         if len(items) > 0:
-            item_global_pos = items[min_index].get_position
+            item_global_pos = items[max_index].get_position
             domain_size = self._robot_domain[2] - self._robot_domain[0] + 1
             item_relative_pos = (item_global_pos[0]-self._robot_domain[0], item_global_pos[1]-self._robot_domain[1])
             robot_pos = (self._pos[0]-self._robot_domain[0], self._pos[1]-self._robot_domain[1])

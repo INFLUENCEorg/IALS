@@ -44,7 +44,7 @@ class LocalWarehouse(GlobalWarehouse):
         obs = self._get_observation()
         self.episode_length = 0
         self.influence.reset()
-        self.probs = self.influence.predict(self.get_dset)
+        # self.probs = self.influence.predict(self.get_dset)
         if self.influence.aug_obs:
             obs = np.append(obs, self.influence.get_hidden_state())
         return obs
@@ -53,6 +53,7 @@ class LocalWarehouse(GlobalWarehouse):
         """
         Performs a single step in the environment.
         """
+        self.probs = self.influence.predict(self.get_dset)
         self._increase_item_waiting_time()
         self._robots_act([action])
         # ext_robot_locs = self._sample_ext_robot_locs(self.probs)
@@ -63,7 +64,6 @@ class LocalWarehouse(GlobalWarehouse):
         self.episode_length += 1
         self.total_steps += 1
         done = (self.max_episode_length <= self.episode_length)
-        self.probs = self.influence.predict(self.get_dset)
         # if self.parameters['render']:
         #     self.render(self.parameters['render_delay'])
         # Influence-augmented observations
