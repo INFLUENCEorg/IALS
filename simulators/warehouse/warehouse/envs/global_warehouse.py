@@ -337,7 +337,8 @@ class GlobalWarehouse(gym.Env):
             #    robot_domain[1] <= item_pos[1] <= robot_domain[3]:
             #     reward += -0.1 #*item.get_waiting_time
             if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
-                reward = item_waiting_times[index]/max(item_waiting_times)
+                # reward = item_waiting_times[index]/max(item_waiting_times)
+                reward = 1
                 self.items.remove(item)
         return reward
 
