@@ -52,9 +52,11 @@ class MiniWarehouse(gym.Env):
         self._place_robots()
         self.item_id = 0
         self.items = []
+        self._remove_items()
         self._add_items()
         obs = self._get_observation()
         self.episode_length = 0
+        self.prev_items = np.copy(self.items)
         # self.max_waiting_time = np.random.choice([4, 8], 4) 
         return obs
 
@@ -64,10 +66,13 @@ class MiniWarehouse(gym.Env):
         """
         self._robots_act([action])
         self._increase_item_waiting_time()
+        dset = self.get_dset
         reward = self._compute_reward(self.robots[self.learning_robot_id])
         self._remove_items()
+        infs = self.get_infs
         self._add_items()
         obs = self._get_observation()
+        self.prev_items = np.copy(self.items)
         # Check whether learning robot is done
         # done = self.robots[self.learning_robot_id].done
         self.total_steps += 1
@@ -75,7 +80,7 @@ class MiniWarehouse(gym.Env):
         done = (self.max_episode_length <= self.episode_length)
         # if self.render_bool:
         #     self.render(self.render_delay)
-        return obs, reward, done, {}
+        return obs, reward, done, {'dset': dset, 'infs': infs}
 
     @property
     def observation_space(self):
@@ -88,41 +93,28 @@ class MiniWarehouse(gym.Env):
         agents in the environment
         """
         return spaces.Discrete(len(self.ACTIONS))
+    
+    @property
+    def get_dset(self):
+        state = self._get_state()
+        robot = self.robots[self.learning_robot_id]
+        obs = robot.observe(state, 'vector')
+        # dset = obs[49:]
+        dset = obs#[25:]
+        return dset
 
-    # def render(self, delay=0.0):
-    #     """
-    #     Renders the environment
-    #     """
-    #     bitmap = self._get_state()
-    #     position = self.robots[self.learning_robot_id].get_position
-    #     bitmap[position[0], position[1], 1] += 1
-    #     im = bitmap[:, :, 0] - 2*bitmap[:, :, 1]
-    #     if self.img is None:
-    #         fig,ax = plt.subplots(1)
-    #         self.img = ax.imshow(im, vmin=-2, vmax=1)
-    #         for robot_id, robot in enumerate(self.robots):
-    #             domain = robot.get_domain
-    #             y = domain[0]
-    #             x = domain[1]
-    #             color = 'k'
-    #             linestyle='-'
-    #             linewidth=2
-    #             rect1 = patches.Rectangle((x+0.5, y+0.5), self.robot_domain_size[0]-2,
-    #                                      self.robot_domain_size[1]-2, linewidth=linewidth,
-    #                                      edgecolor=color, linestyle=linestyle,
-    #                                      facecolor='none')
-    #             rect2 = patches.Rectangle((x-0.48, y-0.48), self.robot_domain_size[0]-0.02,
-    #                                      self.robot_domain_size[1]-0.02, linewidth=3,
-    #                                      edgecolor=color, linestyle=linestyle,
-    #                                      facecolor='none')
-    #             self.img.axes.get_xaxis().set_visible(False)
-    #             self.img.axes.get_yaxis().set_visible(False)
-    #             ax.add_patch(rect1)
-    #             ax.add_patch(rect2)
-    #     else:
-    #         self.img.set_data(im)
-    #     plt.pause(delay)
-    #     plt.draw()
+    @property
+    def get_infs(self):
+        state_bitmap = np.zeros([self.n_rows, self.n_columns], dtype=np.int)
+        for item in self.prev_items:
+            if item.get_id not in [item.get_id for item in self.items] and  item.get_id not in self.removed_by_robot:
+                item_pos = item.get_position
+                state_bitmap[item_pos[0], item_pos[1]] = 1
+        infs = np.concatenate((state_bitmap[[0,-1], 1:-1].flatten(),
+                               state_bitmap[1:-1, [0,-1]].flatten())
+        )
+        return infs
+
 
     def render(self, mode='human'):
         """
@@ -206,13 +198,10 @@ class MiniWarehouse(gym.Env):
                         loc = [row, column]
                         loc_free = True
                         region_free = True
+                        just_removed = loc not in self.just_removed_list
                         if item_locs is not None:
-                            # region = int(column//self.distance_between_shelves)
-                            # columns_occupied = [item_loc[1] for item_loc in item_locs if item_loc[0] == row]
-                            # regions_occupied = [int(column//self.distance_between_shelves) for column in columns_occupied]
-                            # region_free = region not in regions_occupied
                             loc_free = loc not in item_locs
-                        if np.random.uniform() < self.prob_item_appears and loc_free:
+                        if np.random.uniform() < self.prob_item_appears and loc_free and just_removed:
                             self.items.append(Item(self.item_id, loc))
                             self.item_id += 1
                             item_locs = [item.get_position for item in self.items]
@@ -220,14 +209,10 @@ class MiniWarehouse(gym.Env):
                 for column in range(0, self.n_rows, self.distance_between_shelves):
                     loc = [row, column]
                     loc_free = True
-                    region_free = True
+                    just_removed = loc not in self.just_removed_list
                     if item_locs is not None:
-                        # region = int(row//self.distance_between_shelves)
-                        # rows_occupied = [item_loc[0] for item_loc in item_locs if item_loc[1] == column]
-                        # regions_occupied = [int(row//self.distance_between_shelves) for row in rows_occupied]
-                        # region_free = region not in regions_occupied
-                        loc_free = loc not in item_locs
-                    if np.random.uniform() < self.prob_item_appears and loc_free:
+                        loc_free = loc not in item_locs and loc 
+                    if np.random.uniform() < self.prob_item_appears and loc_free and just_removed:
                         self.items.append(Item(self.item_id, loc))
                         self.item_id += 1
                         item_locs = [item.get_position for item in self.items]
@@ -294,7 +279,7 @@ class MiniWarehouse(gym.Env):
                 #     self.items.remove(item)
                 #     break
                 reward = item_waiting_times[index]/max(item_waiting_times)
-                self.items.remove(item)
+                # self.items.remove(item)
                 # reward += 10
                 # reward += 1/item.get_waiting_time
         return reward
@@ -305,22 +290,28 @@ class MiniWarehouse(gym.Env):
         Removes items collected by robots. Robots collect items by steping on
         them
         """
+        self.removed_by_robot = []
+        self.just_removed_list = []
         for robot in self.robots:
             robot_pos = robot.get_position
-            for item in self.items:
-                # item_pos = item.get_position
-                # if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
-                #     self.items.remove(item)
-                if item.get_waiting_time >= self.max_waiting_time:
+            for item in np.copy(self.items):
+                item_pos = item.get_position
+                if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
                     self.items.remove(item)
-                # elif item_pos[0] == 0 and item.get_waiting_time >= self.max_waiting_time[0]:
-                #     self.items.remove(item)
-                # elif item_pos[0] == 4 and item.get_waiting_time >= self.max_waiting_time[1]:
-                #     self.items.remove(item)
-                # elif item_pos[1] == 0 and item.get_waiting_time >= self.max_waiting_time[2]:
-                #     self.items.remove(item)
-                # elif item_pos[1] == 4 and item.get_waiting_time >= self.max_waiting_time[3]:
-                #     self.items.remove(item)
+                    self.removed_by_robot.append(item.get_id)
+                    self.just_removed_list.append(item.get_position)
+        for item in np.copy(self.items):
+            if item.get_waiting_time >= self.max_waiting_time:
+                    self.items.remove(item)
+                    self.just_removed_list.append(item.get_position)
+            # elif item_pos[0] == 0 and item.get_waiting_time >= self.max_waiting_time[0]:
+            #     self.items.remove(item)
+            # elif item_pos[0] == 4 and item.get_waiting_time >= self.max_waiting_time[1]:
+            #     self.items.remove(item)
+            # elif item_pos[1] == 0 and item.get_waiting_time >= self.max_waiting_time[2]:
+            #     self.items.remove(item)
+            # elif item_pos[1] == 4 and item.get_waiting_time >= self.max_waiting_time[3]:
+            #     self.items.remove(item)
 
     def _increase_item_waiting_time(self):
         """

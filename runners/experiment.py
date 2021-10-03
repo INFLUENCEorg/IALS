@@ -206,6 +206,9 @@ class Experiment(object):
                     hidden_memory = None
                 action, value, log_prob = self.agent.choose_action(obs)
                 new_obs, reward, done, info = self.env.step(action)
+                if self.parameters['render']:
+                    self.env.render()
+                    time.sleep(.5)
                 self.agent.add_to_memory(obs, action, reward, done, value, log_prob, hidden_memory)
                 obs = new_obs
                 rollout_step += 1
@@ -253,9 +256,13 @@ class Experiment(object):
             while not done[0]:
                 n_steps += 1
                 action, _, _= agent.choose_action(obs)
+                if self.parameters['render']:
+                    self.global_env.render()
+                    time.sleep(.5)
                 obs, _, done, info = self.global_env.step(action)
                 dset.append(np.array([i['dset'] for i in info]))
                 infs.append(np.array([i['infs'] for i in info]))
+                # breakpoint()
             log(dset, infs, data_path)
         print('Done!')
 

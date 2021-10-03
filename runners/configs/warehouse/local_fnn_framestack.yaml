@@ -19,7 +19,7 @@ parameters:
         seq_len: 1
         num_workers: 8
         epsilon: 0.1
-        beta: 0.1
+        beta: 0.01
         render: False
         policy: 'FNNFSPolicy'
         load_policy: False
@@ -29,13 +29,14 @@ parameters:
 
     influence:
         # Common hyperparameters
-        seq_len: 100
+        seq_len: 16
+        recurrent: False
         episode_length: 100
         data_path: '../influence/data/warehouse/'
         lr: 1.0e-3
-        num_epochs: 500
-        batch_size: 32
-        hidden_memory_size: 64
+        num_epochs: 1000
+        batch_size: 3200
+        hidden_memory_size: 128
         input_size: 37
         output_size: 4
         n_sources: 4

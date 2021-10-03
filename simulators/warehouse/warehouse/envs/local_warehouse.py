@@ -80,16 +80,14 @@ class LocalWarehouse(GlobalWarehouse):
         """
         for robot in self.robots:
             robot_pos = robot.get_position
-            items = np.copy(self.items)
-            for item in items:
+            for item in np.copy(self.items):
                 item_pos = item.get_position
                 if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
                     self.items.remove(item)
         ext_robot_locs = self._sample_ext_robot_locs(probs)
         for ext_robot_loc in ext_robot_locs:
             if ext_robot_loc is not None:
-                items = np.copy(self.items)
-                for item in items:
+                for item in np.copy(self.items):
                     item_pos = item.get_position
                     if ext_robot_loc[0] == item_pos[0] and ext_robot_loc[1] == item_pos[1]:
                         self.items.remove(item)

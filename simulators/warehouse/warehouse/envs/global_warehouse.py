@@ -113,7 +113,7 @@ class GlobalWarehouse(gym.Env):
 
         if self.img is None:
             fig,ax = plt.subplots(1)
-            self.img = ax.imshow(im)
+            self.img = ax.imshow(im, vmin=-3, vmax=1)
             for robot_id, robot in enumerate(self.robots):
                 domain = robot.get_domain
                 y = domain[0]
@@ -133,6 +133,7 @@ class GlobalWarehouse(gym.Env):
                 ax.add_patch(rect)
                 self.img.axes.get_xaxis().set_visible(False)
                 self.img.axes.get_yaxis().set_visible(False)
+
         else:
             self.img.set_data(im)
         # plt.pause(delay)
@@ -337,9 +338,8 @@ class GlobalWarehouse(gym.Env):
             #    robot_domain[1] <= item_pos[1] <= robot_domain[3]:
             #     reward += -0.1 #*item.get_waiting_time
             if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
-                # reward = item_waiting_times[index]/max(item_waiting_times)
-                reward = 1
-                self.items.remove(item)
+                reward = item_waiting_times[index]/max(item_waiting_times)
+                # reward = 1
         return reward
 
     def _get_robot_items(self, robot):
@@ -358,7 +358,7 @@ class GlobalWarehouse(gym.Env):
         """
         for robot in self.robots:
             robot_pos = robot.get_position
-            for item in self.items:
+            for item in np.copy(self.items):
                 item_pos = item.get_position
                 if robot_pos[0] == item_pos[0] and robot_pos[1] == item_pos[1]:
                     self.items.remove(item)
