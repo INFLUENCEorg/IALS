@@ -83,7 +83,6 @@ class LocalMiniWarehouse(MiniWarehouse):
         
         for prob, item_loc in zip(self.probs, self.get_item_locs()):
             remove_item = np.random.choice([False, True], p=prob)
-            print(prob)
             if remove_item:
                 for item in np.copy(self.items):
                     if item.get_position[0] == item_loc[0] and item.get_position[1] == item_loc[1]:
@@ -97,7 +96,6 @@ class LocalMiniWarehouse(MiniWarehouse):
         bitmap_locs[[0,-1], 1:-1] = 1
         bitmap_locs[1:-1, [0,-1]] = 1
         item_locs = np.argwhere(bitmap_locs == 1)
-        print(item_locs)
         return item_locs
     
 
