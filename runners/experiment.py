@@ -127,7 +127,7 @@ class Experiment(object):
             )
 
         # global_env_name = self.parameters['env']+ ':mini-' + self.parameters['env'] + '-v0'
-        global_env_name = self.parameters['env'] + ':global-' + self.parameters['env'] + '-v0'
+        global_env_name = self.parameters['env'] + ':global-' + self.parameters['name'] + '-v0'
         # global_env_name = 'tmaze:tmaze-v0'
         self.global_env = SubprocVecEnv(
             [self.make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])],
@@ -150,12 +150,12 @@ class Experiment(object):
             else:
                 influence = InfluenceUniform(parameters['influence'])
 
-            local_env_name = self.parameters['env']+ ':local-' + self.parameters['env'] + '-v0'
+            local_env_name = self.parameters['env']+ ':local-' + self.parameters['name'] + '-v0'
             self.env = SubprocVecEnv(   
                 [self.make_env(local_env_name, i, seed, influence) for i in range(self.parameters['num_workers'])],
                 start_method='fork'
                 )
-            self.env = VecNormalize(self.env)
+            self.env = VecNormalize(self.env, norm_reward=True)
 
             if self.parameters['framestack']:
                 self.env = VecFrameStack(self.env, n_stack=self.parameters['n_stack'])
@@ -256,9 +256,9 @@ class Experiment(object):
             while not done[0]:
                 n_steps += 1
                 action, _, _= agent.choose_action(obs)
-                if self.parameters['render']:
-                    self.global_env.render()
-                    time.sleep(.5)
+                # if self.parameters['render']:
+                #     self.global_env.render()
+                #     time.sleep(.5)
                 obs, _, done, info = self.global_env.step(action)
                 dset.append(np.array([i['dset'] for i in info]))
                 infs.append(np.array([i['infs'] for i in info]))
@@ -284,9 +284,9 @@ class Experiment(object):
                 action, _, _ = agent.choose_action(obs)
                 obs, _, done, _ = self.global_env.step(action)
                 reward = self.global_env.get_original_reward()
-                if self.parameters['render']:
-                    self.global_env.render()
-                    time.sleep(.5)
+                # if self.parameters['render']:
+                #     self.global_env.render()
+                #     time.sleep(.5)
                 reward_sum += np.array(reward)
             episode_rewards.append(reward_sum)
         print('Done!')

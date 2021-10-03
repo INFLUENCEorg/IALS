@@ -177,7 +177,10 @@ class InfluenceNetwork(object):
                 targets_batch = targets[indices]
                 self.model.hidden_cell = torch.zeros(1, self._batch_size, self._hidden_memory_size)
                 logits, probs = self.model(seqs_batch)
-                targets_batch = torch.argmax(targets_batch.view(-1, self.n_sources, self.output_size), dim=2).long().flatten()
+                if targets_batch.shape[1] == self.n_sources*self.output_size:
+                    targets_batch = torch.argmax(targets_batch.view(-1, self.n_sources, self.output_size), dim=2).long().flatten()
+                else:
+                    targets_batch = targets_batch.long().flatten()
                 logits = logits.flatten(end_dim=1)
                 loss = self.loss_function(logits, targets_batch)
                 self.optimizer.zero_grad()
@@ -195,7 +198,10 @@ class InfluenceNetwork(object):
         loss = 0
         self.model.hidden_cell = torch.zeros(1, len(inputs), self._hidden_memory_size)
         logits, probs = self.model(inputs)
-        targets = torch.argmax(targets.view(-1, self.n_sources, self.output_size), dim=2).long().flatten()
+        if targets.shape[1] == self.n_sources*self.output_size:
+            targets = torch.argmax(targets.view(-1, self.n_sources, self.output_size), dim=2).long().flatten()
+        else:
+            targets = targets.long().flatten()
         logits = logits.flatten(end_dim=1)
         loss = self.loss_function(logits, targets)
         # from collections import Counter

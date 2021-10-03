@@ -110,8 +110,9 @@ class MiniWarehouse(gym.Env):
             if item.get_id not in [item.get_id for item in self.items] and  item.get_id not in self.removed_by_robot:
                 item_pos = item.get_position
                 state_bitmap[item_pos[0], item_pos[1]] = 1
-        infs = np.concatenate((state_bitmap[[0,-1], 1:-1].flatten(),
-                               state_bitmap[1:-1, [0,-1]].flatten())
+        infs = np.concatenate((state_bitmap[0, 1:-1].flatten(),
+                               state_bitmap[1:-1, [0,-1]].flatten(),
+                               state_bitmap[-1, 1:-1].flatten())
         )
         return infs
 
@@ -131,7 +132,7 @@ class MiniWarehouse(gym.Env):
 
         if self.img is None:
             fig,ax = plt.subplots(1)
-            self.img = ax.imshow(im)
+            self.img = ax.imshow(im, vmin=-3, vmax=1)
             for robot_id, robot in enumerate(self.robots):
                 domain = robot.get_domain
                 y = domain[0]

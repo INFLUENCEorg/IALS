@@ -8,6 +8,10 @@ register(
     entry_point='warehouse.envs:LocalWarehouse',
 )
 register(
-    id='mini-warehouse-v0',
+    id='global-mini-warehouse-v0',
     entry_point='warehouse.envs:MiniWarehouse',
+)
+register(
+    id='local-mini-warehouse-v0',
+    entry_point='warehouse.envs:LocalMiniWarehouse',
 )
