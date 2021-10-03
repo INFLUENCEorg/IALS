@@ -111,10 +111,12 @@ class InfluenceNetwork(object):
 
     
     def predict(self, obs):
-        self.stack(obs)
-        inputs = torch.FloatTensor(self.stacked_obs)
+        if self.recurrent:
+            inputs = torch.FloatTensor(obs).view(1,1,-1)
+        else:
+            self.stack(obs)
+            inputs = torch.FloatTensor(self.stacked_obs)
         _, probs = self.model(inputs)
-        # probs = [prob[0] for prob in probs]
         return probs[0]
     
     def reset(self):
