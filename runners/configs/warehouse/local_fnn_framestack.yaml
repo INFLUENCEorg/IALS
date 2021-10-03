@@ -44,4 +44,4 @@ parameters:
         aug_obs: False
         load_model: False
         curriculum: False
-        dataset_size: 1.0e+4
+        dataset_size: 5.0e+4
