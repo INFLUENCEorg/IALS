@@ -20,7 +20,7 @@ import torch.optim.lr_scheduler as sch
 class Network(nn.Module):
     """
     """
-    def __init__(self, input_size, hidden_memory_size, n_sources, output_size, recurrent, seq_len):
+    def __init__(self, input_size, hidden_memory_size, n_sources, output_size, recurrent, seq_len, truncated):
         super().__init__()
         self.relu = nn.ReLU()
         self.recurrent = recurrent
@@ -34,13 +34,15 @@ class Network(nn.Module):
         # self.linear2 = nn.Linear(hidden_memory_size, hidden_memory_size)
         self.linear3 = nn.Linear(hidden_memory_size, output_size*n_sources)
         self.n_sources = n_sources
+        self.truncated = truncated
         self.reset()
 
     def forward(self, input_seq):
         input_seq = (input_seq - 0.5)/0.5
         if self.recurrent:
             out, self.hidden_cell = self.gru(input_seq, self.hidden_cell)
-            out = out[:, -1, :]
+            if self.truncated:
+                out = out[:, -1, :]
         else:
             out = self.relu(self.linear1(input_seq.flatten(start_dim=1)))
         # out = self.relu(self.linear2(out))
@@ -73,8 +75,10 @@ class InfluenceNetwork(object):
         self.inputs_file = data_path + 'inputs.csv'
         self.targets_file = data_path + 'targets.csv'
         self.recurrent = parameters['recurrent']
+        self.truncated = self._seq_len < self._episode_length
         self.model = Network(self.input_size, self._hidden_memory_size, 
-                             self.n_sources, self.output_size, self.recurrent, self._seq_len)
+                             self.n_sources, self.output_size, self.recurrent,
+                             self._seq_len, self.truncated)
         self.loss_function = nn.CrossEntropyLoss()
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self._lr)
         self.scheduler = sch.StepLR(self.optimizer, step_size=100, gamma=0.1)
@@ -144,7 +148,10 @@ class InfluenceNetwork(object):
                 start = episode*self._episode_length+seq
                 end = episode*self._episode_length+seq+self._seq_len
                 input_seq.append(inputs[start:end])
-                target_seq.append(targets[end-1])
+                if self.truncated:
+                    target_seq.append(targets[end-1])
+                else:
+                    target_seq.append(targets[start:end])
         return input_seq, target_seq
 
     def _split_train_test(self, inputs, targets):
