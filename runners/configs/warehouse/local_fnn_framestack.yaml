@@ -6,7 +6,7 @@ parameters:
         obs_size: 37
         rollout_steps: 8
         num_actions: 4
-        name: 'local_warehouse_iam'
+        name: 'warehouse'
         influence_model: 'nn'
         fully_connected: true
         num_fc_layers: 1
@@ -17,10 +17,10 @@ parameters:
         recurrent: true
         num_rec_units: 512
         seq_len: 1
-        num_workers: 8
+        num_workers: 1
         epsilon: 0.1
         beta: 0.01
-        render: False
+        render: True
         policy: 'FNNFSPolicy'
         load_policy: False
         framestack: True
@@ -29,13 +29,13 @@ parameters:
 
     influence:
         # Common hyperparameters
-        seq_len: 100
-        recurrent: True
+        seq_len: 16
+        recurrent: False
         episode_length: 100
         data_path: '../influence/data/warehouse/'
         lr: 1.0e-4
-        num_epochs: 500
-        batch_size: 32
+        num_epochs: 250
+        batch_size: 3200
         hidden_memory_size: 64
         input_size: 37
         output_size: 4
