@@ -74,7 +74,6 @@ class LocalMiniWarehouse(MiniWarehouse):
                     if item.get_position[0] == item_loc[0] and item.get_position[1] == item_loc[1]:
                         self.items.remove(item)
                         self.just_removed_list.append(item.get_position)
-                        print('WAITING TIME:', item.get_waiting_time)
                         
 
 
