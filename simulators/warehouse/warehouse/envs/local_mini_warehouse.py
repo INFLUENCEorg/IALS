@@ -14,23 +14,9 @@ class LocalMiniWarehouse(MiniWarehouse):
                3: 'RIGHT'}
 
     def __init__(self, influence, seed):
-        self.parameters = read_parameters('local_warehouse.yaml')
-        # parameters = parse_arguments()
-        self.n_columns = self.parameters['n_columns']
-        self.n_rows = self.parameters['n_rows']
-        self.n_robots_row = self.parameters['n_robots_row']
-        self.n_robots_column = self.parameters['n_robots_column']
-        self.distance_between_shelves = self.parameters['distance_between_shelves']
-        self.robot_domain_size = self.parameters['robot_domain_size']
-        self.prob_item_appears = self.parameters['prob_item_appears']
-        # The learning robot
-        self.learning_robot_id = self.parameters['learning_robot_id']
-        self.max_episode_length = self.parameters['n_steps_episode']
-        self.obs_type = self.parameters['obs_type']
-        self.items = []
-        self.img = None
         self.influence = influence
         self.total_steps = 0
+        super(LocalMiniWarehouse, self).__init__(seed)
 
     def reset(self):
         """
@@ -88,6 +74,7 @@ class LocalMiniWarehouse(MiniWarehouse):
                     if item.get_position[0] == item_loc[0] and item.get_position[1] == item_loc[1]:
                         self.items.remove(item)
                         self.just_removed_list.append(item.get_position)
+                        print('WAITING TIME:', item.get_waiting_time)
                         
 
 
