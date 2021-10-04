@@ -30,7 +30,7 @@ class LocalWarehouse(GlobalWarehouse):
         self.items = []
         self.img = None
         self.influence = influence
-        self.total_steps = 0
+        self.seed(seed)
 
     def reset(self):
         """
@@ -44,9 +44,6 @@ class LocalWarehouse(GlobalWarehouse):
         obs = self._get_observation()
         self.episode_length = 0
         self.influence.reset()
-        # self.probs = self.influence.predict(self.get_dset)
-        if self.influence.aug_obs:
-            obs = np.append(obs, self.influence.get_hidden_state())
         return obs
 
     def step(self, action):
@@ -62,7 +59,6 @@ class LocalWarehouse(GlobalWarehouse):
         self._add_items()
         obs = self._get_observation()
         self.episode_length += 1
-        self.total_steps += 1
         done = (self.max_episode_length <= self.episode_length)
         # if self.parameters['render']:
         #     self.render(self.parameters['render_delay'])
