@@ -23,6 +23,7 @@ parameters:
         render: False
         policy: 'FNNPolicy'
         load_policy: False
+        framestack: False
 
     influence:
         # Common hyperparameters
