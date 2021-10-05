@@ -17,19 +17,20 @@ parameters:
         recurrent: true
         num_rec_units: 512
         seq_len: 1
-        num_workers: 1
+        num_workers: 8
         epsilon: 0.1
         beta: 0.01
-        render: False
+        render: True
         policy: 'FNNFSPolicy'
         load_policy: False
         framestack: True
         n_stack: 8
         dset: [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]
+        total_steps: 4.0e+6
 
     influence:
         # Common hyperparameters
-        seq_len: 16
+        seq_len: 8
         recurrent: False
         episode_length: 100
         data_path: '../influence/data/warehouse/'
@@ -44,4 +45,4 @@ parameters:
         aug_obs: False
         load_model: False
         curriculum: False
-        dataset_size: 5.0e+4
+        dataset_size: 1.0e+4
