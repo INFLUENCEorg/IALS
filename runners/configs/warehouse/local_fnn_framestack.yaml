@@ -20,7 +20,7 @@ parameters:
         num_workers: 8
         epsilon: 0.1
         beta: 0.01
-        render: True
+        render: False
         policy: 'FNNFSPolicy'
         load_policy: False
         framestack: True
