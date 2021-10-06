@@ -177,7 +177,7 @@ class InfluenceNetwork(object):
                 targets_batch = targets[indices]
                 self.model.hidden_cell = torch.zeros(1, self._batch_size, self._hidden_memory_size)
                 logits, probs = self.model(seqs_batch)
-                if targets_batch.shape[1] == self.n_sources*self.output_size:
+                if targets_batch.shape[-1] == self.n_sources*self.output_size:
                     targets_batch = torch.argmax(targets_batch.view(-1, self.n_sources, self.output_size), dim=2).long().flatten()
                 else:
                     targets_batch = targets_batch.long().flatten()
@@ -197,20 +197,13 @@ class InfluenceNetwork(object):
         targets = torch.FloatTensor(targets)
         loss = 0
         self.model.hidden_cell = torch.zeros(1, len(inputs), self._hidden_memory_size)
-        logits, probs = self.model(inputs)
-        if targets.shape[1] == self.n_sources*self.output_size:
+        logits, _ = self.model(inputs)
+        if targets.shape[-1] == self.n_sources*self.output_size:
             targets = torch.argmax(targets.view(-1, self.n_sources, self.output_size), dim=2).long().flatten()
         else:
             targets = targets.long().flatten()
         logits = logits.flatten(end_dim=1)
         loss = self.loss_function(logits, targets)
-        # from collections import Counter
-        # targets_counts = Counter(torch.argmax(targets[:, start:end], dim=1).detach().numpy())
-        # print(targets_counts)
-        # probs_counts = np.sum(probs[s], axis=0)
-        # print(probs_counts)
-        # for i in range(len(inputs)):
-            # self._plot_prediction(probs[s][i], targets[i, start:end])
         return loss.item()
 
     def _plot_prediction(self, prediction, target):

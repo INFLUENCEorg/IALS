@@ -29,13 +29,13 @@ parameters:
 
     influence:
         # Common hyperparameters
-        seq_len: 8
-        recurrent: False
+        seq_len: 100
+        recurrent: True
         episode_length: 100
         data_path: '../influence/data/warehouse/'
         lr: 1.0e-4
         num_epochs: 250
-        batch_size: 3200
+        batch_size: 32
         hidden_memory_size: 64
         input_size: 37
         output_size: 4
