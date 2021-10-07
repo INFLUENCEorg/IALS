@@ -108,27 +108,22 @@ class LocalTraffic(TrafficLightGridBitmapEnv):
             observation.append(state[edge][:-1])
         observation.append(state[-1]) #  append traffic light info
         observation = np.concatenate(observation)
-        # self.dset = observation
+        self.dset = observation
         if self.influence.aug_obs:
             observation = np.append(observation, self.influence.get_hidden_state())
         reward = 0
         done = False
-        if np.random.choice([True, False]):
-            self.probs = [0.1, 0.1, 0.1, 0.1]
-        else:
-            self.probs = [0.2, 0.2, 0.2, 0.2]
-
         return observation
 
     # override
     def step(self, rl_actions):
-        # probs = self.influence.predict(self.dset)
+        probs = self.influence.predict(self.dset)
         node = self.tl_controlled[0]
         node_edges = dict(self.network.node_mapping)[node]
         self.k.vehicle.kernel_api.simulation.clearPending()
         for i, edge in enumerate(node_edges):
             sample = np.random.uniform(0,1)
-            if sample < self.probs[i]:
+            if sample < probs[i]:
                 speed = 9.5
                 if len(self.k.vehicle.get_ids_by_edge(edge)) > 8:
                     speed = 3
@@ -153,12 +148,12 @@ class LocalTraffic(TrafficLightGridBitmapEnv):
         observation.append(state[-1]) #  append traffic light info again
         observation = np.concatenate(observation)
         infs = np.array(infs)
-        dset = observation
+        self.dset = observation
         if self.influence.aug_obs:
             observation = np.append(observation, self.influence.get_hidden_state())
         if done:
             self.k.vehicle.kernel_api.simulation.clearPending()
-        return observation, reward, done, {'dset': dset, 'infs': infs}
+        return observation, reward, done, {'dset': self.dset, 'infs': infs}
     
     # override
     @property

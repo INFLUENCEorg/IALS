@@ -83,7 +83,7 @@ def get_inflow_params(col_num, row_num, additional_net_params):
         inflow.add(
             veh_type='idm',
             edge=outer_edges[i],
-            probability=0.15,
+            probability=0.10,
             depart_lane='free',
             depart_speed=10)
 
