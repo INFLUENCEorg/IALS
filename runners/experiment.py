@@ -191,10 +191,10 @@ class Experiment(object):
         episode = 1
         start = time.time()
         done = [False]*self.parameters['num_workers']
-        while step < self.parameters['total_steps']:
+        while step <= self.parameters['total_steps']:
             
             rollout_step = 0
-            while rollout_step <= self.parameters['rollout_steps']:
+            while rollout_step < self.parameters['rollout_steps']:
                 if step % self.parameters['eval_freq'] == 0:
                    mean_return = self.evaluate(step)
                    self._run.log_scalar('mean episodic return', mean_return, step)
