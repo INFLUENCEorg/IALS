@@ -3,7 +3,7 @@ parameters:
         # Common hyperparameters
         env: 'traffic'
         simulator: 'local'
-        name: 'uniform_traffic'
+        name: 'traffic'
         influence_model: 'uniform'
         num_workers: 8
         policy: 'FNNPolicy'
