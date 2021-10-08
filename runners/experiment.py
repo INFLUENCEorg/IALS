@@ -38,8 +38,8 @@ def log(dset, infs, data_path):
     Log influence dataset
     """
     generate_path(data_path)
-    inputs_file = data_path + str('inputs.csv')
-    targets_file = data_path + str('targets.csv')
+    inputs_file = data_path + 'inputs.csv'
+    targets_file = data_path + 'targets.csv'
     dset = np.reshape(np.swapaxes(dset, 0, 1), (-1, np.shape(dset)[2]))
     infs = np.reshape(np.swapaxes(infs, 0, 1), (-1, np.shape(infs)[2]))
     with open(inputs_file,'a') as file:
@@ -133,29 +133,29 @@ class Experiment(object):
             [self.make_env(global_env_name, i, seed) for i in range(self.parameters['num_workers'])],
             'spawn'
             ) 
-        self.global_env = VecNormalize(self.global_env, norm_reward=True, norm_obs=True)
+        self.global_env = VecNormalize(self.global_env, norm_reward=False, norm_obs=False)
 
         if self.parameters['framestack']:
             self.global_env = VecFrameStack(self.global_env, n_stack=self.parameters['n_stack'])
         
         if self.parameters['simulator'] == 'local':
-            data_path = parameters['influence']['data_path'] + str(_run._id) + '/'
+            self.data_path = parameters['influence']['data_path'] + str(_run._id) + '/'
 
             if self.parameters['influence_model'] == 'nn':
-                influence = InfluenceNetwork(parameters['influence'], data_path, _run._id)
-                self.collect_data(parameters['influence']['dataset_size'], data_path)
-                loss = influence.learn()
+                self.influence = InfluenceNetwork(parameters['influence'], self.data_path, _run._id)
+                self.collect_data(parameters['influence']['dataset_size'], self.data_path)
+                loss = self.influence.learn()
                 self._run.log_scalar('influence loss', loss, 0)
             
             else:
-                influence = InfluenceUniform(parameters['influence'])
+                self.influence = InfluenceUniform(parameters['influence'])
 
             local_env_name = self.parameters['env']+ ':local-' + self.parameters['name'] + '-v0'
             self.env = SubprocVecEnv(   
-                [self.make_env(local_env_name, i, seed, influence) for i in range(self.parameters['num_workers'])],
+                [self.make_env(local_env_name, i, seed, self.influence) for i in range(self.parameters['num_workers'])],
                 start_method='fork'
                 )
-            self.env = VecNormalize(self.env, norm_reward=True, norm_obs=True)
+            self.env = VecNormalize(self.env, norm_reward=False, norm_obs=False)
 
             if self.parameters['framestack']:
                 self.env = VecFrameStack(self.env, n_stack=self.parameters['n_stack'])
@@ -196,8 +196,7 @@ class Experiment(object):
             rollout_step = 0
             while rollout_step < self.parameters['rollout_steps']:
                 if step % self.parameters['eval_freq'] == 0:
-                   mean_return = self.evaluate(step)
-                   self._run.log_scalar('mean episodic return', mean_return, step)
+                   self.evaluate(step)
                    self.agent.save_policy()
                 if self.agent.policy.recurrent:
                     self.agent.reset_hidden_memory(done)
@@ -279,18 +278,29 @@ class Experiment(object):
             obs = self.global_env.reset()
             # NOTE: Episodes in all envs must terminate at the same time
             agent.reset_hidden_memory([True]*self.parameters['num_workers'])
+            dset = []
+            infs = []
             while not done[0]:
                 n_steps += 1
                 action, _, _ = agent.choose_action(obs)
-                obs, _, done, _ = self.global_env.step(action)
+                obs, _, done, info = self.global_env.step(action)
                 reward = self.global_env.get_original_reward()
                 # if self.parameters['render']:
                 #     self.global_env.render()
                 #     time.sleep(.5)
                 reward_sum += np.array(reward)
+                dset.append(np.array([i['dset'] for i in info]))
+                infs.append(np.array([i['infs'] for i in info]))
+                # breakpoint()
+            if self.parameters['simulator'] == 'local':
+                log(dset, infs, self.data_path)
             episode_rewards.append(reward_sum)
+        if self.parameters['simulator'] == 'local':
+            loss = self.influence.test(self.data_path + 'inputs.csv', self.data_path + 'targets.csv')
+            self._run.log_scalar('influence loss', loss, step)
+        self._run.log_scalar('mean episodic return', np.mean(episode_rewards), step)
         print('Done!')
-        return np.mean(episode_rewards)
+        
         
 
     def print_results(self, episode_return, episode_step, global_step, episode):

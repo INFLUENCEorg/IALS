@@ -99,9 +99,9 @@ class InfluenceNetwork(object):
         os.remove(self.targets_file)
         return loss
 
-    def test(self):
-        inputs = self._read_data(self.inputs_file)
-        targets = self._read_data(self.targets_file)
+    def test(self, inputs_file, targets_file):
+        inputs = self._read_data(inputs_file)
+        targets = self._read_data(targets_file)
         input_seqs, target_seqs = self._form_sequences(inputs, targets)
         loss = self._test(input_seqs, target_seqs)
         print(f'Test loss: {loss:10.8f}')
