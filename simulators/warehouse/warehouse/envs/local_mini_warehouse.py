@@ -74,12 +74,12 @@ class LocalMiniWarehouse(MiniWarehouse):
                     if item.get_position[0] == item_loc[0] and item.get_position[1] == item_loc[1]:
                         self.items.remove(item)
                         self.just_removed_list.append(item.get_position)
-                        from pathlib import Path
-                        p = Path('../plots/data_NM.csv')
-                        with p.open('ab') as f:
-                            # print(item.get_waiting_time)
-                            # np.save(f, item.get_waiting_time)
-                            np.savetxt(f, [item.get_waiting_time], delimiter=",")
+                        # SAVE ITEM WAITING TIME
+                        # from pathlib import Path
+                        # p = Path('../plots/data_NM.csv')
+                        # with p.open('ab') as f:
+                        #     # np.save(f, item.get_waiting_time)
+                        #     np.savetxt(f, [item.get_waiting_time], delimiter=",")
 
                         
 
