@@ -3,11 +3,11 @@ parameters:
         # Common hyperparameters
         simulator: 'global'
         env: 'warehouse'
-        obs_size: 8
+        obs_size: 37
         rollout_steps: 8
         num_actions: 4
-        name: 'global_warehouse_recurrent'
-        influence_model: None
+        name: 'mini-warehouse'
+        influence_model: 'nn'
         fully_connected: true
         num_fc_layers: 1
         num_fc_units: [512]
@@ -21,7 +21,7 @@ parameters:
         epsilon: 0.1
         beta: 0.01
         render: False
-        policy: 'GRUPolicy'
+        policy: 'IAMPolicy'
         load_policy: False
-        total_steps: 1.0e+5
-        eval_freq: 1.0e+4
+        framestack: False
+        dset: [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]

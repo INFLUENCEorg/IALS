@@ -105,15 +105,16 @@ class GlobalWarehouse(gym.Env):
         bitmap = self._get_state()
         position = self.robots[self.learning_robot_id].get_position
         bitmap[position[0], position[1], 1] += 1
-        for robot_id, robot in enumerate(self.robots):
-            if robot.is_slow:
-                position = robot.get_position
-                bitmap[position[0], position[1], 1] += 2
+        # bitmap[:, :, 1] = bitmap[:, :, 1] -  0.1
+        # for robot_id, robot in enumerate(self.robots):
+        #     if robot.is_slow:
+        #         position = robot.get_position
+        #         bitmap[position[0], position[1], 1] += 2
         im = bitmap[:, :, 0] - 2*bitmap[:, :, 1]
 
         if self.img is None:
             fig,ax = plt.subplots(1)
-            self.img = ax.imshow(im, vmin=-3, vmax=1)
+            self.img = ax.imshow(im, vmin=-4, vmax=1)
             for robot_id, robot in enumerate(self.robots):
                 domain = robot.get_domain
                 y = domain[0]

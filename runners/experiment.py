@@ -126,7 +126,6 @@ class Experiment(object):
             load=self.parameters['load_policy']
             )
 
-        # global_env_name = self.parameters['env']+ ':mini-' + self.parameters['env'] + '-v0'
         global_env_name = self.parameters['env'] + ':global-' + self.parameters['name'] + '-v0'
         # global_env_name = 'tmaze:tmaze-v0'
         self.global_env = SubprocVecEnv(
@@ -265,7 +264,7 @@ class Experiment(object):
             log(dset, infs, data_path)
         print('Done!')
 
-    def evaluate(self, step):
+    def evaluate(self, step, collect_data=False):
         """Return mean sum of episodic rewards) for given model"""
         episode_rewards = []
         n_steps = 0
@@ -285,12 +284,13 @@ class Experiment(object):
                 action, _, _ = agent.choose_action(obs)
                 obs, _, done, info = self.global_env.step(action)
                 reward = self.global_env.get_original_reward()
-                # if self.parameters['render']:
-                #     self.global_env.render()
-                #     time.sleep(.5)
+                if self.parameters['render']:
+                    self.global_env.render()
+                    time.sleep(.5)
                 reward_sum += np.array(reward)
-                dset.append(np.array([i['dset'] for i in info]))
-                infs.append(np.array([i['infs'] for i in info]))
+                if collect_data:
+                    dset.append(np.array([i['dset'] for i in info]))
+                    infs.append(np.array([i['infs'] for i in info]))
                 # breakpoint()
             if self.parameters['simulator'] == 'local':
                 log(dset, infs, self.data_path)
