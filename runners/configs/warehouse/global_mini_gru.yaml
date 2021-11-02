@@ -1,0 +1,27 @@
+parameters:
+    main:
+        # Common hyperparameters
+        simulator: 'global'
+        env: 'warehouse'
+        obs_size: 37
+        rollout_steps: 8
+        num_actions: 4
+        name: 'mini-warehouse'
+        influence_model: 'nn'
+        fully_connected: true
+        num_fc_layers: 1
+        num_fc_units: [512]
+        # Convolutional module
+        convolutional: false
+        # Recurrent module
+        recurrent: true
+        num_rec_units: 512
+        seq_len: 8
+        num_workers: 8
+        epsilon: 0.1
+        beta: 0.01
+        render: False
+        policy: 'GRUPolicy'
+        load_policy: False
+        framestack: False
+        dset: [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]
