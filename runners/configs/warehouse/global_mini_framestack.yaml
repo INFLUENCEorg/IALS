@@ -21,7 +21,7 @@ parameters:
         epsilon: 0.1
         beta: 0.01
         render: False
-        policy: 'IAMPolicy'
+        policy: 'FNNFSPolicy'
         load_policy: False
         framestack: True
         n_stack: 10
