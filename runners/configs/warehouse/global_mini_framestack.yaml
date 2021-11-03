@@ -23,5 +23,6 @@ parameters:
         render: False
         policy: 'IAMPolicy'
         load_policy: False
-        framestack: False
+        framestack: True
+        n_stack: 10
         dset: [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]
