@@ -25,7 +25,7 @@ class MiniWarehouse(gym.Env):
         self.n_rows = 7
         self.n_robots_row = 1
         self.n_robots_column = 1
-        self.distance_between_shelves = 5
+        self.distance_between_shelves = 6
         self.robot_domain_size = [7, 7]
         self.prob_item_appears = 0.03
         # The learning robot
