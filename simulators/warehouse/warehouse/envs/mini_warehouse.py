@@ -198,11 +198,10 @@ class MiniWarehouse(gym.Env):
                     if column % (self.distance_between_shelves) != 0:
                         loc = [row, column]
                         loc_free = True
-                        region_free = True
                         just_removed = loc not in self.just_removed_list
                         if item_locs is not None:
                             loc_free = loc not in item_locs
-                        if np.random.uniform() < self.prob_item_appears and loc_free and just_removed:
+                        if np.random.uniform() < self.prob_item_appears and loc_free and just_removed and len(self.items) < 5:
                             self.items.append(Item(self.item_id, loc))
                             self.item_id += 1
                             item_locs = [item.get_position for item in self.items]
@@ -213,7 +212,7 @@ class MiniWarehouse(gym.Env):
                     just_removed = loc not in self.just_removed_list
                     if item_locs is not None:
                         loc_free = loc not in item_locs and loc 
-                    if np.random.uniform() < self.prob_item_appears and loc_free and just_removed:
+                    if np.random.uniform() < self.prob_item_appears and loc_free and just_removed and len(self.items) < 5:
                         self.items.append(Item(self.item_id, loc))
                         self.item_id += 1
                         item_locs = [item.get_position for item in self.items]
@@ -301,10 +300,10 @@ class MiniWarehouse(gym.Env):
                     self.items.remove(item)
                     self.removed_by_robot.append(item.get_id)
                     self.just_removed_list.append(item.get_position)
-        for item in np.copy(self.items):
-            if item.get_waiting_time >= self.max_waiting_time:
-                    self.items.remove(item)
-                    self.just_removed_list.append(item.get_position)
+        # for item in np.copy(self.items):
+        #     if item.get_waiting_time >= self.max_waiting_time:
+        #             self.items.remove(item)
+        #             self.just_removed_list.append(item.get_position)
             # elif item_pos[0] == 0 and item.get_waiting_time >= self.max_waiting_time[0]:
             #     self.items.remove(item)
             # elif item_pos[0] == 4 and item.get_waiting_time >= self.max_waiting_time[1]:
