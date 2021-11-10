@@ -98,7 +98,7 @@ class Experiment(object):
             policy = IAMPolicy(self.parameters['obs_size'], 
                 self.parameters['num_actions'], 
                 self.parameters['num_workers'],
-                dset=None
+                dset=self.parameters['dset']
                 ) 
         elif self.parameters['policy'] == 'FNNFSPolicy':
             policy = FNNFSPolicy(self.parameters['obs_size'], 
