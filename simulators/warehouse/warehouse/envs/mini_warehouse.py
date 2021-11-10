@@ -201,7 +201,7 @@ class MiniWarehouse(gym.Env):
                         just_removed = loc not in self.just_removed_list
                         if item_locs is not None:
                             loc_free = loc not in item_locs
-                        if np.random.uniform() < self.prob_item_appears and loc_free and just_removed and len(self.items) < 5:
+                        if np.random.uniform() < self.prob_item_appears and loc_free and just_removed and len(self.items) < 3:
                             self.items.append(Item(self.item_id, loc))
                             self.item_id += 1
                             item_locs = [item.get_position for item in self.items]
@@ -212,7 +212,7 @@ class MiniWarehouse(gym.Env):
                     just_removed = loc not in self.just_removed_list
                     if item_locs is not None:
                         loc_free = loc not in item_locs and loc 
-                    if np.random.uniform() < self.prob_item_appears and loc_free and just_removed and len(self.items) < 5:
+                    if np.random.uniform() < self.prob_item_appears and loc_free and just_removed and len(self.items) < 3:
                         self.items.append(Item(self.item_id, loc))
                         self.item_id += 1
                         item_locs = [item.get_position for item in self.items]
@@ -279,7 +279,9 @@ class MiniWarehouse(gym.Env):
                 #     self.items.remove(item)
                 #     break
                 if item_waiting_times[index] == max(item_waiting_times):
-                    reward = 1
+                    reward = 1.0
+                else:
+                    reward = -1.0/3
                 # reward = item_waiting_times[index]/max(item_waiting_times)
                 # self.items.remove(item)
                 # reward += 10
