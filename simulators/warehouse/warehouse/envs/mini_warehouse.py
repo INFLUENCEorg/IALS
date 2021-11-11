@@ -18,15 +18,15 @@ class MiniWarehouse(gym.Env):
                3: 'RIGHT'}
             #    4: 'NOOP'}
 
-    OBS_SIZE = 69
+    OBS_SIZE = 37
 
     def __init__(self, seed):
-        self.n_columns = 7
-        self.n_rows = 7
+        self.n_columns = 5
+        self.n_rows = 5
         self.n_robots_row = 1
         self.n_robots_column = 1
-        self.distance_between_shelves = 6
-        self.robot_domain_size = [7, 7]
+        self.distance_between_shelves = 4
+        self.robot_domain_size = [5, 5]
         self.prob_item_appears = 0.03
         # The learning robot
         self.learning_robot_id = 0
