@@ -91,24 +91,32 @@ class Experiment(object):
         
         if self.parameters['policy'] == 'FNNPolicy':
             policy = FNNPolicy(self.parameters['obs_size'], 
-                self.parameters['num_actions'], 
+                self.parameters['num_actions'],
+                self.parameters['hidden_size'],
+                self.parameters['hidden_size_2'],
                 self.parameters['num_workers']
                 )
         elif self.parameters['policy'] == 'IAMPolicy':
             policy = IAMPolicy(self.parameters['obs_size'], 
                 self.parameters['num_actions'], 
+                self.parameters['hidden_size'],
+                self.parameters['hidden_size_2'],
                 self.parameters['num_workers'],
                 dset=self.parameters['dset']
                 ) 
         elif self.parameters['policy'] == 'FNNFSPolicy':
             policy = FNNFSPolicy(self.parameters['obs_size'], 
-                self.parameters['num_actions'], 
+                self.parameters['num_actions'],
+                self.parameters['hidden_size'],
+                self.parameters['hidden_size_2'], 
                 self.parameters['num_workers'],
                 dset=self.parameters['dset'],
                 n_stack=self.parameters['n_stack']
                 )                       
         elif self.parameters['policy'] == 'GRUPolicy':
             policy = GRUPolicy(self.parameters['obs_size'], 
+                self.parameters['hidden_size'],
+                self.parameters['hidden_size_2'],
                 self.parameters['num_actions'], 
                 self.parameters['num_workers']
                 )
@@ -284,9 +292,9 @@ class Experiment(object):
                 action, _, _ = agent.choose_action(obs)
                 obs, _, done, info = self.global_env.step(action)
                 reward = self.global_env.get_original_reward()
-                if self.parameters['render']:
-                    self.global_env.render()
-                    time.sleep(.5)
+                # if self.parameters['render']:
+                #     self.global_env.render()
+                #     time.sleep(.5)
                 reward_sum += np.array(reward)
                 if collect_data:
                     dset.append(np.array([i['dset'] for i in info]))
