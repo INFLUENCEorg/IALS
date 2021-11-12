@@ -115,9 +115,9 @@ class Experiment(object):
                 )                       
         elif self.parameters['policy'] == 'GRUPolicy':
             policy = GRUPolicy(self.parameters['obs_size'], 
+                self.parameters['num_actions'],
                 self.parameters['hidden_size'],
                 self.parameters['hidden_size_2'],
-                self.parameters['num_actions'], 
                 self.parameters['num_workers']
                 )
 
