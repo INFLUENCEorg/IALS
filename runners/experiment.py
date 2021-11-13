@@ -102,7 +102,8 @@ class Experiment(object):
                 self.parameters['hidden_size'],
                 self.parameters['hidden_size_2'],
                 self.parameters['num_workers'],
-                dset=self.parameters['dset']
+                dset=self.parameters['dset'],
+                dset_size=self.parameters['dset_size']
                 ) 
         elif self.parameters['policy'] == 'IAMLSTMPolicy':
             policy = IAMLSTMPolicy(self.parameters['obs_size'], 
@@ -110,7 +111,8 @@ class Experiment(object):
                 self.parameters['hidden_size'],
                 self.parameters['hidden_size_2'],
                 self.parameters['num_workers'],
-                dset=self.parameters['dset']
+                dset=self.parameters['dset'],
+                dset_size=self.parameters['dset_size']
                 ) 
         elif self.parameters['policy'] == 'FNNFSPolicy':
             policy = FNNFSPolicy(self.parameters['obs_size'], 
