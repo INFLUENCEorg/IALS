@@ -5,7 +5,7 @@ from influence.influence_network import InfluenceNetwork
 from influence.influence_uniform import InfluenceUniform
 # from simulators.vec_env import VecEnv
 from stable_baselines3.common.vec_env import SubprocVecEnv, VecNormalize, VecFrameStack
-from recurrent_policies.PPO import Agent, FNNPolicy, GRUPolicy, ModifiedGRUPolicy, IAMPolicy, FNNFSPolicy, LSTMPolicy
+from recurrent_policies.PPO import Agent, FNNPolicy, GRUPolicy, ModifiedGRUPolicy, IAMGRUPolicy, FNNFSPolicy, LSTMPolicy, IAMLSTMPolicy
 import gym
 import sacred
 from sacred.observers import MongoObserver
@@ -96,8 +96,16 @@ class Experiment(object):
                 self.parameters['hidden_size_2'],
                 self.parameters['num_workers']
                 )
-        elif self.parameters['policy'] == 'IAMPolicy':
-            policy = IAMPolicy(self.parameters['obs_size'], 
+        elif self.parameters['policy'] == 'IAMGRUPolicy':
+            policy = IAMGRUPolicy(self.parameters['obs_size'], 
+                self.parameters['num_actions'], 
+                self.parameters['hidden_size'],
+                self.parameters['hidden_size_2'],
+                self.parameters['num_workers'],
+                dset=self.parameters['dset']
+                ) 
+        elif self.parameters['policy'] == 'IAMLSTMPolicy':
+            policy = IAMLSTMPolicy(self.parameters['obs_size'], 
                 self.parameters['num_actions'], 
                 self.parameters['hidden_size'],
                 self.parameters['hidden_size_2'],

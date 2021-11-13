@@ -11,20 +11,23 @@ class Tmaze(gym.Env):
                3: 'RIGHT'}
     OBS_SIZE = CORRIDOR_LENGTH + 1
 
-    def __init__(self):
-        pass
+    def __init__(self, seed):
+        self.seed(seed)
+        self.max_steps = 100
 
     def reset(self):
         self.value = np.random.choice(2,1)
         self.location = np.zeros(self.CORRIDOR_LENGTH)
         self.location[0] = 1
         obs = np.append(self.location, self.value)
+        self.steps = 0
         return obs
     
     def step(self, action):
         location_idx = np.where(self.location==1)[0][0]
         reward = 0.0
         done = False
+        self.steps += 1
         if location_idx == (self.CORRIDOR_LENGTH - 1):
             if action == 0:
                 done = True
@@ -42,6 +45,8 @@ class Tmaze(gym.Env):
             if location_idx < (self.CORRIDOR_LENGTH - 1):
                 self.location = np.zeros(self.CORRIDOR_LENGTH)
                 self.location[location_idx+1] = 1
+        if self.steps >= self.max_steps:
+            done = True
         obs = np.append(self.location, 0)
         return obs, reward, done, {}
 
@@ -63,6 +68,7 @@ class Tmaze(gym.Env):
         agents in the environment
         """
         return spaces.Discrete(len(self.ACTIONS))
+
             
                 
 
