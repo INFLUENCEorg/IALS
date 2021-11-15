@@ -9,6 +9,7 @@ parameters:
         name: 'mini-warehouse'
         hidden_size: 256
         hidden_size_2: 128
+        hidden_memory_size: 32
         seq_len: 8
         num_workers: 8
         epsilon: 0.1
