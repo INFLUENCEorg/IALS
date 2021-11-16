@@ -7,9 +7,9 @@ parameters:
         rollout_steps: 8
         num_actions: 4
         name: 'mini-warehouse'
-        hidden_size: 64
+        hidden_size: 128
         hidden_size_2: 128
-        hidden_memory_size: 64
+        hidden_memory_size: 128
         seq_len: 8
         num_workers: 8
         epsilon: 0.1
