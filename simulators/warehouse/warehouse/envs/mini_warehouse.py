@@ -39,8 +39,8 @@ class MiniWarehouse(gym.Env):
         # self.reset()
         self.max_waiting_time = 8
         self.total_steps = 0
-        self.reset()
         self.seed(seed)
+        self.reset()
 
     ############################## Override ###############################
 
