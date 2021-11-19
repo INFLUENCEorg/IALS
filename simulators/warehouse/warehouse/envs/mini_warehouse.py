@@ -1,5 +1,5 @@
 from warehouse.envs.item import Item
-from warehouse.envs.robot import Robot
+from warehouse.envs.mini_robot import Robot
 from warehouse.envs.utils import *
 import numpy as np
 from gym import spaces
@@ -18,7 +18,7 @@ class MiniWarehouse(gym.Env):
                3: 'RIGHT'}
             #    4: 'NOOP'}
 
-    OBS_SIZE = 69
+    OBS_SIZE = 73
 
     def __init__(self, seed):
         self.n_columns = 7
@@ -181,7 +181,7 @@ class MiniWarehouse(gym.Env):
                 robot_position = [robot_domain[0] + self.robot_domain_size[0]//2,
                                   robot_domain[1] + self.robot_domain_size[1]//2]
                 self.robots.append(Robot(self.robot_id, robot_position,
-                                                  robot_domain, False))
+                                                  robot_domain))#, False))
                 self.robot_id += 1
 
     def _add_items(self):
