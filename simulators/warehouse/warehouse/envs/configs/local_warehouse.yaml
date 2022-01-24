@@ -10,4 +10,4 @@ warehouse:
   obs_type: 'vector'
   n_steps_episode: 100
   render: False
-  render_delay: 0.5
+  render_delay: 0.2

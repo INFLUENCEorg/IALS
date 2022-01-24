@@ -149,9 +149,9 @@ class Experiment(object):
             total_steps=self.parameters['total_steps'],
             clip_range=self.parameters['epsilon'],
             entropy_coef=self.parameters['beta'],
-            load=self.parameters['load_policy']
+            load=self.parameters['load_policy'],
+            rollout_steps=self.parameters['rollout_steps']
             )
-
         global_env_name = self.parameters['env'] + ':global-' + self.parameters['name'] + '-v0'
         # global_env_name = 'tmaze:tmaze-v0'
         self.global_env = SubprocVecEnv(
@@ -168,9 +168,10 @@ class Experiment(object):
 
             if self.parameters['influence_model'] == 'nn':
                 self.influence = InfluenceNetwork(parameters['influence'], self.data_path, _run._id)
-                self.collect_data(parameters['influence']['dataset_size'], self.data_path)
-                loss = self.influence.learn()
-                self._run.log_scalar('influence loss', loss, 0)
+                if parameters['influence']['train']:
+                    self.collect_data(parameters['influence']['dataset_size'], self.data_path)
+                    loss = self.influence.learn()
+                    self._run.log_scalar('influence loss', loss, 0)
             
             else:
                 self.influence = InfluenceUniform(parameters['influence'])
@@ -239,6 +240,9 @@ class Experiment(object):
                 step += 1
                 episode_step += 1
                 episode_reward += np.mean(self.env.get_original_reward())
+                # if self.parameters['render']:
+                #     self.env.render()
+                #     time.sleep(.2)
                 # episode_reward += np.mean(reward)
                 if done[0]:
                     end = time.time()
@@ -249,12 +253,7 @@ class Experiment(object):
                     episode_step = 0
                     episode += 1
             
-            self.agent.bootstrap(
-                obs, 
-                self.parameters['rollout_steps'], 
-                self.parameters['gamma'], 
-                self.parameters['lambda']
-                )
+            self.agent.bootstrap(obs)
 
             if self.agent.buffer.is_full:
                 start2 = time.time()
@@ -310,11 +309,11 @@ class Experiment(object):
                 action, _, _ = agent.choose_action(obs)
                 obs, _, done, info = self.global_env.step(action)
                 reward = self.global_env.get_original_reward()
-                # if self.parameters['render']:
-                #     self.global_env.render()
-                #     time.sleep(.5)
+                if self.parameters['render']:
+                    self.global_env.render()
+                    time.sleep(.5)
                 reward_sum += np.array(reward)
-                if collect_data:
+                if self.parameters['simulator'] == 'local':
                     dset.append(np.array([i['dset'] for i in info]))
                     infs.append(np.array([i['infs'] for i in info]))
                 # breakpoint()

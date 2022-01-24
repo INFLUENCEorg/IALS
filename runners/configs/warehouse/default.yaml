@@ -1,0 +1,82 @@
+parameters:
+    main:
+        # Common hyperparameters
+        mode: 'train'
+        load: false
+        name: 'partial'
+        algorithm: PPO
+        env: 'warehouse'
+        simulator: 'partial'
+        num_actions: 4
+        max_steps: 2.0e+6
+        max_episode_steps: 5.0e+3
+        train_frequency: 1
+        save_frequency: 1.0e+5
+        summary_frequency: 1.0e+4
+        tensorboard: true
+        iteration: -1
+        episode: 0
+        num_workers: 8
+        max_steps: 2.0e+6
+        beta: 1.0e-2
+        epsilon: 0.1
+        time_horizon: 16
+        obs_type: 'vector'
+        obs_size: 73
+        c1: 1
+        num_epoch: 3
+        gamma: 0.99
+        lambda: 0.95
+        learning_rate: 2.5e-4
+        batch_size: 32
+        memory_size: 128
+        influence_model: 'nn'
+        eval_freq: 1.0e+5
+        eval_steps: 1.0e+4
+
+        fully_connected: true
+        num_fc_layers: 1
+        num_fc_units: [256]
+        # Convolutional module
+        convolutional: false
+        # Recurrent module
+        recurrent: true
+        num_rec_units: 128
+        seq_len: 8
+        # Influence-aware memory
+        influence: false
+        # Attention
+        attention: false
+        automatic_dpatch: false
+        manual_dpatch: true
+        num_att_units: [256]
+        # D-set
+        inf_num_predictors: 16
+        dset: [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
+        # Influence fully connected module
+        inf_num_fc_layers: 0
+        inf_num_fc_units: [128]
+        # Influence recurrent module
+        inf_num_rec_units: 8
+        inf_seq_len: 8
+
+    influence:
+        # Common hyperparameters
+        seq_len: 100
+        episode_length: 100
+        data_path: '../influence/data/warehouse/'
+        lr: 1.0e-3
+        n_epochs1: 2000
+        n_epochs2: 50
+        batch_size: 32
+        hidden_memory_size: 8
+        input_size: 73
+        output_size: 49
+        n_sources: 8
+        checkpoint_path: '../influence/models/warehouse/model'
+        aug_obs: False
+        load_model: False
+        curriculum: False
+        dataset_size1: 1.0e+4
+        dataset_size2: 1.0e+4
+        train_freq: 1.0e+6

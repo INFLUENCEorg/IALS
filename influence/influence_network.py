@@ -17,6 +17,11 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.optim.lr_scheduler as sch
 
+def init_weights(m):
+    if isinstance(m, nn.Linear):
+        # nn.init.xavier_uniform_(m.weight)
+        nn.init.uniform_(m.weight)
+
 class Network(nn.Module):
     """
     """
@@ -79,6 +84,7 @@ class InfluenceNetwork(object):
         self.model = Network(self.input_size, self._hidden_memory_size, 
                              self.n_sources, self.output_size, self.recurrent,
                              self._seq_len, self.truncated)
+        self.model.apply(init_weights)
         self.loss_function = nn.CrossEntropyLoss()
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self._lr)
         self.scheduler = sch.StepLR(self.optimizer, step_size=100, gamma=0.1)
