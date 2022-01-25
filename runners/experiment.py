@@ -320,9 +320,9 @@ class Experiment(object):
             if self.parameters['simulator'] == 'local':
                 log(dset, infs, self.data_path)
             episode_rewards.append(reward_sum)
-        if self.parameters['simulator'] == 'local':
-            loss = self.influence.test(self.data_path + 'inputs.csv', self.data_path + 'targets.csv')
-            self._run.log_scalar('influence loss', loss, step)
+        # if self.parameters['simulator'] == 'local':
+            # loss = self.influence.test(self.data_path + 'inputs.csv', self.data_path + 'targets.csv')
+            # self._run.log_scalar('influence loss', loss, step)
         self._run.log_scalar('mean episodic return', np.mean(episode_rewards), step)
         print('Done!')
         
