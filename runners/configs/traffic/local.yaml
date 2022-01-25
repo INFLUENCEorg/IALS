@@ -1,0 +1,38 @@
+parameters:
+    main:
+        # Common hyperparameters
+        env: 'traffic'
+        simulator: 'local'
+        name: 'traffic'
+        influence_model: 'nn'
+        obs_size: 40
+        num_workers: 8
+        rollout_steps: 64
+        epsilon: 0.1
+        beta: 0.01
+        render: False
+        policy: 'FNNPolicy'
+        load_policy: False
+        framestack: False
+        hidden_size: 256
+        hidden_size_2: 128
+
+    influence:
+        # Common hyperparameters
+        seq_len: 1
+        recurrent: False
+        episode_length: 300
+        data_path: '../influence/data/warehouse/'
+        lr: 1.0e-4
+        num_epochs: 1000
+        batch_size: 4800
+        hidden_memory_size: 64
+        input_size: 40
+        output_size: 1
+        n_sources: 4
+        checkpoint_path: '../influence/models/traffic/model'
+        aug_obs: False
+        load_model: False
+        curriculum: False
+        dataset_size: 5.0e+4
+        train: True

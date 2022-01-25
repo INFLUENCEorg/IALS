@@ -34,7 +34,10 @@ class Network(nn.Module):
         else:
             self.linear1 = nn.Linear(input_size*seq_len, hidden_memory_size)
         self.output_size = output_size
-        self.softmax = nn.Softmax(dim=-1)
+        if output_size > 1:
+            self.softmax = nn.Softmax(dim=-1)
+        else:
+            self.softmax = nn.Sigmoid()
         self.hidden_memory_size = hidden_memory_size
         # self.linear2 = nn.Linear(hidden_memory_size, hidden_memory_size)
         self.linear3 = nn.Linear(hidden_memory_size, output_size*n_sources)
@@ -86,8 +89,10 @@ class InfluenceNetwork(object):
                              self._seq_len, self.truncated)
         self.model.apply(init_weights)
         self.loss_function = nn.CrossEntropyLoss()
+        if self.output_size == 1:
+            self.loss_function = nn.BCEWithLogitsLoss()
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self._lr)
-        self.scheduler = sch.StepLR(self.optimizer, step_size=100, gamma=0.1)
+        # self.scheduler = sch.StepLR(self.optimizer, step_size=100, gamma=0.1)
         self.checkpoint_path = parameters['checkpoint_path'] + str(run_id)
         if parameters['load_model']:
             self._load_model()
@@ -183,10 +188,10 @@ class InfluenceNetwork(object):
                 targets_batch = targets[indices]
                 self.model.hidden_cell = torch.zeros(1, self._batch_size, self._hidden_memory_size)
                 logits, probs = self.model(seqs_batch)
-                if targets_batch.shape[-1] == self.n_sources*self.output_size:
+                if self.output_size > 1:
                     targets_batch = torch.argmax(targets_batch.view(-1, self.n_sources, self.output_size), dim=2).long().flatten()
                 else:
-                    targets_batch = targets_batch.long().flatten()
+                    targets_batch = targets_batch.view(-1, 1)
                 logits = logits.flatten(end_dim=1)
                 loss = self.loss_function(logits, targets_batch)
                 self.optimizer.zero_grad()
@@ -204,10 +209,10 @@ class InfluenceNetwork(object):
         loss = 0
         self.model.hidden_cell = torch.zeros(1, len(inputs), self._hidden_memory_size)
         logits, _ = self.model(inputs)
-        if targets.shape[-1] == self.n_sources*self.output_size:
+        if self.output_size > 1:
             targets = torch.argmax(targets.view(-1, self.n_sources, self.output_size), dim=2).long().flatten()
         else:
-            targets = targets.long().flatten()
+            targets = targets.view(-1, 1)
         logits = logits.flatten(end_dim=1)
         loss = self.loss_function(logits, targets)
         return loss.item()
