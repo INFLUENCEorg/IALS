@@ -19,8 +19,8 @@ import torch.optim.lr_scheduler as sch
 
 def init_weights(m):
     if isinstance(m, nn.Linear):
-        # nn.init.xavier_uniform_(m.weight)
-        nn.init.uniform_(m.weight)
+        nn.init.xavier_uniform_(m.weight)
+        # nn.init.uniform_(m.weight)
 
 class Network(nn.Module):
     """
