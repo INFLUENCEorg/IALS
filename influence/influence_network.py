@@ -22,10 +22,10 @@ def init_weights(m):
     if isinstance(m, nn.Linear):
         nn.init.xavier_uniform_(m.weight)
         # nn.init.uniform_(m.weight)
-    # elif isinstance(m, nn.GRU):
-    #     for name, param in m.named_parameters():
-    #         if 'weight' in name:
-    #             nn.init.xavier_uniform_(param)
+    elif isinstance(m, nn.GRU):
+        for name, param in m.named_parameters():
+            if 'weight' in name:
+                nn.init.xavier_uniform_(param)
 
 class Network(nn.Module):
     """
