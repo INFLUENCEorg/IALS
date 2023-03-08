@@ -3,7 +3,7 @@ parameters:
         # Common hyperparameters
         simulator: 'local'
         env: 'warehouse'
-        obs_size: 37
+        obs_size: 296
         rollout_steps: 8
         num_actions: 4
         name: 'warehouse'
@@ -21,7 +21,7 @@ parameters:
         epsilon: 0.1
         beta: 0.01
         render: False
-        policy: 'FNNFSPolicy'
+        policy: 'FNNPolicy'
         load_policy: False
         framestack: True
         n_stack: 8
