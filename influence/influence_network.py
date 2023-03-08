@@ -15,54 +15,57 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import torch.optim.lr_scheduler as sch
+
+def init_weights(m):
+    
+    if isinstance(m, nn.Linear):
+        nn.init.xavier_uniform_(m.weight)
+        # nn.init.uniform_(m.weight)
+    elif isinstance(m, nn.GRU):
+        for name, param in m.named_parameters():
+            if 'weight' in name:
+                nn.init.xavier_uniform_(param)
 
 class Network(nn.Module):
     """
     """
-    def __init__(self, input_size, hidden_memory_size, n_sources, output_size, recurrent):
+    def __init__(self, input_size, hidden_memory_size, n_sources, output_size, recurrent, seq_len, truncated):
         super().__init__()
-        # self.fc = nn.Linear(input_size, 16)
         self.relu = nn.ReLU()
-        # self.lstm = nn.LSTM(input_size, hidden_memory_size, batch_first=True)
         self.recurrent = recurrent
-        self.linear1 = nn.Linear(input_size, hidden_memory_size)
         if self.recurrent:
             self.gru = nn.GRU(input_size, hidden_memory_size, batch_first=True)
-        # else:
-            # self.linear1 = nn.Linear(input_size, hidden_memory_size)
-        self.linear2 = nn.ModuleList()
-        # self.linear3 = nn.ModuleList()
-        self.n_sources = n_sources
-        self.softmax = nn.Softmax(dim=1)
-        self.sigmoid = nn.Sigmoid()
+        else:
+            self.linear1 = nn.Linear(input_size*seq_len, hidden_memory_size)
+        self.output_size = output_size
+        if output_size > 1:
+            self.softmax = nn.Softmax(dim=-1)
+        else:
+            self.softmax = nn.Sigmoid()
         self.hidden_memory_size = hidden_memory_size
-        for _ in range(self.n_sources):
-            self.linear2.append((nn.Linear(hidden_memory_size, output_size)))
-            # self.linear3.append((nn.Linear(hidden_memory_size, output_size)))
+        # self.linear2 = nn.Linear(hidden_memory_size, hidden_memory_size)
+        self.linear3 = nn.Linear(hidden_memory_size, output_size*n_sources)
+        self.n_sources = n_sources
+        self.truncated = truncated
         self.reset()
 
     def forward(self, input_seq):
+        input_seq = (input_seq - 0.5)/0.5
         if self.recurrent:
-            # out = self.relu(self.linear1(input_seq))
             out, self.hidden_cell = self.gru(input_seq, self.hidden_cell)
+            if self.truncated:
+                out = out[:, -1, :]
         else:
-            out = self.relu(self.linear1(input_seq))
-        logits = []
-        probs = []
-        for k in range(self.n_sources):
-            # linear2_out = self.relu(self.linear2[k](out))
-            linear2_out = self.linear2[k](out)
-            logits.append(linear2_out)
-            if np.shape(linear2_out[:, -1, :])[1] > 1: 
-                probs.append(self.softmax(linear2_out[:, -1, :]).detach().numpy())
-            else:
-                probs.append(self.sigmoid(linear2_out[:, -1, :]).detach().numpy())
+            out = self.relu(self.linear1(input_seq.flatten(start_dim=1)))
+        # out = self.relu(self.linear2(out))
+        logits = self.linear3(out).view(-1, self.n_sources, self.output_size)
+        probs = self.softmax(logits).detach().numpy()
         return logits, probs
     
     def reset(self):
-        # self.hidden_cell = (torch.zeros(1,1,self.hidden_memory_size),
-        #                     torch.zeros(1,1,self.hidden_memory_size))
         self.hidden_cell = torch.zeros(1,1,self.hidden_memory_size)
+
 
 class InfluenceNetwork(object):
     """
@@ -70,12 +73,12 @@ class InfluenceNetwork(object):
     def __init__(self, parameters, data_path, run_id):
         """
         """
-        # parameters = read_parameters('../influence/configs/influence.yaml')
         self._seq_len = parameters['seq_len']
         self._episode_length = parameters['episode_length']
         self._lr = parameters['lr']
         self._hidden_memory_size = parameters['hidden_memory_size']
         self._batch_size = parameters['batch_size']
+        self.num_epochs = parameters['num_epochs']
         self.n_sources = parameters['n_sources']
         self.input_size = parameters['input_size']
         self.output_size = parameters['output_size']
@@ -84,29 +87,27 @@ class InfluenceNetwork(object):
         self.parameters = parameters
         self.inputs_file = data_path + 'inputs.csv'
         self.targets_file = data_path + 'targets.csv'
-        self.recurrent = self._seq_len > 1
+        self.recurrent = parameters['recurrent']
+        self.truncated = self._seq_len < self._episode_length
         self.model = Network(self.input_size, self._hidden_memory_size, 
-                             self.n_sources, self.output_size, self.recurrent)
-        if self.output_size > 1:
-            self.loss_function = nn.CrossEntropyLoss()
-        else:
+                             self.n_sources, self.output_size, self.recurrent,
+                             self._seq_len, self.truncated)
+        self.model.apply(init_weights)
+        self.loss_function = nn.CrossEntropyLoss()
+        if self.output_size == 1:
             self.loss_function = nn.BCEWithLogitsLoss()
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self._lr, weight_decay=0.001)
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self._lr)
+        # self.scheduler = sch.StepLR(self.optimizer, step_size=100, gamma=0.1)
         self.checkpoint_path = parameters['checkpoint_path'] + str(run_id)
         if parameters['load_model']:
             self._load_model()
-        if self.curriculum:
-            self.strength = 0.5
-            self.strength_increment = 0.025
-        else:
-            self.strength = 1
 
-    def train(self, n_epochs):
+    def learn(self):
         inputs = self._read_data(self.inputs_file)
         targets = self._read_data(self.targets_file)
         input_seqs, target_seqs = self._form_sequences(inputs, targets)
         train_input_seqs, train_target_seqs, test_input_seqs, test_target_seqs = self._split_train_test(input_seqs, target_seqs)
-        loss = self._train(train_input_seqs, train_target_seqs, test_input_seqs, test_target_seqs, n_epochs)
+        loss = self._train(train_input_seqs, train_target_seqs, test_input_seqs, test_target_seqs)
         self._save_model()
         if self.curriculum:
             self.strength += self.strength_increment
@@ -114,9 +115,9 @@ class InfluenceNetwork(object):
         os.remove(self.targets_file)
         return loss
 
-    def test(self):
-        inputs = self._read_data(self.inputs_file)
-        targets = self._read_data(self.targets_file)
+    def test(self, inputs_file, targets_file):
+        inputs = self._read_data(inputs_file)
+        targets = self._read_data(targets_file)
         input_seqs, target_seqs = self._form_sequences(inputs, targets)
         loss = self._test(input_seqs, target_seqs)
         print(f'Test loss: {loss:10.8f}')
@@ -126,16 +127,23 @@ class InfluenceNetwork(object):
 
     
     def predict(self, obs):
-        obs_tensor = torch.reshape(torch.FloatTensor(obs), (1,1,-1))
-        _, probs = self.model(obs_tensor)
-        probs = [prob[0] for prob in probs]
-        return probs
+        if self.recurrent:
+            inputs = torch.FloatTensor(obs).view(1,1,-1)
+        else:
+            self.stack(obs)
+            inputs = torch.FloatTensor(self.stacked_obs)
+        _, probs = self.model(inputs)
+        return probs[0]
     
     def reset(self):
+        self.stacked_obs = np.zeros((1, self._seq_len, self.input_size))
         self.model.reset()
     
+    def stack(self, obs):
+        self.stacked_obs[:,:-1, :] = self.stacked_obs[:,1:,:]
+        self.stacked_obs[0,-1, :] = obs
+    
     def get_hidden_state(self):
-        # return self.model.hidden_cell[0].detach().numpy()[0][0]
         return self.model.hidden_cell.detach().numpy()
 
 
@@ -158,7 +166,10 @@ class InfluenceNetwork(object):
                 start = episode*self._episode_length+seq
                 end = episode*self._episode_length+seq+self._seq_len
                 input_seq.append(inputs[start:end])
-                target_seq.append(targets[start:end])
+                if self.truncated:
+                    target_seq.append(targets[end-1])
+                else:
+                    target_seq.append(targets[start:end])
         return input_seq, target_seq
 
     def _split_train_test(self, inputs, targets):
@@ -167,39 +178,31 @@ class InfluenceNetwork(object):
         test_inputs, test_targets = inputs[-test_size:], targets[-test_size:]
         return train_inputs, train_targets, test_inputs, test_targets
 
-    def _train(self, train_inputs, train_targets, test_inputs, test_targets, n_epochs):
+    def _train(self, train_inputs, train_targets, test_inputs, test_targets):
         seqs = torch.FloatTensor(train_inputs)
         targets = torch.FloatTensor(train_targets)
-        for e in range(n_epochs):
+        for e in range(self.num_epochs):
             permutation = torch.randperm(len(seqs))
             if e % 50 == 0:
                 test_loss = self._test(test_inputs, test_targets)
                 print(f'epoch: {e:3} test loss: {test_loss:10.8f}')
+                # print('lr: {1}'.format(e, self.optimizer.param_groups[0]['lr']))
             for i in range(0, len(seqs) - len(seqs) % self._batch_size, self._batch_size):
                 indices = permutation[i:i+self._batch_size]
                 seqs_batch = seqs[indices]
                 targets_batch = targets[indices]
-                # self.model.hidden_cell = (torch.randn(1, self._batch_size, self._hidden_memory_size),
-                #                           torch.randn(1, self._batch_size, self._hidden_memory_size))
                 self.model.hidden_cell = torch.zeros(1, self._batch_size, self._hidden_memory_size)
                 logits, probs = self.model(seqs_batch)
-                end = 0
+                if self.output_size > 1:
+                    targets_batch = torch.argmax(targets_batch.view(-1, self.n_sources, self.output_size), dim=2).long().flatten()
+                else:
+                    targets_batch = targets_batch.view(-1, 1)
+                logits = logits.flatten(end_dim=1)
+                loss = self.loss_function(logits, targets_batch)
                 self.optimizer.zero_grad()
-                loss = 0
-                for s in range(self.n_sources):
-                    start = end 
-                    end += self.output_size
-                    target = targets_batch[:, :, start:end]
-                    logit =  logits[s]
-                    if self.output_size > 1:
-                        logit = logit.view(-1, self.output_size)
-                        target = torch.argmax(target, dim=2).view(-1)
-                    else:
-                        logit = logit.view(-1)
-                        target = target.view(-1)
-                    loss += self.loss_function(logit, target)
                 loss.backward()
                 self.optimizer.step()
+            # self.scheduler.step()
         test_loss = self._test(test_inputs, test_targets)
         print(f'epoch: {e+1:3} test loss: {test_loss:10.8f}')
         self.model.reset()
@@ -209,31 +212,14 @@ class InfluenceNetwork(object):
         inputs = torch.FloatTensor(inputs)
         targets = torch.FloatTensor(targets)
         loss = 0
-        # self.model.hidden_cell = (torch.randn(1, len(inputs), self._hidden_memory_size),
-        #                           torch.randn(1, len(inputs), self._hidden_memory_size))
         self.model.hidden_cell = torch.zeros(1, len(inputs), self._hidden_memory_size)
-        logits, probs = self.model(inputs)
-        self.img1 = None
-        end = 0
-        targets_counts = []
-        for s in range(self.n_sources):
-            start = end
-            end += self.output_size
-            # loss += self.loss_function[s % 2](logits[s][:,-1,:], torch.argmax(targets[:, start:end], dim=1))
-            target = targets[:, :, start:end]
-            logit =  logits[s].view(-1, self.output_size)
-            if self.output_size > 1:
-                target = torch.argmax(target, dim=2).view(-1)
-            else:
-                target = target.view(-1, 1)
-            loss += self.loss_function(logit, target)
-            # from collections import Counter
-            # targets_counts = Counter(torch.argmax(targets[:, start:end], dim=1).detach().numpy())
-            # print(targets_counts)
-            # probs_counts = np.sum(probs[s], axis=0)
-            # print(probs_counts)
-            # for i in range(len(inputs)):
-                # self._plot_prediction(probs[s][i], targets[i, start:end])
+        logits, _ = self.model(inputs)
+        if self.output_size > 1:
+            targets = torch.argmax(targets.view(-1, self.n_sources, self.output_size), dim=2).long().flatten()
+        else:
+            targets = targets.view(-1, 1)
+        logits = logits.flatten(end_dim=1)
+        loss = self.loss_function(logits, targets)
         return loss.item()
 
     def _plot_prediction(self, prediction, target):

@@ -1,0 +1,49 @@
+parameters:
+    main:
+        # Common hyperparameters
+        simulator: 'local'
+        env: 'warehouse'
+        obs_size: 37
+        rollout_steps: 8
+        num_actions: 4
+        name: 'warehouse'
+        influence_model: 'uniform'
+        fully_connected: true
+        num_fc_layers: 1
+        num_fc_units: [512]
+        # Convolutional module
+        convolutional: false
+        # Recurrent module
+        recurrent: true
+        num_rec_units: 512
+        seq_len: 1
+        num_workers: 1
+        epsilon: 0.1
+        beta: 0.01
+        render: False
+        policy: 'FNNFSPolicy'
+        load_policy: False
+        framestack: True
+        n_stack: 8
+        hidden_size: 256
+        hidden_size_2: 128
+        dset: [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]
+
+    influence:
+        # Common hyperparameters
+        # probs: [[0.03365385, 0.02798077, 0.02759615, 0.91076923], 
+        #         [0.02740385, 0.03038462, 0.02653846, 0.91567308], 
+        #         [0.02788462, 0.02567308, 0.02576923, 0.92067308], 
+        #         [0.03096154, 0.03096154, 0.02951923, 0.90855769]]
+        # probs: [[0.04067308, 0.03846154, 0.03721154, 0.88365385], 
+        #         [0.03942308, 0.03798077, 0.03634615, 0.88625], 
+        #         [0.03365385, 0.04480769, 0.03721154, 0.88432692], 
+        #         [0.03384615, 0.04336538, 0.03634615, 0.88644231]]
+        probs: [[0.25, 0.25, 0.25, 0.25],
+                [0.25, 0.25, 0.25, 0.25],
+                [0.25, 0.25, 0.25, 0.25],
+                [0.25, 0.25, 0.25, 0.25]]
+        seq_len: 1
+        episode_length: 100
+        output_size: 4
+        data_path: '../influence/data/warehouse/'

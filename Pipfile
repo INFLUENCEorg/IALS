@@ -5,20 +5,23 @@ name = "pypi"
 
 [packages]
 flow = {path = "./flow"}
-networkx = "*"
+numpy = "*"
+matplotlib = "==3.5.0"
+pyaml = "*"
 sacred = "*"
 pymongo = "*"
 sshtunnel = "*"
-torch = "*"
-tensorflow = "==1.13.1"
-gym = "*"
-matplotlib = "*"
-pyaml = "*"
+networkx = "*"
 lxml = "*"
+pyglet = "*"
 opencv-python = "*"
 imutils = "*"
+scipy = "*"
+torch = "==1.8.1"
+stable-baselines3 = "*"
 
 [dev-packages]
+ipykernel = "*"
 
 [requires]
-python_version = "3.7"
+python_version = "3.8"

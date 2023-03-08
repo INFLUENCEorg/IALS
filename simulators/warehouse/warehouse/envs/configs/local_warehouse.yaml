@@ -1,0 +1,13 @@
+warehouse:
+  n_rows: 5 # n_robots_row*(domain_size-1) + 1
+  n_columns: 5 # n_robots_column*(domain_size-1) + 1
+  n_robots_row: 1
+  n_robots_column: 1
+  distance_between_shelves: 4
+  robot_domain_size: [5, 5]
+  prob_item_appears: 0.02
+  learning_robot_id: 0 # the learning robot
+  obs_type: 'vector'
+  n_steps_episode: 100
+  render: False
+  render_delay: 0.2

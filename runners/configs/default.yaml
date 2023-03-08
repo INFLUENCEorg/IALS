@@ -7,20 +7,13 @@ parameters:
         influence_model: 'nn'
         obs_size: 40
         num_actions: 2
-        max_steps: 2.0e+6
-        max_episode_steps: 5.0e+3
-        train_frequency: 1
+        total_steps: 2.0e+6
         save_frequency: 1.0e+5
-        summary_frequency: 1.0e+4
-        tensorboard: true
-        iteration: -1
-        episode: 0
         num_workers: 8
         beta: 1.0e-2
-        epsilon: 0.2
-        time_horizon: 64
+        epsilon: 0.1
+        rollout_steps: 64
         obs_type: 'vector'
-        obs_size: 40
         c1: 1
         num_epoch: 3
         gamma: 0.99
@@ -31,8 +24,11 @@ parameters:
         eval_freq: 1.0e+5
         eval_steps: 1.0e+4
         num_workers: 8
-
+        framestack: false
+        load_policy: false
+        
         load: false
+        render: false
         fully_connected: true
         num_fc_layers: 2
         num_fc_units: [64, 32]

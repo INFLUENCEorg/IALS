@@ -5,8 +5,10 @@ parameters:
         simulator: 'local'
         name: 'uniform_traffic'
         influence_model: 'uniform'
-        eval_steps: 5.0e+4
-        num_workers: 1
+        num_workers: 8
+        policy: 'IAMPolicy'
+        seq_len: 8
+        dset: null
 
     influence:
         probs: [0.5, 0.5, 0.5, 0.5]
