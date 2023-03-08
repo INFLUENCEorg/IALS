@@ -17,7 +17,7 @@ parameters:
         recurrent: true
         num_rec_units: 512
         seq_len: 1
-        num_workers: 2
+        num_workers: 8
         epsilon: 0.1
         beta: 0.01
         render: False
@@ -28,6 +28,7 @@ parameters:
         hidden_size: 256
         hidden_size_2: 128
         dset: [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]
+        render: False                                                               
 
     influence:
         # Common hyperparameters

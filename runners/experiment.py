@@ -88,7 +88,6 @@ class Experiment(object):
         self._run = _run
         self._seed = seed
         self.parameters = parameters['main']
-        print(self.parameters['policy'])
         if self.parameters['policy'] == 'FNNPolicy':
             policy = FNNPolicy(self.parameters['obs_size'], 
                 self.parameters['num_actions'],
@@ -169,8 +168,12 @@ class Experiment(object):
             if self.parameters['influence_model'] == 'nn':
                 self.influence = InfluenceNetwork(parameters['influence'], self.data_path, _run._id)
                 if parameters['influence']['train']:
+                    start = time.time()
                     self.collect_data(parameters['influence']['dataset_size'], self.data_path)
+                    print('Data collection time: ', str(time.time() - start))
+                    start = time.time()
                     loss = self.influence.learn()
+                    print('Influence training time: ', str(time.time() - start))
                     self._run.log_scalar('influence loss', loss, 0)
             
             else:
@@ -217,13 +220,16 @@ class Experiment(object):
         episode = 1
         start = time.time()
         done = [False]*self.parameters['num_workers']
+        start = time.time()
         while step <= self.parameters['total_steps']:
-            
             rollout_step = 0
             while rollout_step < self.parameters['rollout_steps']:
                 if step % self.parameters['eval_freq'] == 0:
-                   self.evaluate(step)
-                   self.agent.save_policy()
+                    end = time.time()
+                    print('Training time: ', end - start)
+                    self.evaluate(step)
+                    self.agent.save_policy()
+                    start = time.time()
                 if self.agent.policy.recurrent:
                     self.agent.reset_hidden_memory(done)
                     hidden_memory = self.agent.policy.hidden_memory
@@ -240,14 +246,11 @@ class Experiment(object):
                 step += 1
                 episode_step += 1
                 episode_reward += np.mean(self.env.get_original_reward())
-                # if self.parameters['render']:
-                #     self.env.render()
-                #     time.sleep(.2)
+                if self.parameters['render']:
+                    self.env.render()
+                    time.sleep(.2)
                 # episode_reward += np.mean(reward)
                 if done[0]:
-                    end = time.time()
-                    print('Time: ', end - start)
-                    start = end
                     self.print_results(episode_reward, episode_step, step, episode)
                     episode_reward = 0.0
                     episode_step = 0
@@ -307,12 +310,13 @@ class Experiment(object):
             while not done[0]:
                 n_steps += 1
                 action, _, _ = agent.choose_action(obs)
-                obs, _, done, info = self.global_env.step(action)
+                obs, reward, done, info = self.global_env.step(action)
                 reward = self.global_env.get_original_reward()
-                if self.parameters['render']:
-                    self.global_env.render()
-                    time.sleep(.5)
-                reward_sum += np.array(reward)
+                # if self.parameters['render']:
+                #     self.global_env.render()
+                #     time.sleep(.5)
+                # reward_sum += np.array(reward)
+                reward_sum = np.array([0.0]*self.parameters['num_workers'])
                 if self.parameters['simulator'] == 'local':
                     dset.append(np.array([i['dset'] for i in info]))
                     infs.append(np.array([i['infs'] for i in info]))

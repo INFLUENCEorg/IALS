@@ -3,6 +3,11 @@ parameters:
         # Common hyperparameters
         env: 'traffic'
         simulator: 'global'
-        name: 'global_traffic'
+        name: 'traffic'
         influence_model: None
         num_workers: 8
+        policy: 'FNNPolicy'
+        load_policy: False
+        framestack: False
+        hidden_size: 256
+        hidden_size_2: 128

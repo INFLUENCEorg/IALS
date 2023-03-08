@@ -50,13 +50,13 @@ phases = [{'duration': '31', 'minDur': '8', 'maxDur': '45', 'state': 'GrGr'},
 nodes = []
 for node in range(N_ROWS*N_COLUMNS):
     nodes.append('center'+str(node))
-nodes.pop(18)
+nodes.pop(12)
 additional_env_params = {'target_velocity': 50,
                          'switch_time': 3.0,
                          'num_observed': 2,
                          'discrete': True,
                          'tl_type': 'actuated',
-                         'tl_controlled': ['center18'],
+                         'tl_controlled': ['center12'],
                          'scale': 10}
 horizon = 300
 
@@ -144,11 +144,12 @@ class GlobalTraffic(TrafficLightGridBitmapEnv):
     def reset(self):
         # print(len(set(self.total_veh)))
         # self.total_veh = []
-        state = super().reset()
+        states = super().reset()
         node = self.tl_controlled[0]
         node_edges = dict(self.network.node_mapping)[node]
         observation = []
         infs = []
+        state = states[0]
         for edge in range(len(node_edges)):
             observation.append(state[edge][:-1])
             infs.append(state[edge][-1]) # last bit is influence source
@@ -166,11 +167,12 @@ class GlobalTraffic(TrafficLightGridBitmapEnv):
 
     # override
     def step(self, rl_actions):
-        state, reward, done, _ = super().step(rl_actions)
+        states, reward, done, _ = super().step(rl_actions)
         node = self.tl_controlled[0]
         node_edges = dict(self.network.node_mapping)[node]
         observation = []
         infs = []
+        state = states[0]
         for edge in range(len(node_edges)):
             observation.append(state[edge][:-1])
             infs.append(state[edge][-1]) # last bit is influence source
@@ -178,6 +180,7 @@ class GlobalTraffic(TrafficLightGridBitmapEnv):
         observation = np.concatenate(observation)
         infs = np.array(infs, dtype='object')
         dset = observation
+        # print(reward)
         # if self.influence.aug_obs:
         #     self.influence.predict(dset)
         #     observation = np.append(observation, self.influence.get_hidden_state())

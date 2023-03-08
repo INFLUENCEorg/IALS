@@ -101,7 +101,8 @@ class LocalTraffic(TrafficLightGridBitmapEnv):
         #             # self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm', 
         #                             #    edge=edge, lane='free', pos=6, speed=10)
         #         self.veh_id += 1
-        state = super().reset()
+        states = super().reset()
+        state = states[0]
         observation = []
         infs = []
         for edge in range(len(node_edges)):
@@ -136,7 +137,8 @@ class LocalTraffic(TrafficLightGridBitmapEnv):
                 self.k.vehicle.add(veh_id='idm_' + str(self.veh_id), type_id='idm',
                                    edge=edge, lane='allowed', pos=6, speed=speed)
                 self.veh_id += 1
-        state, reward, done, _ = super().step(rl_actions)
+        states, reward, done, _ = super().step(rl_actions)
+        state = states[0]
         # self.k.vehicle.kernel_api.simulation.clearPending()
         # remove pending vehicles that couldn't be added
         node_edges = dict(self.network.node_mapping)[node]

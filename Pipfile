@@ -6,7 +6,7 @@ name = "pypi"
 [packages]
 flow = {path = "./flow"}
 numpy = "*"
-matplotlib = "*"
+matplotlib = "==3.5.0"
 pyaml = "*"
 sacred = "*"
 pymongo = "*"
@@ -21,6 +21,7 @@ torch = "==1.8.1"
 stable-baselines3 = "*"
 
 [dev-packages]
+ipykernel = "*"
 
 [requires]
 python_version = "3.8"
