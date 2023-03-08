@@ -171,12 +171,12 @@ class GlobalWarehouse(gym.Env):
         # infs =  np.array(prev_items) - np.array(items) - np.concatenate((bitmap[[0,-1], 1:-1].flatten(),bitmap[1:-1, [0,-1]].flatten()))
         # infs = np.maximum(np.zeros_like(infs), infs)
         robot_neighbors = self._get_robot_neighbors(self.learning_robot_id)
-        infs = np.array([]).astype(np.int)
+        infs = np.array([]).astype(np.int64)
         for idx, neighbor_id in enumerate(robot_neighbors):
             loc_bitmap = self.get_robot_loc_bitmap(neighbor_id)
             loc_bitmap = np.reshape(loc_bitmap, (self.robot_domain_size[0], self.robot_domain_size[1]))
             intersection = np.array(self._get_intersection(idx, loc_bitmap))
-            source = np.zeros(self.robot_domain_size[0]-1).astype(np.int)
+            source = np.zeros(self.robot_domain_size[0]-1).astype(np.int64)
             if all(intersection == np.zeros(len(intersection))):
                 source[-1] = 1
             else:
@@ -270,7 +270,7 @@ class GlobalWarehouse(gym.Env):
         Generates a 3D bitmap: First layer shows the location of every item.
         Second layer shows the location of the robots.
         """
-        state_bitmap = np.zeros([self.n_rows, self.n_columns, 2], dtype=np.int)
+        state_bitmap = np.zeros([self.n_rows, self.n_columns, 2], dtype=np.int64)
         for item in self.items:
             item_pos = item.get_position
             state_bitmap[item_pos[0], item_pos[1], 0] = 1 #item.get_waiting_time

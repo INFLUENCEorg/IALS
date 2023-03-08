@@ -104,7 +104,7 @@ class MiniWarehouse(gym.Env):
 
     @property
     def get_infs(self):
-        state_bitmap = np.zeros([self.n_rows, self.n_columns], dtype=np.int)
+        state_bitmap = np.zeros([self.n_rows, self.n_columns], dtype=np.int64)
         for item in self.prev_items:
             if item.get_id not in [item.get_id for item in self.items] and  item.get_id not in self.removed_by_robot:
                 item_pos = item.get_position
@@ -223,7 +223,7 @@ class MiniWarehouse(gym.Env):
         Generates a 3D bitmap: First layer shows the location of every item.
         Second layer shows the location of the robots.
         """
-        state_bitmap = np.zeros([self.n_rows, self.n_columns, 2], dtype=np.int)
+        state_bitmap = np.zeros([self.n_rows, self.n_columns, 2], dtype=np.int64)
         for item in self.items:
             item_pos = item.get_position
             state_bitmap[item_pos[0], item_pos[1], 0] = 1 #item.get_waiting_time
