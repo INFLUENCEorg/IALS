@@ -1,5 +1,5 @@
 Bootstrap: docker
-From: python:3.8
+From: python:3.6
 
 %files
     Pipfile
@@ -7,8 +7,8 @@ From: python:3.8
     simulators
 
 %post
-    apt-get -y update
-    apt-get -y install git cmake python3 g++ libxerces-c-dev libfox-1.6-dev libgdal-dev libproj-dev libgl2ps-dev python3-dev swig default-jdk maven libeigen3-dev
+    apt-get update -y
+    apt-get install -y git cmake python3 g++ libxerces-c-dev libfox-1.6-dev libgdal-dev libproj-dev libgl2ps-dev python3-dev swig default-jdk maven libeigen3-dev
     git clone --recursive https://github.com/eclipse/sumo
     export SUMO_HOME="$PWD/sumo"
     mkdir sumo/build/cmake-build && cd sumo/build/cmake-build
@@ -16,11 +16,28 @@ From: python:3.8
     make -j$(nproc)
     cd /
     git clone https://github.com/INFLUENCEorg/flow.git
-    pip install pipenv
-    pipenv install  --deploy --system
+    git clone https://github.com/miguelsuau/recurrent_policies.git
+    pip install -e ./flow
+    pip install stable-baselines3
+    pip install numpy
+    pip install matplotlib
+    pip install pyaml
+    pip install sacred
+    pip install pymongo
+    pip install sshtunnel
+    pip install networkx
+    pip install lxml
+    pip install pyglet
+    pip install imutils
+    pip install scipy
+    pip install torch==1.8.1
+    pip install pathos
+    pip install psutil
+    pip install opencv-python==4.5.3.56
     pip install -e ./simulators/warehouse/
-    pip install -e simulators/traffic/
-    chmod -R 777 /usr/local/lib/python3.8/site-packages
+    pip install -e ./simulators/traffic/
+    chmod -R 777 /usr/local/lib/python3.6/site-packages
+    chmod -R 777 /flow/
     
 %environment    
     export SUMO_HOME="/sumo"
