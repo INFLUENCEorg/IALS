@@ -4,12 +4,9 @@ from warehouse.envs.utils import *
 import numpy as np
 import gym
 from gym import spaces
-import time
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import networkx as nx
-import csv
-from PIL import Image
 
 class GlobalWarehouse(gym.Env):
     """
