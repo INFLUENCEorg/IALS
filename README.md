@@ -1,40 +1,23 @@
-# scalable-simulations
+# IALS
 
-Source code for influence augmented local simulation for fast policy search in structured domains. The code includes:
+Source code for the paper [Influence-Augmented Local Simulators: a Scalable Solution for Fast Deep RL in Large Networked Systems](https://proceedings.mlr.press/v162/suau22a.html):
 
-* A policy search algorithm to train RL agents (PPO). 
-* Global and local simulators of the Warehouse environment. 
-* An influence predictor for the local simulator.
+## Requirements
+[Singularity](https://sylabs.io/docs/)
 
 ## Installation
-
-### SUMO
-
-Install the dependencies:
-```
-sudo apt-get install cmake python g++ libxerces-c-dev libfox-1.6-dev libgdal-dev libproj-dev libgl2ps-dev swig
-```
-Clone the sumo repository:
-```
-git clone --recursive https://github.com/eclipse/sumo
-```
-Set the environment variables:
-```
-echo 'export SUMO_HOME="/path/to/sumo"' >> ~/.bashrc
-echo 'export PYTHONPATH="/path/to/sumo/tools/"' >> ~/.bashrc 
-```
-Build the sumo binaries:
-```
-mkdir sumo/build/cmake-build && cd sumo/build/cmake-build
-cmake ../..
-make -j$(nproc)
+```console 
+sudo singularity build IALS.sif IALS.def
 ```
 
 ## Running an experiment
+Launch the singularity shell:
+```console
+singularity shell --writable-tmpfs IALS.sif
+```
 To run a new experiment do:
-
 ```console
 cd runners
-python experimentor.py with ./configs/Warehouse/partial.yaml
+python experiment.py with ./configs/warehouse/local_fnn_framestack.yaml
 ```
-This will train a new policy on the partial simulator. To train on the global simulator change the config file path to `./configs/Warehouse/global.yaml`.
+This will train a new policy in the warehouse env on IALS. To train on the global simulator change the config file path to `./configs/warehouse/global_fnn_framestack.yaml`.

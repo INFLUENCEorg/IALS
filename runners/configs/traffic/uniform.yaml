@@ -3,12 +3,22 @@ parameters:
         # Common hyperparameters
         env: 'traffic'
         simulator: 'local'
-        name: 'uniform_traffic'
+        name: 'traffic'
         influence_model: 'uniform'
-        eval_steps: 5.0e+4
-        num_workers: 1
+        policy: 'FNNPolicy'
+        seq_len: 1
+        framestack: false
+        load_policy: false
+        hidden_size: 256
+        hidden_size_2: 128
+        num_workers: 8
+        epsilon: 0.1
+        beta: 0.01
+        render: False
+        policy: 'FNNPolicy'
+        load_policy: False
 
     influence:
-        probs: [0.5, 0.5, 0.5, 0.5]
+        probs: [0.1, 0.1, 0.1, 0.1]
         seq_len: 1
         episode_length: 300

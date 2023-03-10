@@ -138,6 +138,7 @@ class LocalTraffic(TrafficLightGridBitmapEnv):
                                    edge=edge, lane='allowed', pos=6, speed=speed)
                 self.veh_id += 1
         states, reward, done, _ = super().step(rl_actions)
+        reward = reward[0]
         state = states[0]
         # self.k.vehicle.kernel_api.simulation.clearPending()
         # remove pending vehicles that couldn't be added

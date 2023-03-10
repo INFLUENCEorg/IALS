@@ -17,7 +17,6 @@ import os
 import time
 from copy import deepcopy
 from gym import spaces
-from stable_baselines3.common.env_util import make_vec_env
 
 def generate_path(path):
     """

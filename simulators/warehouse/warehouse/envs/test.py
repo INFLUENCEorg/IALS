@@ -53,7 +53,7 @@ warehouse.reset()
 initial_positions = []
 for robot in warehouse.robots:
     initial_positions.append(robot.get_position)
-actions = dict(enumerate(np.zeros(len(warehouse.robots), dtype=np.int)))
+actions = dict(enumerate(np.zeros(len(warehouse.robots), dtype=np.int64)))
 warehouse.step(actions)
 for robot, initial_position in zip(warehouse.robots, initial_positions):
     assert robot.get_position[1] - 1 == initial_position[1], "action test: failed"
@@ -61,7 +61,7 @@ for robot, initial_position in zip(warehouse.robots, initial_positions):
 initial_positions = []
 for robot in warehouse.robots:
     initial_positions.append(robot.get_position)
-actions = dict(enumerate(np.ones(len(warehouse.robots), dtype=np.int)))
+actions = dict(enumerate(np.ones(len(warehouse.robots), dtype=np.int64)))
 warehouse.step(actions)
 for robot, initial_position in zip(warehouse.robots, initial_positions):
     assert robot.get_position[1] + 1 == initial_position[1], "action test: failed"
@@ -69,7 +69,7 @@ for robot, initial_position in zip(warehouse.robots, initial_positions):
 initial_positions = []
 for robot in warehouse.robots:
     initial_positions.append(robot.get_position)
-actions = dict(enumerate(2*np.ones(len(warehouse.robots), dtype=np.int)))
+actions = dict(enumerate(2*np.ones(len(warehouse.robots), dtype=np.int64)))
 warehouse.step(actions)
 for robot, initial_position in zip(warehouse.robots, initial_positions):
     assert robot.get_position[0] + 1 == initial_position[0], "action test: failed"
@@ -77,7 +77,7 @@ for robot, initial_position in zip(warehouse.robots, initial_positions):
 initial_positions = []
 for robot in warehouse.robots:
     initial_positions.append(robot.get_position)
-actions = dict(enumerate(3*np.ones(len(warehouse.robots), dtype=np.int)))
+actions = dict(enumerate(3*np.ones(len(warehouse.robots), dtype=np.int64)))
 warehouse.step(actions)
 for robot, initial_position in zip(warehouse.robots, initial_positions):
     assert robot.get_position[0] - 1 == initial_position[0], "action test: failed"
