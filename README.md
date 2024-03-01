@@ -1,6 +1,6 @@
 # IALS
 
-Source code for the paper [Influence-Augmented Local Simulators: a Scalable Solution for Fast Deep RL in Large Networked Systems](https://proceedings.mlr.press/v162/suau22a.html) by Miguel Suau, Jinke He, Mustafa Mert Çelikok, Matthijs Spaan, and Frans Oliehoek.
+Source code for the paper [Influence-Augmented Local Simulators: a Scalable Solution for Fast Deep RL in Large Networked Systems](https://proceedings.mlr.press/v162/suau22a.html) by Miguel Suau, Jinke He, Matthijs Spaan, and Frans Oliehoek.
 
 ## Requirements
 [Singularity](https://sylabs.io/docs/)
