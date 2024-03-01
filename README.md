@@ -9,7 +9,7 @@ Source code for the paper [Influence-Augmented Local Simulators: a Scalable Solu
 ```console 
 sudo singularity build IALS.sif IALS.def
 ```
-This will create a singularity container and install all the required packages. Alternatively, you can create a virtual environment install the packages listed in IALS.def
+This will create a singularity container and install all the required packages. Alternatively, you can create a virtual environment and install the packages listed in IALS.def
 
 ## Running an experiment
 Launch the singularity shell:
